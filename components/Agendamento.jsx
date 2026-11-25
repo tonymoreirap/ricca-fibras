@@ -9,16 +9,15 @@ import {
   real, mascaraCelular, celularFormatado, hojeISO, somaDias, diaSemana, instante,
   hora, dataLonga,
 } from "../lib/formato";
-import { IlustracaoServico, IconeSeta, IconeVoltar, IconeRelogio } from "./Icones";
+import { blocosDoDia, paraIntervalos, primeiroNome } from "../lib/agenda";
+import { lerSessao, salvarSessao, limparSessao } from "../lib/sessao";
+import CampoSenha from "./CampoSenha";
+import { IlustracaoServico, IconeSeta, IconeVoltar, IconeRelogio, IconeCadeado } from "./Icones";
 
 const ICONE = { aplicacao: "fibra", manutencao: "manutencao" };
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const SEMANA = ["D", "S", "T", "Q", "Q", "S", "S"];
 const JANELA_DIAS = 60;
-
-function horarioDoDia(iso) {
-  return salao.horarios.find((h) => h.diasSemana.includes(diaSemana(iso)) && h.abre != null);
-}
 
 export function mensagemRecibo(a, origem) {
   const restante = Number(a.valor) - Number(a.sinal);
@@ -68,6 +67,8 @@ export default function Agendamento() {
 
   const [nome, setNome] = useState("");
   const [celular, setCelular] = useState("");
+  const [senha, setSenha] = useState("");
+  const [sessao, setSessao] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
   const [meus, setMeus] = useState([]);
@@ -84,12 +85,13 @@ export default function Agendamento() {
         }
       })
       .catch((e) => setErroServicos(e.message));
+    setSessao(lerSessao("cliente"));
     try {
       setMeus(JSON.parse(localStorage.getItem("rica:agendamentos") || "[]"));
       const salvo = JSON.parse(localStorage.getItem("rica:cliente") || "null");
       if (salvo) {
         setNome(salvo.nome || "");
-        setCelular(salvo.celular || "");
+        setCelular(salvo.celular ? mascaraCelular(salvo.celular) : "");
       }
     } catch {}
   }, [params]);
@@ -101,7 +103,7 @@ export default function Agendamento() {
     const ate = somaDias(`${mesBase}-01`, 41);
     setCarregandoAgenda(true);
     rpc("horarios_ocupados", { p_de: de, p_ate: ate })
-      .then((l) => setOcupados(l.map((o) => [new Date(o.inicio).getTime(), new Date(o.fim).getTime()])))
+      .then((l) => setOcupados(paraIntervalos(l)))
       .catch(() => setOcupados([]))
       .finally(() => setCarregandoAgenda(false));
   }, [mesBase, etapa]);
@@ -109,21 +111,8 @@ export default function Agendamento() {
   const limite = somaDias(hoje, JANELA_DIAS);
 
   function vagasDoDia(iso) {
-    if (!servico) return [];
-    const h = horarioDoDia(iso);
-    if (!h || iso < hoje || iso > limite) return [];
-    const dur = servico.duracao_min * 60000;
-    const agora = Date.now() + 60 * 60000;
-    const lista = [];
-    // blocos fixos do tamanho do serviço, a partir da abertura (ex.: 9h, 12h, 15h)
-    for (let m = h.abre * 60; m + servico.duracao_min <= h.fecha * 60; m += servico.duracao_min) {
-      const ini = instante(iso, 0).getTime() + m * 60000;
-      const fim = ini + dur;
-      if (ini < agora) continue;
-      const livre = !ocupados.some(([a, b]) => ini < b && fim > a);
-      lista.push({ ini, fim, livre });
-    }
-    return lista;
+    if (!servico || iso < hoje || iso > limite) return [];
+    return blocosDoDia(iso, servico.duracao_min, ocupados, 60);
   }
 
   // grade do mês
@@ -141,30 +130,52 @@ export default function Agendamento() {
   };
 
   const vagas = dia ? vagasDoDia(dia) : [];
-  const valido = nome.trim().length >= 2 && celular.replace(/\D/g, "").length >= 10;
+  const digitos = celular.replace(/\D/g, "");
+  const valido = sessao?.token ? true : nome.trim().length >= 2 && digitos.length >= 10 && senha.length >= 6;
+
+  function trocarConta() {
+    limparSessao("cliente");
+    setSessao(null);
+    setSenha("");
+  }
 
   async function reservar() {
     setEnviando(true);
     setErro("");
     try {
-      const [r] = await rpc("criar_agendamento", {
+      const logada = Boolean(sessao?.token);
+      const r = await rpc("agendar", {
         p_servico: servico.codigo,
         p_inicio: new Date(inicio).toISOString(),
-        p_nome: nome.trim(),
-        p_celular: celular,
+        p_nome: logada ? sessao.nome : nome.trim(),
+        p_celular: logada ? sessao.celular : digitos,
+        p_senha: logada ? null : senha,
+        p_token: sessao?.token || null,
       });
-      try {
-        localStorage.setItem("rica:cliente", JSON.stringify({ nome: nome.trim(), celular }));
-      } catch {}
-      guardarCodigo(r.codigo);
-      router.push(`/recibo/${r.codigo}?novo=1`);
+      if (!r.ok) {
+        if (logada) {
+          // a sessão venceu: pede os dados de novo
+          setNome(sessao.nome || "");
+          setCelular(mascaraCelular(sessao.celular || ""));
+          trocarConta();
+          setErro("Sua sessão expirou. Confirme sua senha para reservar.");
+        } else {
+          setErro(r.erro);
+        }
+        setEnviando(false);
+        return;
+      }
+      if (r.token) salvarSessao("cliente", { token: r.token, nome: r.nome, celular: digitos });
+      const a = r.agendamento;
+      guardarCodigo(a.codigo);
+      router.push(`/recibo/${a.codigo}?novo=1`);
     } catch (e) {
       setErro(e.message);
       if (/reservado/i.test(e.message)) {
         setInicio(null);
         setEtapa("data");
         rpc("horarios_ocupados", { p_de: `${mesBase}-01`, p_ate: somaDias(`${mesBase}-01`, 41) })
-          .then((l) => setOcupados(l.map((o) => [new Date(o.inicio).getTime(), new Date(o.fim).getTime()])))
+          .then((l) => setOcupados(paraIntervalos(l)))
           .catch(() => {});
       }
       setEnviando(false);
@@ -235,7 +246,11 @@ export default function Agendamento() {
                 Fale com a {salao.contato}
               </a>
             </p>
-            {meus.length > 0 && (
+            {sessao?.token ? (
+              <Link href="/cliente" className="meus-atalho">
+                Ver meus horários e recibos <IconeSeta />
+              </Link>
+            ) : meus.length > 0 && (
               <div className="meus">
                 <h2>Seus agendamentos neste celular</h2>
                 {meus.map((c) => (
@@ -330,21 +345,50 @@ export default function Agendamento() {
 
         {etapa === "dados" && servico && inicio && (
           <section className="etapa entra">
-            <h1 className="etapa-titulo">Seus dados</h1>
-            <p className="tela-sub">A Luana usa esses dados para confirmar o seu horário.</p>
-            <div className="form">
-              <label htmlFor="nome">Nome</label>
-              <input id="nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome" />
-              <label htmlFor="cel">Celular com WhatsApp</label>
-              <input
-                id="cel"
-                inputMode="numeric"
-                autoComplete="tel"
-                value={celular}
-                onChange={(e) => setCelular(mascaraCelular(e.target.value))}
-                placeholder="(85) 99793-5916"
-              />
-            </div>
+            {sessao?.token ? (
+              <>
+                <h1 className="etapa-titulo">Confirme a reserva</h1>
+                <div className="logada vidro">
+                  <span className="avatar avatar-p" aria-hidden="true">
+                    <span>{(sessao.nome || "?")[0]}</span>
+                  </span>
+                  <span className="logada-texto">
+                    <strong>{primeiroNome(sessao.nome)}</strong>
+                    <small>{celularFormatado(sessao.celular)}</small>
+                  </span>
+                  <button type="button" className="logada-trocar" onClick={trocarConta}>
+                    Não é você?
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h1 className="etapa-titulo">Seus dados</h1>
+                <p className="tela-sub">A Luana usa esses dados para confirmar o seu horário.</p>
+                <div className="form">
+                  <label htmlFor="nome">Nome</label>
+                  <input id="nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome" />
+                  <label htmlFor="cel">Celular com WhatsApp</label>
+                  <input
+                    id="cel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    value={celular}
+                    onChange={(e) => setCelular(mascaraCelular(e.target.value))}
+                    placeholder="(85) 99793-5916"
+                  />
+                  <label htmlFor="senha">Senha da sua conta</label>
+                  <CampoSenha id="senha" valor={senha} aoMudar={setSenha} nova placeholder="Pelo menos 6 caracteres" />
+                  <p className="dica-senha">
+                    <IconeCadeado width="16" height="16" />
+                    <span>
+                      Primeira vez? Crie uma senha agora. Já tem conta? Use a sua. Com ela você acompanha
+                      horários, recibos e manutenções.
+                    </span>
+                  </p>
+                </div>
+              </>
+            )}
 
             <div className="resumo vidro">
               <div className="resumo-linha">

@@ -10,6 +10,7 @@ import { salao } from "../../../content/salao";
 import { real, hora, dataLonga, dataCurta } from "../../../lib/formato";
 import { mensagemRecibo, guardarCodigo } from "../../../components/Agendamento";
 import { IconeConversa, IconeVoltar, IlustracaoServico } from "../../../components/Icones";
+import { lerSessao } from "../../../lib/sessao";
 
 const STATUS = {
   aguardando_sinal: { texto: "Aguardando o sinal", classe: "chip-alerta" },
@@ -31,9 +32,11 @@ export default function Recibo() {
   const [origem, setOrigem] = useState("");
   const [arquivo, setArquivo] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [logada, setLogada] = useState(false);
 
   useEffect(() => {
     setOrigem(window.location.origin);
+    setLogada(Boolean(lerSessao("cliente")?.token));
     rpc("consultar_agendamento", { p_codigo: String(codigo) })
       .then(async (l) => {
         if (!l.length) {
@@ -106,7 +109,7 @@ export default function Recibo() {
   return (
     <div className="app app-recibo">
       <header className="barra-topo nao-imprimir">
-        <Link href="/agendar" className="barra-voltar" aria-label="Voltar">
+        <Link href={logada ? "/cliente" : "/agendar"} className="barra-voltar" aria-label="Voltar">
           <IconeVoltar />
         </Link>
         <span className="barra-marca">Recibo</span>
@@ -226,8 +229,8 @@ export default function Recibo() {
               <a className="botao-linha" href={`/recibo/${a.codigo}/pdf`} target="_blank" rel="noopener">
                 Abrir recibo em PDF
               </a>
-              <Link href="/visitante" className="link-claro">
-                Voltar ao início
+              <Link href={logada ? "/cliente" : "/visitante"} className="link-claro">
+                {logada ? "Ir para minha área" : "Voltar ao início"}
               </Link>
             </div>
           </>

@@ -94,6 +94,43 @@ export const IconeSair = (p) => (
   </svg>
 );
 
+export const IconeOlho = ({ fechado, ...p }) => (
+  <svg {...base(p)}>
+    <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+    <circle cx="12" cy="12" r="3" />
+    {fechado && <path d="M4 20 20 4" />}
+  </svg>
+);
+export const IconeMais = (p) => (
+  <svg {...base(p)}>
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
+export const IconeBusca = (p) => (
+  <svg {...base(p)}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m16 16 4.5 4.5" />
+  </svg>
+);
+export const IconeCheck = (p) => (
+  <svg {...base(p)}>
+    <path d="m5 12.5 4.5 4.5L19 7.5" />
+  </svg>
+);
+export const IconeCadeado = (p) => (
+  <svg {...base(p)}>
+    <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
+    <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+    <circle cx="12" cy="15.5" r="1.2" fill="url(#g-ouro)" />
+  </svg>
+);
+export const IconeRecibo = (p) => (
+  <svg {...base(p)}>
+    <path d="M6 3.5h12v17l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4Z" />
+    <path d="M9 8h6M9 11.5h6M9 15h3.5" />
+  </svg>
+);
+
 /* ---------- ilustrações dos serviços (48×48, ouro + rosé) ---------- */
 const ilus = { width: 48, height: 48, viewBox: "0 0 48 48", fill: "none", "aria-hidden": true };
 const contorno = { stroke: "url(#g-ouro-48)", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" };

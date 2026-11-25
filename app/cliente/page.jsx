@@ -2,26 +2,28 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { clienteDemo as c } from "../../content/demo";
+import { useRouter } from "next/navigation";
+import { rpc } from "../../lib/supabase";
 import { linkAgendar } from "../../content/salao";
+import { real, hora, dataLonga, FUSO } from "../../lib/formato";
+import { STATUS, primeiroNome } from "../../lib/agenda";
+import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import {
-  IconeCasa,
-  IconeHistorico,
-  IconeBrilho,
-  IconeSair,
-  IconeCalendario,
-  IconeCoroa,
-  IconeConversa,
-  IlustracaoServico,
+  IconeCasa, IconeHistorico, IconeSair, IconeCalendario, IconeCoroa, IconeConversa,
+  IconeSeta, IconeRecibo, IlustracaoServico,
 } from "../../components/Icones";
 
+const ICONE = { aplicacao: "fibra", manutencao: "manutencao" };
 const ext = { target: "_blank", rel: "noopener" };
-const DIA = 864e5;
-const curta = (d) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
-const longa = (d) => d.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
-const mesAno = (d) => d.toLocaleDateString("pt-BR", { month: "short", year: "numeric" }).replace(".", "").replace(" de ", "/");
+const curta = (d) =>
+  new Date(d).toLocaleDateString("pt-BR", { timeZone: FUSO, day: "2-digit", month: "short", year: "2-digit" }).replace(/\./g, "");
+const mesAno = (d) =>
+  new Date(d).toLocaleDateString("pt-BR", { timeZone: FUSO, month: "short", year: "numeric" }).replace(".", "").replace(" de ", "/");
+const dataDia = (iso) =>
+  new Date(`${iso}T12:00:00-03:00`).toLocaleDateString("pt-BR", { timeZone: FUSO, weekday: "long", day: "numeric", month: "long" });
 
-function saudacao(h) {
+function saudacao() {
+  const h = Number(new Date().toLocaleString("en-US", { timeZone: FUSO, hour: "numeric", hour12: false }));
   if (h < 12) return "Bom dia";
   if (h < 18) return "Boa tarde";
   return "Boa noite";
@@ -30,48 +32,146 @@ function saudacao(h) {
 function Anel({ feito, total }) {
   const r = 50;
   const volta = 2 * Math.PI * r;
-  const p = Math.min(1, feito / total);
+  const p = Math.max(0, Math.min(1, feito / total));
   const ang = p * 2 * Math.PI - Math.PI / 2;
-  const px = 60 + r * Math.cos(ang);
-  const py = 60 + r * Math.sin(ang);
   return (
     <svg className="anel" viewBox="0 0 120 120" aria-hidden="true">
       <circle cx="60" cy="60" r={r} className="anel-trilho" />
-      <circle
-        cx="60"
-        cy="60"
-        r={r}
-        className="anel-progresso"
-        strokeDasharray={volta}
-        strokeDashoffset={volta * (1 - p)}
-        transform="rotate(-90 60 60)"
-      />
-      <circle cx={px} cy={py} r="7" className="anel-brilho" />
-      <circle cx={px} cy={py} r="3.6" className="anel-ponto" />
+      <circle cx="60" cy="60" r={r} className="anel-progresso" strokeDasharray={volta} strokeDashoffset={volta * (1 - p)} transform="rotate(-90 60 60)" />
+      <circle cx={60 + r * Math.cos(ang)} cy={60 + r * Math.sin(ang)} r="7" className="anel-brilho" />
+      <circle cx={60 + r * Math.cos(ang)} cy={60 + r * Math.sin(ang)} r="3.6" className="anel-ponto" />
     </svg>
   );
 }
 
-export default function Cliente() {
-  const [hoje, setHoje] = useState(null);
-  useEffect(() => setHoje(new Date()), []);
-
-  const u = c.ultimoServico;
-  const faltam = u.cicloDias - u.diasAtras;
-  const vence = hoje && new Date(hoje.getTime() + faltam * DIA);
+function Manutencao({ m }) {
+  const faltam = m.dias_restantes;
+  const atrasada = faltam < 0;
   const quase = faltam <= 5;
+  return (
+    <section className="manut vidro entra" aria-labelledby="manut-titulo">
+      <div className="manut-topo">
+        <div className="manut-anel">
+          <Anel feito={m.ciclo_dias - Math.max(0, faltam)} total={m.ciclo_dias} />
+          <span className="manut-numero">
+            {Math.abs(faltam)}
+            <small>{Math.abs(faltam) === 1 ? "dia" : "dias"}</small>
+          </span>
+        </div>
+        <div className="manut-texto">
+          <span className={`chip ${quase ? "chip-alerta" : ""}`}>
+            {atrasada ? "Passou do prazo" : quase ? "Quase na hora" : "Em dia"}
+          </span>
+          <h2 id="manut-titulo">{atrasada ? "Sua manutenção atrasou" : "Sua próxima manutenção"}</h2>
+          <p>{atrasada ? `Era até ${dataDia(m.proxima)}` : `Até ${dataDia(m.proxima)}`}</p>
+          <p className="manut-dia">Último atendimento em {curta(m.ultimo)} · ciclo de {m.ciclo_dias} dias</p>
+        </div>
+      </div>
+      <Link className="botao-ouro" href="/agendar?servico=manutencao">
+        <IconeCalendario stroke="currentColor" />
+        Agendar manutenção
+      </Link>
+    </section>
+  );
+}
+
+function Proximo({ a }) {
+  const st = STATUS[a.status];
+  const pendente = a.status === "aguardando_sinal";
+  return (
+    <article className="proximo vidro entra">
+      <div className="proximo-topo">
+        <span className="proximo-arte" aria-hidden="true">
+          <IlustracaoServico tipo={ICONE[a.servico] || "fibra"} tamanho={44} />
+        </span>
+        <span className="proximo-texto">
+          <span className="proximo-rotulo">Seu próximo horário</span>
+          <strong>{a.servico_nome}</strong>
+        </span>
+      </div>
+      <p className="proximo-data">{dataLonga(a.inicio)}</p>
+      <div className="proximo-linha">
+        <p className="proximo-hora">
+          {hora(a.inicio)} às {hora(a.fim)}
+        </p>
+        <span className={`chip ${st.classe}`}>{st.texto}</span>
+      </div>
+      {pendente ? (
+        <>
+          <p className="proximo-nota">Pague o sinal de {real(a.sinal)} via Pix para a Luana confirmar.</p>
+          <Link className="botao-ouro" href={`/recibo/${a.codigo}`}>
+            Pagar sinal de {real(a.sinal)}
+          </Link>
+        </>
+      ) : (
+        <Link className="botao-linha" href={`/recibo/${a.codigo}`}>
+          <IconeRecibo width="20" height="20" />
+          Ver recibo
+        </Link>
+      )}
+    </article>
+  );
+}
+
+export default function Cliente() {
+  const router = useRouter();
+  const [dados, setDados] = useState(null);
+  const [erro, setErro] = useState("");
+  const [ola, setOla] = useState("Olá");
+
+  useEffect(() => {
+    setOla(saudacao());
+    const s = lerSessao("cliente");
+    if (!s?.token) {
+      router.replace("/entrar");
+      return;
+    }
+    rpc("cliente_area", { p_token: s.token })
+      .then(setDados)
+      .catch((e) => {
+        if (sessaoExpirada(e)) {
+          limparSessao("cliente");
+          router.replace("/entrar");
+        } else setErro("Não foi possível carregar seus dados. Verifique a internet.");
+      });
+  }, [router]);
+
+  async function sair() {
+    const s = lerSessao("cliente");
+    limparSessao("cliente");
+    try {
+      await rpc("sair", { p_token: s?.token || "" });
+    } catch {}
+    router.replace("/");
+  }
+
+  if (!dados) {
+    return (
+      <div className="app app-cliente">
+        <main className="tela carregando-tela">
+          {erro ? <p className="erro">{erro}</p> : <span className="pulso" aria-label="Carregando" />}
+        </main>
+      </div>
+    );
+  }
+
+  const { conta, agendamentos, concluidos, manutencao } = dados;
+  const agora = Date.now();
+  const ativos = agendamentos
+    .filter((a) => ["aguardando_sinal", "confirmado"].includes(a.status) && new Date(a.fim).getTime() > agora)
+    .sort((x, y) => new Date(x.inicio) - new Date(y.inicio));
+  const historico = agendamentos.filter((a) => !ativos.includes(a));
+  const [proximo, ...outros] = ativos;
 
   return (
     <div className="app app-cliente">
-      <p className="faixa-demo">Demonstração · os dados abaixo são de exemplo</p>
-
-      <header className="c-topo entra">
+      <header className="c-topo entra" id="topo">
         <div>
-          <p className="c-saudacao">{hoje ? saudacao(hoje.getHours()) : "Olá"},</p>
-          <h1>{c.nome}</h1>
+          <p className="c-saudacao">{ola},</p>
+          <h1>{primeiroNome(conta.nome)}</h1>
         </div>
         <span className="avatar" aria-hidden="true">
-          <span>{c.nome[0]}</span>
+          <span>{conta.nome[0]}</span>
         </span>
       </header>
 
@@ -82,16 +182,14 @@ export default function Cliente() {
             <img src="/monograma.webp" alt="" width="46" height="46" />
             <span className="cartao-nivel">
               <IconeCoroa stroke="currentColor" width="16" height="16" />
-              Cliente Ouro
+              {concluidos} {concluidos === 1 ? "atendimento" : "atendimentos"}
             </span>
           </div>
-          <p className="cartao-rica-nome">
-            {c.nome} {c.sobrenome}
-          </p>
+          <p className="cartao-rica-nome">{conta.nome}</p>
           <div className="cartao-rica-rodape">
             <span>
               Cliente desde
-              <strong>{hoje ? mesAno(new Date(hoje.getTime() - c.clienteHaDias * DIA)) : "—"}</strong>
+              <strong>{mesAno(dados.cliente_desde || conta.criado_em)}</strong>
             </span>
             <span>
               Rica Fibras
@@ -100,89 +198,76 @@ export default function Cliente() {
           </div>
         </section>
 
-        <section className="manut vidro entra" aria-labelledby="manut-titulo">
-          <div className="manut-topo">
-            <div className="manut-anel">
-              <Anel feito={u.diasAtras} total={u.cicloDias} />
-              <span className="manut-numero">
-                {faltam}
-                <small>{faltam === 1 ? "dia" : "dias"}</small>
-              </span>
-            </div>
-            <div className="manut-texto">
-              <span className={`chip ${quase ? "chip-alerta" : ""}`}>
-                {quase ? "Quase na hora" : "Em dia"}
-              </span>
-              <h2 id="manut-titulo">Sua próxima manutenção</h2>
-              <p>{vence ? <>Até {longa(vence)}</> : " "}</p>
-              <p className="manut-dia">
-                Dia {u.diasAtras} de {u.cicloDias} do ciclo da fibra
-              </p>
-            </div>
-          </div>
-          <Link className="botao-ouro" href="/agendar?servico=manutencao">
-            <IconeCalendario stroke="currentColor" />
-            Agendar manutenção
-          </Link>
-        </section>
+        {!conta.verificado && (
+          <p className="aviso-verificar">
+            Seu histórico completo aparece aqui assim que a Luana confirmar o seu primeiro sinal.
+          </p>
+        )}
 
-        <section className="bloco">
-          <div className="bloco-cabeca">
-            <h2>Fidelidade</h2>
-            <span className="bloco-fio" aria-hidden="true" />
-          </div>
-          <div className="selos vidro">
-            <div className="selos-grade" aria-label={`${c.selos} de 10 selos`}>
-              {Array.from({ length: 10 }, (_, i) => (
-                <span key={i} className={i < c.selos ? "selo-cheio" : "selo-vazio"}>
-                  {i < c.selos ? <IlustracaoServico tipo="fibra" tamanho={26} /> : i + 1}
-                </span>
-              ))}
-            </div>
-            <p>
-              Faltam <strong>{10 - c.selos} manutenções</strong> para o seu mimo.
-            </p>
-          </div>
-        </section>
+        {proximo && <Proximo a={proximo} />}
+
+        {outros.length > 0 && (
+          <ul className="lista-mini">
+            {outros.map((a) => (
+              <li key={a.codigo}>
+                <Link href={`/recibo/${a.codigo}`}>
+                  <span>
+                    <strong>{a.servico_nome}</strong>
+                    <small>
+                      {dataLonga(a.inicio)} · {hora(a.inicio)}
+                    </small>
+                  </span>
+                  <span className={`chip ${STATUS[a.status].classe}`}>{STATUS[a.status].texto}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {manutencao ? (
+          <Manutencao m={manutencao} />
+        ) : (
+          !proximo && (
+            <section className="vazio vidro entra">
+              <IlustracaoServico tipo="fibra" tamanho={64} />
+              <h2>Seu primeiro horário</h2>
+              <p>Escolha o dia e reserve com o sinal de 30% via Pix. A contagem da manutenção começa depois do atendimento.</p>
+              <Link className="botao-ouro" href="/agendar">
+                <IconeCalendario stroke="currentColor" />
+                Agendar horário
+              </Link>
+            </section>
+          )
+        )}
 
         <section className="bloco" id="historico">
           <div className="bloco-cabeca">
-            <h2>Seus atendimentos</h2>
+            <h2>Atendimentos e recibos</h2>
             <span className="bloco-fio" aria-hidden="true" />
           </div>
-          <ol className="linha-tempo">
-            {c.historico.map((h, i) => (
-              <li key={i}>
-                <span className="linha-icone">
-                  <IlustracaoServico tipo={h.icone} tamanho={26} />
-                </span>
-                <span className="linha-texto">
-                  <span className="linha-nome">{h.nome}</span>
-                  <span className="linha-data">
-                    {hoje ? curta(new Date(hoje.getTime() - h.diasAtras * DIA)) : ""}
+          {historico.length === 0 ? (
+            <p className="bloco-vazio">Os atendimentos concluídos aparecem aqui, com o recibo de cada um.</p>
+          ) : (
+            <ol className="linha-tempo">
+              {historico.map((a) => (
+                <li key={a.codigo} className={a.status === "cancelado" ? "linha-cancelada" : ""}>
+                  <span className="linha-icone">
+                    <IlustracaoServico tipo={ICONE[a.servico] || "fibra"} tamanho={26} />
                   </span>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className="bloco">
-          <div className="bloco-cabeca">
-            <h2>Seus cuidados</h2>
-            <span className="bloco-fio" aria-hidden="true" />
-          </div>
-          <div className="cuidados">
-            <div className="vidro">
-              <span>Técnica</span>
-              <strong>{c.tecnica}</strong>
-            </div>
-            <div className="vidro">
-              <span>Formato</span>
-              <strong>{c.formato}</strong>
-            </div>
-          </div>
-          <a className="botao-linha" href={linkAgendar(`Oi, Luana! Sou a ${c.nome}.`)} {...ext}>
+                  <Link className="linha-texto" href={`/recibo/${a.codigo}`}>
+                    <span className="linha-nome">
+                      {a.servico_nome}
+                      <small>
+                        {a.status === "concluido" ? real(a.valor) : STATUS[a.status].texto} · Recibo {a.codigo}
+                      </small>
+                    </span>
+                    <span className="linha-data">{curta(a.inicio)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          )}
+          <a className="botao-linha" href={linkAgendar(`Oi, Luana! Sou a ${primeiroNome(conta.nome)}.`)} {...ext}>
             <IconeConversa stroke="currentColor" width="20" height="20" />
             Falar com a Luana
           </a>
@@ -190,22 +275,22 @@ export default function Cliente() {
       </main>
 
       <nav className="abas" aria-label="Menu">
-        <a href="#" aria-current="page">
+        <a href="#topo" aria-current="page">
           <IconeCasa />
           Início
         </a>
-        <Link href="/visitante#servicos">
-          <IconeBrilho />
-          Serviços
+        <Link href="/agendar">
+          <IconeCalendario />
+          Agendar
         </Link>
         <a href="#historico">
           <IconeHistorico />
-          Histórico
+          Recibos
         </a>
-        <Link href="/">
+        <button type="button" onClick={sair}>
           <IconeSair />
           Sair
-        </Link>
+        </button>
       </nav>
     </div>
   );
