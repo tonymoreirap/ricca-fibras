@@ -9,6 +9,7 @@ import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from
 import { STATUS, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import NovoHorario from "../../components/admin/NovoHorario";
+import MenuApp, { sairDeTudo } from "../../components/MenuApp";
 import { IconeConversa, IconeMais, IconeSair, IconeBusca, IconeRecibo, IconeCheck, IlustracaoServico } from "../../components/Icones";
 
 const ICONE = { aplicacao: "fibra", manutencao: "manutencao" };
@@ -209,6 +210,10 @@ export default function Painel() {
     }
     setSessao(s);
     carregar(s.token);
+    if (new URLSearchParams(window.location.search).get("novo") === "1") {
+      setNovo({});
+      window.history.replaceState(null, "", "/admin");
+    }
     const atualizar = () => document.visibilityState === "visible" && carregar(s.token);
     document.addEventListener("visibilitychange", atualizar);
     return () => document.removeEventListener("visibilitychange", atualizar);
@@ -245,11 +250,7 @@ export default function Painel() {
     }
   }
 
-  async function sair() {
-    limparSessao("admin");
-    try { await rpc("sair", { p_token: sessao?.token || "" }); } catch {}
-    router.replace("/");
-  }
+  const sair = () => sairDeTudo(router);
 
   const vis = useMemo(() => {
     if (!dados) return null;
@@ -480,14 +481,9 @@ export default function Painel() {
           </section>
         )}
 
-        <p className="adm-rodape">
-          <Link href="/visitante">Ver o app como visitante</Link>
-        </p>
       </main>
 
-      <button type="button" className="fab" onClick={() => setNovo({})} aria-label="Novo horário">
-        <IconeMais stroke="currentColor" width="26" height="26" />
-      </button>
+      <MenuApp quem={{ tipo: "admin" }} aoNovoHorario={() => setNovo({})} />
 
       {novo && (
         <NovoHorario

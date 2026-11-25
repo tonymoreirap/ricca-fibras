@@ -1,8 +1,10 @@
 import Link from "next/link";
+import RedirecionarLogado from "../components/RedirecionarLogado";
 
 export default function Entrada() {
   return (
     <main className="entrada">
+      <RedirecionarLogado />
       <img
         className="entrada-foto"
         src="/rica-fundo.webp"

@@ -2,6 +2,7 @@ import Link from "next/link";
 import BarraTopo from "../../components/BarraTopo";
 import ListaServicos from "../../components/ListaServicos";
 import StatusAberto from "../../components/StatusAberto";
+import { BotaoConta, RodapeVisitante } from "../../components/ContaVisitante";
 import {
   IconeConversa,
   IconeBrilho,
@@ -23,11 +24,7 @@ export default function Visitante() {
       <BarraTopo
         voltar="/"
         sobreposta
-        direita={
-          <Link href="/entrar" className="barra-link">
-            Entrar
-          </Link>
-        }
+        direita={<BotaoConta />}
       />
 
       <section className="v-capa">
@@ -130,10 +127,7 @@ export default function Visitante() {
         </footer>
       </main>
 
-      <Link className="cta-flutuante botao-ouro" href="/agendar">
-        <IconeCalendario stroke="currentColor" />
-        Agendar horário
-      </Link>
+      <RodapeVisitante />
     </div>
   );
 }

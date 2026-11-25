@@ -19,7 +19,10 @@ export default function EntrarEquipe() {
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    if (lerSessao("admin")?.token) router.replace("/admin");
+    if (lerSessao("admin")?.token) return router.replace("/admin");
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("primeiro") === "1") setModo("primeiro");
+    if (q.get("email")) setEmail(q.get("email"));
   }, [router]);
 
   const emailOk = /^\S+@\S+\.\S+$/.test(email.trim());

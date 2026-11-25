@@ -8,8 +8,9 @@ import { linkAgendar } from "../../content/salao";
 import { real, hora, dataLonga, FUSO } from "../../lib/formato";
 import { STATUS, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
+import MenuApp from "../../components/MenuApp";
 import {
-  IconeCasa, IconeHistorico, IconeSair, IconeCalendario, IconeCoroa, IconeConversa,
+  IconeCalendario, IconeCoroa, IconeConversa,
   IconeSeta, IconeRecibo, IlustracaoServico,
 } from "../../components/Icones";
 
@@ -135,15 +136,6 @@ export default function Cliente() {
         } else setErro("Não foi possível carregar seus dados. Verifique a internet.");
       });
   }, [router]);
-
-  async function sair() {
-    const s = lerSessao("cliente");
-    limparSessao("cliente");
-    try {
-      await rpc("sair", { p_token: s?.token || "" });
-    } catch {}
-    router.replace("/");
-  }
 
   if (!dados) {
     return (
@@ -274,24 +266,7 @@ export default function Cliente() {
         </section>
       </main>
 
-      <nav className="abas" aria-label="Menu">
-        <a href="#topo" aria-current="page">
-          <IconeCasa />
-          Início
-        </a>
-        <Link href="/agendar">
-          <IconeCalendario />
-          Agendar
-        </Link>
-        <a href="#historico">
-          <IconeHistorico />
-          Recibos
-        </a>
-        <button type="button" onClick={sair}>
-          <IconeSair />
-          Sair
-        </button>
-      </nav>
+      <MenuApp quem={{ tipo: "cliente" }} />
     </div>
   );
 }

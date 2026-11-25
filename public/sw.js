@@ -1,6 +1,6 @@
 // Service worker simples: busca na rede primeiro e guarda uma cópia
 // para o site abrir mesmo sem internet.
-const CACHE = "rica-v3";
+const CACHE = "rica-v4";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.add("/")));

@@ -21,7 +21,8 @@ function Formulario() {
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    if (lerSessao("cliente")?.token) router.replace("/cliente");
+    if (lerSessao("admin")?.token) return router.replace("/admin");
+    if (lerSessao("cliente")?.token) return router.replace("/cliente");
     try {
       const salvo = JSON.parse(localStorage.getItem("rica:cliente") || "null");
       if (salvo) {
@@ -31,9 +32,12 @@ function Formulario() {
     } catch {}
   }, [router]);
 
+  // no "Já tenho conta" o mesmo campo aceita celular (cliente) ou e-mail (dona e equipe)
+  const ehEmail = modo === "entrar" && /[a-z@]/i.test(celular);
   const digitos = celular.replace(/\D/g, "");
-  const valido =
-    digitos.length >= 10 && senha.length >= 6 && (modo === "entrar" || nome.trim().length >= 2);
+  const valido = ehEmail
+    ? /^\S+@\S+\.\S+$/.test(celular.trim()) && senha.length > 0
+    : digitos.length >= 10 && senha.length >= 6 && (modo === "entrar" || nome.trim().length >= 2);
 
   async function enviar(e) {
     e.preventDefault();
@@ -41,6 +45,17 @@ function Formulario() {
     setEnviando(true);
     setErro("");
     try {
+      if (ehEmail) {
+        const r = await rpc("admin_entrar", { p_email: celular.trim(), p_senha: senha });
+        if (!r.ok) {
+          if (r.primeiro_acesso) return router.push(`/admin/entrar?primeiro=1&email=${encodeURIComponent(celular.trim())}`);
+          setErro(r.erro);
+          setEnviando(false);
+          return;
+        }
+        salvarSessao("admin", { token: r.token, nome: r.nome, papel: r.papel });
+        return router.replace("/admin");
+      }
       const r =
         modo === "entrar"
           ? await rpc("cliente_entrar", { p_celular: digitos, p_senha: senha })
@@ -71,7 +86,7 @@ function Formulario() {
       <h1>{modo === "entrar" ? "Entrar" : "Criar sua conta"}</h1>
       <p className="tela-sub">
         {modo === "entrar"
-          ? "Com o celular e a senha que você criou."
+          ? "Clientes entram com o celular. A equipe do salão, com o e-mail."
           : "Seus horários, recibos e manutenções em um só lugar."}
       </p>
 
@@ -91,14 +106,18 @@ function Formulario() {
             <input id="nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Como a Luana te chama" />
           </>
         )}
-        <label htmlFor="celular">Celular com WhatsApp</label>
+        <label htmlFor="celular">{modo === "entrar" ? "Celular ou e-mail" : "Celular com WhatsApp"}</label>
         <input
           id="celular"
-          inputMode="numeric"
-          autoComplete="tel"
-          placeholder="(85) 90000-0000"
+          inputMode={modo === "entrar" ? "email" : "numeric"}
+          autoComplete={modo === "entrar" ? "username" : "tel"}
+          autoCapitalize="none"
+          placeholder={modo === "entrar" ? "(85) 90000-0000 ou seu@email.com" : "(85) 90000-0000"}
           value={celular}
-          onChange={(e) => setCelular(mascaraCelular(e.target.value))}
+          onChange={(e) => {
+            const v = e.target.value;
+            setCelular(modo === "entrar" && /[a-z@]/i.test(v) ? v.replace(/\s/g, "") : mascaraCelular(v));
+          }}
         />
         <label htmlFor="senha">{modo === "entrar" ? "Senha" : "Crie uma senha"}</label>
         <CampoSenha
@@ -124,7 +143,7 @@ function Formulario() {
         Só quer conhecer? <Link href="/visitante">Continuar como visitante</Link>
       </p>
       <p className="tela-equipe">
-        <Link href="/admin/entrar">Acesso da equipe</Link>
+        <Link href="/admin/entrar?primeiro=1">Equipe: recebeu um código de primeiro acesso?</Link>
       </p>
     </main>
   );

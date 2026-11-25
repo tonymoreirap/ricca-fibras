@@ -980,3 +980,5 @@ button.kpi { cursor: pointer; }
 .marcar small { font-weight: 400; color: var(--apagado); font-size: 0.82rem; }
 
 .toast { position: fixed; left: 50%; bottom: calc(6.25rem + env(safe-area-inset-bottom)); z-index: 60; width: max-content; max-width: calc(min(var(--largura-app), 100%) - 2.5rem); transform: translateX(-50%); padding: 0.8rem 1.15rem; border-radius: 1rem; background: #f5ece1; color: #2a180c; font-size: 0.92rem; font-weight: 500; box-shadow: 0 16px 36px -12px rgb(0 0 0 / 0.8); animation: aparecer 0.25s ease both; }
+
+.barra-link-vazio { display: inline-block; width: 4.5rem; height: 2rem; border-color: transparent; background: none; }
