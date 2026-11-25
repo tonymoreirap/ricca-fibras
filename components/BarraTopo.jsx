@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { IconeVoltar } from "./Icones";
 
-export default function BarraTopo({ voltar = "/", direita }) {
+export default function BarraTopo({ voltar = "/", direita, sobreposta = false }) {
   return (
-    <header className="barra-topo">
+    <header className={`barra-topo ${sobreposta ? "barra-sobreposta" : ""}`}>
       <Link href={voltar} className="barra-voltar" aria-label="Voltar">
         <IconeVoltar />
       </Link>

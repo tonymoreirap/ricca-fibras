@@ -1,7 +1,15 @@
 import Link from "next/link";
 import BarraTopo from "../../components/BarraTopo";
 import ListaServicos from "../../components/ListaServicos";
-import { IconeConversa, IconeBrilho, IconeCurso, IconeInstagram } from "../../components/Icones";
+import StatusAberto from "../../components/StatusAberto";
+import {
+  IconeConversa,
+  IconeBrilho,
+  IconeCurso,
+  IconeCamera,
+  IconeRelogio,
+  IlustracaoServico,
+} from "../../components/Icones";
 import { salao, linkAgendar } from "../../content/salao";
 
 export const metadata = { title: "Serviços e valores — Rica Fibras" };
@@ -10,80 +18,117 @@ const ext = { target: "_blank", rel: "noopener" };
 
 export default function Visitante() {
   return (
-    <div className="app">
+    <div className="app app-visitante">
       <BarraTopo
         voltar="/"
+        sobreposta
         direita={
           <Link href="/entrar" className="barra-link">
             Entrar
           </Link>
         }
       />
+
+      <section className="v-capa">
+        <img
+          className="v-capa-foto"
+          src="/rica-fundo.webp"
+          alt="Luana, da Rica Fibras"
+          width="720"
+          height="1080"
+          fetchPriority="high"
+        />
+        <div className="v-capa-texto entra">
+          <p className="v-capa-ola">Olá, seja bem-vinda</p>
+          <h1>Fibra de vidro com acabamento de joia.</h1>
+          <StatusAberto />
+        </div>
+      </section>
+
+      <nav className="destaques entra" aria-label="Atalhos">
+        <a href={linkAgendar()} {...ext}>
+          <span className="destaque-anel"><IconeConversa width="26" height="26" /></span>
+          Agendar
+        </a>
+        <a href="#servicos">
+          <span className="destaque-anel"><IconeBrilho width="26" height="26" /></span>
+          Serviços
+        </a>
+        <a href="#curso">
+          <span className="destaque-anel"><IconeCurso width="26" height="26" /></span>
+          Curso
+        </a>
+        <a href={`https://instagram.com/${salao.instagram}`} {...ext}>
+          <span className="destaque-anel"><IconeCamera width="26" height="26" /></span>
+          Trabalhos
+        </a>
+        <a href="#horarios">
+          <span className="destaque-anel"><IconeRelogio width="26" height="26" /></span>
+          Horários
+        </a>
+      </nav>
+
       <main className="tela">
-        <section className="boas-vindas">
-          <h1>Olá! Que bom ter você aqui.</h1>
-          <p className="tela-sub">
-            Veja nossos serviços e fale com a {salao.contato} para agendar.
-          </p>
-        </section>
-
-        <nav className="atalhos" aria-label="Atalhos">
-          <a href={linkAgendar()} {...ext}>
-            <IconeConversa />
-            Falar com a atendente
-          </a>
-          <a href="#servicos">
-            <IconeBrilho />
-            Serviços e valores
-          </a>
-          <a href="#curso">
-            <IconeCurso />
-            Curso {salao.curso.nome}
-          </a>
-          <a href={`https://instagram.com/${salao.instagram}`} {...ext}>
-            <IconeInstagram />
-            Nossos trabalhos
-          </a>
-        </nav>
-
         <section id="servicos" className="bloco">
-          <h2>Serviços e valores</h2>
+          <div className="bloco-cabeca">
+            <h2>Serviços e valores</h2>
+            <span className="bloco-fio" aria-hidden="true" />
+          </div>
           <ListaServicos />
         </section>
 
         <section id="curso" className="bloco">
-          <h2>Curso {salao.curso.nome}</h2>
-          <div className="cartao">
+          <div className="bloco-cabeca">
+            <h2>Para profissionais</h2>
+            <span className="bloco-fio" aria-hidden="true" />
+          </div>
+          <div className="curso vidro">
+            <div className="curso-topo">
+              <span className="curso-arte" aria-hidden="true">
+                <IlustracaoServico tipo="curso" tamanho={56} />
+              </span>
+              <div>
+                <p className="curso-rotulo">Curso</p>
+                <h3>{salao.curso.nome}</h3>
+              </div>
+            </div>
             <p>{salao.curso.descricao}</p>
             <a
-              className="link-ouro"
+              className="botao-linha"
               href={linkAgendar(`Oi, Luana! Quero saber sobre o curso ${salao.curso.nome}.`)}
               {...ext}
             >
-              Saber datas e valores
+              Quero saber datas e valores
             </a>
           </div>
         </section>
 
-        <section className="bloco">
-          <h2>Horários</h2>
-          <ul className="grupo">
+        <section id="horarios" className="bloco">
+          <div className="bloco-cabeca">
+            <h2>Horários</h2>
+            <span className="bloco-fio" aria-hidden="true" />
+          </div>
+          <ul className="horarios vidro">
             {salao.horarios.map((h) => (
-              <li key={h.dias} className="grupo-linha grupo-estatica">
-                <span className="grupo-titulo">{h.dias}</span>
-                <span className="grupo-valor">{h.horas}</span>
+              <li key={h.dias} className={h.abre == null ? "horario-fechado" : ""}>
+                <span>{h.dias}</span>
+                <span>{h.horas}</span>
               </li>
             ))}
           </ul>
         </section>
+
+        <footer className="v-rodape">
+          <img src="/monograma.webp" alt="" width="64" height="64" />
+          <p>Rica Fibras</p>
+          <span>@{salao.instagram}</span>
+        </footer>
       </main>
 
-      <div className="acao-fixa">
-        <a className="botao-ouro" href={linkAgendar()} {...ext}>
-          <IconeConversa />
-          Falar com a atendente
-        </a>
-      </div>
+      <a className="cta-flutuante botao-ouro" href={linkAgendar()} {...ext}>
+        <IconeConversa stroke="currentColor" />
+        Falar com a {salao.contato}
+      </a>
     </div>
   );
 }

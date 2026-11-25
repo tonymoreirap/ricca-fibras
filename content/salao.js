@@ -26,9 +26,11 @@ export const salao = {
   bairroCidade: "",
 
   // TODO: horários reais.
+  // diasSemana: 0 = domingo ... 6 = sábado. abre/fecha em horas (24h).
   horarios: [
-    { dias: "Terça a sexta", horas: "9h às 19h" },
-    { dias: "Sábado", horas: "9h às 15h" },
+    { dias: "Terça a sexta", diasSemana: [2, 3, 4, 5], abre: 9, fecha: 19, horas: "9h às 19h" },
+    { dias: "Sábado", diasSemana: [6], abre: 9, fecha: 15, horas: "9h às 15h" },
+    { dias: "Domingo e segunda", diasSemana: [0, 1], horas: "Fechado" },
   ],
 
   // Serviços: preço "" mostra "Sob consulta".
@@ -36,30 +38,35 @@ export const salao = {
   servicos: [
     {
       nome: "Alongamento em fibra de vidro",
+      icone: "fibra",
       descricao: "Unhas longas, finas e resistentes, com aparência natural.",
       preco: "",
       manutencaoDias: 25,
     },
     {
       nome: "Manutenção da fibra",
+      icone: "manutencao",
       descricao: "Preenchimento do crescimento e reforço da estrutura.",
       preco: "",
       manutencaoDias: 25,
     },
     {
       nome: "Esmaltação em gel",
+      icone: "gel",
       descricao: "Brilho e cor que duram semanas, direto na unha natural.",
       preco: "",
       manutencaoDias: 21,
     },
     {
       nome: "Manicure e pedicure",
+      icone: "manicure",
       descricao: "Cutilagem, lixamento e esmaltação tradicional.",
       preco: "",
       manutencaoDias: null,
     },
     {
       nome: "Design de sobrancelhas",
+      icone: "sobrancelha",
       descricao: "Desenho feito para o seu rosto, com ou sem henna.",
       preco: "",
       manutencaoDias: 20,

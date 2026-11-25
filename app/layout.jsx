@@ -5,6 +5,7 @@ import "@fontsource/jost/500.css";
 import "@fontsource/jost/600.css";
 import "./globals.css";
 import RegistrarSW from "../components/RegistrarSW";
+import Gradientes from "../components/Gradientes";
 
 export const metadata = {
   metadataBase: new URL("https://tonsdellas.com.br"),
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
       <body>
+        <Gradientes />
         {children}
         <RegistrarSW />
       </body>

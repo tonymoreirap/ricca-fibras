@@ -20,6 +20,7 @@ export default function Entrar() {
     <div className="app">
       <BarraTopo voltar="/" />
       <main className="tela tela-entrar">
+        <img className="entrar-monograma" src="/monograma.webp" alt="" width="112" height="112" />
         <h1>Entrar</h1>
         <p className="tela-sub">Use o celular que você informou no salão.</p>
 
@@ -45,7 +46,7 @@ export default function Entrar() {
             </button>
           </form>
         ) : (
-          <div className="aviso">
+          <div className="aviso vidro">
             <h2>O acesso das clientes está sendo finalizado</h2>
             <p>
               Em breve você entra com um código enviado para o seu celular. Enquanto isso, veja como
