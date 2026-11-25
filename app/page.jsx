@@ -1,6 +1,20 @@
-import { salao, linkAgendar, canalAgendar } from "../content/salao";
+import { salao, linkAgendar, canalAgendar, mensagemServico } from "../content/salao";
 
 const ext = { target: "_blank", rel: "noopener" };
+const [assinatura, ...outros] = salao.servicos;
+
+// Fio dourado com o losango do logo.
+function Ornamento() {
+  return (
+    <span className="ornamento" aria-hidden="true">
+      <span />
+      <svg viewBox="0 0 12 12" width="12" height="12">
+        <path d="M6 0 L7.4 4.6 L12 6 L7.4 7.4 L6 12 L4.6 7.4 L0 6 L4.6 4.6 Z" fill="currentColor" />
+      </svg>
+      <span />
+    </span>
+  );
+}
 
 export default function Home() {
   const agendar = linkAgendar();
@@ -44,18 +58,56 @@ export default function Home() {
 
         <section id="servicos" className="servicos">
           <div className="largura">
-            <h2>Serviços</h2>
-            <ul>
-              {salao.servicos.map((s) => (
+            <header className="servicos-cabeca">
+              <h2>Serviços</h2>
+              <Ornamento />
+              <p>
+                Cada serviço tem o seu tempo de manutenção. Escolha o seu e fale direto com a{" "}
+                {salao.contato}.
+              </p>
+            </header>
+
+            <article className="assinatura">
+              <img className="assinatura-marca" src="/monograma.webp" alt="" aria-hidden="true" />
+              <div className="assinatura-conteudo">
+                <p className="assinatura-selo">Assinatura da casa</p>
+                <h3>{assinatura.nome}</h3>
+                <p className="assinatura-desc">{assinatura.descricao}</p>
+                <dl className="assinatura-dados">
+                  <div>
+                    <dt>Manutenção</dt>
+                    <dd>a cada {assinatura.manutencaoDias} dias</dd>
+                  </div>
+                  <div>
+                    <dt>Valor</dt>
+                    <dd>{assinatura.preco || "Sob consulta"}</dd>
+                  </div>
+                </dl>
+                <a className="botao-ouro" href={linkAgendar(mensagemServico(assinatura.nome))} {...ext}>
+                  Agendar este serviço
+                </a>
+              </div>
+            </article>
+
+            <ul className="menu">
+              {outros.map((s) => (
                 <li key={s.nome}>
-                  <div className="servico-linha">
+                  <div className="menu-linha">
                     <h3>{s.nome}</h3>
-                    <span className="preco">{s.preco || "Sob consulta"}</span>
+                    <span className="menu-pontos" aria-hidden="true" />
+                    <span className="menu-preco">{s.preco || "Sob consulta"}</span>
                   </div>
                   <p>{s.descricao}</p>
-                  {s.manutencaoDias && (
-                    <p className="ciclo">Manutenção a cada {s.manutencaoDias} dias</p>
-                  )}
+                  <div className="menu-rodape">
+                    {s.manutencaoDias ? (
+                      <span className="ciclo">Manutenção a cada {s.manutencaoDias} dias</span>
+                    ) : (
+                      <span />
+                    )}
+                    <a href={linkAgendar(mensagemServico(s.nome))} {...ext}>
+                      Agendar este serviço
+                    </a>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -83,6 +135,26 @@ export default function Home() {
                 <p>Sem unha descolando e sem correr atrás de horário.</p>
               </li>
             </ol>
+          </div>
+        </section>
+
+        <section className="curso">
+          <div className="largura curso-grade">
+            <div>
+              <h2>Curso {salao.curso.nome}</h2>
+              <Ornamento />
+            </div>
+            <div>
+              <p>{salao.curso.descricao}</p>
+              <p>Fale com a {salao.contato} para saber as próximas turmas, o formato e os valores.</p>
+              <a
+                className="botao-contorno"
+                href={linkAgendar(`Oi, Luana! Quero saber sobre o curso ${salao.curso.nome}.`)}
+                {...ext}
+              >
+                Quero saber do curso
+              </a>
+            </div>
           </div>
         </section>
 

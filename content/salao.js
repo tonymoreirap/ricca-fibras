@@ -7,13 +7,19 @@ export const salao = {
   frase:
     "Alongamento em fibra, manutenção no tempo certo e um atendimento pensado em cada detalhe.",
 
-  // WhatsApp com DDI + DDD + número, só dígitos. Ex.: "5511999998888"
-  // TODO: trocar pelo número real do salão.
-  whatsapp: "",
-  mensagemWhatsapp: "Oi! Vim pelo site da Ricca Fibras e quero agendar um horário.",
+  // WhatsApp com DDI + DDD + número, só dígitos.
+  whatsapp: "5585996447096",
+  contato: "Luana",
+  mensagemWhatsapp: "Oi, Luana! Vim pelo site da Ricca Fibras e quero agendar um horário.",
 
-  // Usuário do Instagram, sem o @. TODO: confirmar.
-  instagram: "riccafibras",
+  // Usuário do Instagram, sem o @.
+  instagram: "ricafibra_unhas",
+
+  curso: {
+    nome: "Método Rica em Mesa",
+    descricao:
+      "Curso de fibra de vidro com a Luana, para quem quer aprender a técnica e o acabamento que fazem a diferença na mesa.",
+  },
 
   // TODO: endereço real. Deixe "" para esconder.
   endereco: "",
@@ -60,6 +66,10 @@ export const salao = {
     },
   ],
 };
+
+export function mensagemServico(nome) {
+  return `Oi, Luana! Vim pelo site da Ricca Fibras e quero agendar: ${nome}.`;
+}
 
 export function linkAgendar(texto = salao.mensagemWhatsapp) {
   return salao.whatsapp
