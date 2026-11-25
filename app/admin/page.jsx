@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
 import { salao } from "../../content/salao";
 import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from "../../lib/formato";
-import { STATUS, primeiroNome } from "../../lib/agenda";
+import { STATUS, NIVEL, pagamento, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import NovoHorario from "../../components/admin/NovoHorario";
 import MenuApp, { sairDeTudo } from "../../components/MenuApp";
@@ -16,6 +16,8 @@ const ICONE = { aplicacao: "fibra", manutencao: "manutencao" };
 const diaDe = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: FUSO }).format(new Date(d));
 const curta = (d) => new Date(d).toLocaleDateString("pt-BR", { timeZone: FUSO, day: "2-digit", month: "short" }).replace(".", "");
 const dataDia = (iso) => new Date(`${iso}T12:00:00-03:00`).toLocaleDateString("pt-BR", { timeZone: FUSO, day: "numeric", month: "long" });
+const anoMes = (d) => (d ? new Date(`${String(d).slice(0, 10)}T12:00:00-03:00`).toLocaleDateString("pt-BR", { month: "short", year: "numeric" }).replace(".", "").replace(" de ", "/") : "—");
+const ORDENS = { frequentes: "Mais frequentes", antigas: "Mais antigas", nome: "A–Z" };
 const whats = (cel, texto) => `https://wa.me/55${String(cel).replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`;
 
 function rotuloDia(iso) {
@@ -63,6 +65,7 @@ function msgManutencao(c, origem) {
 function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
   const [confirmarCancelar, setConfirmarCancelar] = useState(false);
   const st = STATUS[a.status];
+  const pag = pagamento(a, real);
   return (
     <li className={`ag-item ${aberto ? "aberto" : ""} ag-${a.status}`}>
       <button type="button" className="ag-linha" onClick={alternar} aria-expanded={aberto}>
@@ -72,7 +75,7 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
         </span>
         <span className="ag-texto">
           <strong>{a.cliente_nome}</strong>
-          <small>{a.servico_nome}</small>
+          <small>{a.servico_nome}{a.demo && <em className="selo-exemplo">exemplo</em>}</small>
         </span>
         <span className={`chip ${st.classe}`}>{st.texto}</span>
       </button>
@@ -83,6 +86,7 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
             <div><dt>Valor</dt><dd>{real(a.valor)}</dd></div>
             <div><dt>Sinal</dt><dd>{real(a.sinal)}</dd></div>
             <div><dt>Recibo</dt><dd>{a.codigo}</dd></div>
+            <div className="ag-pag"><dt>Pagamento</dt><dd className={pag.ok ? "pag-ok" : pag.ok === false ? "pag-pendente" : ""}>{pag.texto}</dd></div>
           </dl>
           <div className="ag-acoes">
             {ACOES[a.status].map((x) =>
@@ -111,9 +115,9 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
             )}
           </div>
           <div className="ag-links">
-            <a href={whats(a.cliente_celular, a.status === "aguardando_sinal" ? msgSinal(a, origem) : `Oi, ${primeiroNome(a.cliente_nome)}! Aqui é a Luana, da Rica Fibras.`)} target="_blank" rel="noopener">
+            {a.demo ? <span className="ag-links-off">WhatsApp desligado nos exemplos</span> : <a href={whats(a.cliente_celular, a.status === "aguardando_sinal" ? msgSinal(a, origem) : `Oi, ${primeiroNome(a.cliente_nome)}! Aqui é a Luana, da Rica Fibras.`)} target="_blank" rel="noopener">
               <IconeConversa width="18" height="18" /> WhatsApp
-            </a>
+            </a>}
             <a href={`/recibo/${a.codigo}/pdf`} target="_blank" rel="noopener">
               <IconeRecibo width="18" height="18" /> Recibo PDF
             </a>
@@ -127,14 +131,16 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
 function Cliente({ c, aberto, alternar, liberar, agendarPara, origem }) {
   const [confirmar, setConfirmar] = useState(false);
   const conta = !c.tem_conta ? "Sem conta no app" : c.verificado ? "Conta verificada" : "Conta criada";
+  const nv = NIVEL[c.nivel] || NIVEL.nova;
   return (
     <li className={`cl-item vidro ${aberto ? "aberto" : ""}`}>
       <button type="button" className="cl-linha" onClick={alternar} aria-expanded={aberto}>
         <span className="avatar avatar-p" aria-hidden="true"><span>{c.nome[0]}</span></span>
         <span className="cl-texto">
-          <strong>{c.nome}</strong>
-          <small>{celularFormatado(c.celular)} · {c.atendimentos} {c.atendimentos === 1 ? "atendimento" : "atendimentos"}</small>
+          <strong>{c.nome}{c.demo && <em className="selo-exemplo">exemplo</em>}</strong>
+          <small>{c.atendimentos} {c.atendimentos === 1 ? "atendimento" : "atendimentos"} · desde {anoMes(c.cliente_desde)}</small>
         </span>
+        {c.nivel !== "nova" && <span className={`chip ${nv.classe}`}>{c.nivel === "ouro" ? "Ouro" : "Prata"}</span>}
       </button>
       {aberto && (
         <div className="cl-detalhe">
@@ -142,6 +148,9 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, origem }) {
             <div><dt>Último</dt><dd>{c.ultimo ? curta(c.ultimo) : "—"}</dd></div>
             <div><dt>Próximo</dt><dd>{c.proximo ? `${curta(c.proximo)} · ${hora(c.proximo)}` : "—"}</dd></div>
             <div><dt>Manutenção</dt><dd>{c.manutencao ? dataDia(c.manutencao.proxima) : "—"}</dd></div>
+            <div><dt>Celular</dt><dd>{celularFormatado(c.celular)}</dd></div>
+            <div><dt>Total pago</dt><dd className="pag-ok">{real(c.pago)}</dd></div>
+            <div><dt>Nível</dt><dd>{nv.texto}</dd></div>
             <div><dt>App</dt><dd>{conta}</dd></div>
           </dl>
           <div className="ag-acoes">
@@ -159,6 +168,7 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, origem }) {
             )}
           </div>
           <div className="ag-links">
+            {c.demo ? <span className="ag-links-off">WhatsApp desligado nos exemplos</span> : <>
             <a href={whats(c.celular, `Oi, ${primeiroNome(c.nome)}! Aqui é a Luana, da Rica Fibras.`)} target="_blank" rel="noopener">
               <IconeConversa width="18" height="18" /> WhatsApp
             </a>
@@ -167,6 +177,7 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, origem }) {
                 Lembrar manutenção
               </a>
             )}
+            </>}
           </div>
         </div>
       )}
@@ -184,6 +195,8 @@ export default function Painel() {
   const [ocupado, setOcupado] = useState(false);
   const [anteriores, setAnteriores] = useState(false);
   const [busca, setBusca] = useState("");
+  const [ordem, setOrdem] = useState("frequentes");
+  const [limpar, setLimpar] = useState(false);
   const [novo, setNovo] = useState(null);
   const [aviso, setAviso] = useState("");
   const [origem, setOrigem] = useState("");
@@ -252,6 +265,17 @@ export default function Painel() {
 
   const sair = () => sairDeTudo(router);
 
+  async function limparExemplos() {
+    try {
+      const r = await rpc("admin_limpar_exemplos", { p_token: sessao.token });
+      setAviso(`${r.removidos} agendamentos de exemplo removidos`);
+      setLimpar(false);
+      carregar(sessao.token);
+    } catch (e) {
+      setAviso(sessaoExpirada(e) ? "Só o acesso Master pode remover os exemplos." : "Sem conexão. Tente de novo.");
+    }
+  }
+
   const vis = useMemo(() => {
     if (!dados) return null;
     const agora = Date.now();
@@ -269,9 +293,13 @@ export default function Painel() {
       .filter((c) => c.manutencao)
       .sort((x, y) => x.manutencao.dias_restantes - y.manutencao.dias_restantes);
     const termo = busca.trim().toLowerCase();
-    const clientes = termo
+    const filtradas = termo
       ? dados.clientes.filter((c) => c.nome.toLowerCase().includes(termo) || c.celular.includes(termo.replace(/\D/g, "") || "§"))
       : dados.clientes;
+    const clientes = [...filtradas].sort((x, y) =>
+      ordem === "frequentes" ? y.atendimentos - x.atendimentos || Number(y.pago) - Number(x.pago)
+      : ordem === "antigas" ? String(x.cliente_desde).localeCompare(String(y.cliente_desde))
+      : x.nome.localeCompare(y.nome, "pt-BR"));
     return {
       dias: agrupar(futuros),
       passados: agrupar(passados),
@@ -280,7 +308,7 @@ export default function Painel() {
       vencendo: manut.filter((c) => c.manutencao.dias_restantes <= 5 && !c.proximo).length,
       clientes,
     };
-  }, [dados, busca]);
+  }, [dados, busca, ordem]);
 
   if (!dados || !vis) {
     return (
@@ -311,6 +339,20 @@ export default function Painel() {
       </header>
 
       <main className="tela">
+        {resumo.exemplos > 0 && (
+          <div className="aviso-demo">
+            <p>
+              <strong>Simulação ativa.</strong> {resumo.exemplos} agendamentos de exemplo, marcados com “exemplo”. Eles não
+              ocupam vagas reais e os botões de WhatsApp ficam desligados neles.
+            </p>
+            {eu.papel === "master" && (
+              <button type="button" className={`acao acao-perigo ${limpar ? "armada" : ""}`} onClick={() => (limpar ? limparExemplos() : setLimpar(true))}>
+                {limpar ? "Toque de novo para remover tudo" : "Remover dados de exemplo"}
+              </button>
+            )}
+          </div>
+        )}
+
         <section className="kpis" aria-label="Resumo">
           <div className="kpi vidro">
             <span>Hoje</span>
@@ -401,9 +443,13 @@ export default function Painel() {
                       <button type="button" className="botao-ouro" disabled={ocupado} onClick={() => mudar(a.codigo, "confirmado")}>
                         <IconeCheck stroke="currentColor" width="20" height="20" /> Sinal recebido
                       </button>
-                      <a className="botao-linha" href={whats(a.cliente_celular, msgSinal(a, origem))} target="_blank" rel="noopener">
-                        <IconeConversa width="20" height="20" /> Cobrar pelo WhatsApp
-                      </a>
+                      {a.demo ? (
+                        <p className="ag-links-off">Exemplo: WhatsApp desligado</p>
+                      ) : (
+                        <a className="botao-linha" href={whats(a.cliente_celular, msgSinal(a, origem))} target="_blank" rel="noopener">
+                          <IconeConversa width="20" height="20" /> Cobrar pelo WhatsApp
+                        </a>
+                      )}
                     </div>
                   </li>
                 ))}
@@ -418,6 +464,17 @@ export default function Painel() {
               <IconeBusca width="20" height="20" />
               <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar por nome ou celular" aria-label="Buscar cliente" />
             </label>
+            <div className="ordenar" role="group" aria-label="Ordenar clientes">
+              {Object.entries(ORDENS).map(([k, t]) => (
+                <button key={k} type="button" aria-pressed={ordem === k} onClick={() => setOrdem(k)}>{t}</button>
+              ))}
+            </div>
+            {!busca && vis.clientes.length > 0 && (
+              <p className="cl-resumo">
+                {vis.clientes.length} clientes · {vis.clientes.filter((c) => c.nivel === "ouro").length} Ouro ·{" "}
+                {vis.clientes.filter((c) => c.nivel === "prata").length} Prata
+              </p>
+            )}
             {vis.clientes.length === 0 ? (
               <p className="bloco-vazio">{busca ? "Nenhuma cliente encontrada." : "As clientes aparecem aqui depois do primeiro agendamento."}</p>
             ) : (
@@ -452,7 +509,7 @@ export default function Painel() {
                     <li key={c.celular} className={`mt-item vidro mt-${estado}`}>
                       <div className="mt-topo">
                         <span>
-                          <strong>{c.nome}</strong>
+                          <strong>{c.nome}{c.demo && <em className="selo-exemplo">exemplo</em>}</strong>
                           <small>Até {dataDia(m.proxima)}</small>
                         </span>
                         <span className="mt-dias">
@@ -465,9 +522,13 @@ export default function Painel() {
                         <p className="mt-agendada">Já agendada para {curta(c.proximo)} às {hora(c.proximo)}</p>
                       ) : (
                         <div className="mt-acoes">
-                          <a className="acao acao-forte" href={whats(c.celular, msgManutencao(c, origem))} target="_blank" rel="noopener">
-                            <IconeConversa stroke="currentColor" width="18" height="18" /> Lembrar
-                          </a>
+                          {c.demo ? (
+                            <span className="acao acao-off">Lembrar (exemplo)</span>
+                          ) : (
+                            <a className="acao acao-forte" href={whats(c.celular, msgManutencao(c, origem))} target="_blank" rel="noopener">
+                              <IconeConversa stroke="currentColor" width="18" height="18" /> Lembrar
+                            </a>
+                          )}
                           <button type="button" className="acao" onClick={() => setNovo({ nome: c.nome, celular: c.celular, servico: "manutencao" })}>
                             Agendar
                           </button>

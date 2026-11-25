@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
 import { linkAgendar } from "../../content/salao";
 import { real, hora, dataLonga, FUSO } from "../../lib/formato";
-import { STATUS, primeiroNome } from "../../lib/agenda";
+import { STATUS, NIVEL, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import MenuApp from "../../components/MenuApp";
 import {
@@ -174,7 +174,7 @@ export default function Cliente() {
             <img src="/monograma.webp" alt="" width="46" height="46" />
             <span className="cartao-nivel">
               <IconeCoroa stroke="currentColor" width="16" height="16" />
-              {concluidos} {concluidos === 1 ? "atendimento" : "atendimentos"}
+              {(NIVEL[conta.nivel] || NIVEL.nova).texto}
             </span>
           </div>
           <p className="cartao-rica-nome">{conta.nome}</p>
@@ -184,8 +184,8 @@ export default function Cliente() {
               <strong>{mesAno(dados.cliente_desde || conta.criado_em)}</strong>
             </span>
             <span>
-              Rica Fibras
-              <strong>Cartão Rica</strong>
+              Atendimentos
+              <strong>{concluidos}</strong>
             </span>
           </div>
         </section>

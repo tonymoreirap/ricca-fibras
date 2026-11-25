@@ -982,3 +982,21 @@ button.kpi { cursor: pointer; }
 .toast { position: fixed; left: 50%; bottom: calc(6.25rem + env(safe-area-inset-bottom)); z-index: 60; width: max-content; max-width: calc(min(var(--largura-app), 100%) - 2.5rem); transform: translateX(-50%); padding: 0.8rem 1.15rem; border-radius: 1rem; background: #f5ece1; color: #2a180c; font-size: 0.92rem; font-weight: 500; box-shadow: 0 16px 36px -12px rgb(0 0 0 / 0.8); animation: aparecer 0.25s ease both; }
 
 .barra-link-vazio { display: inline-block; width: 4.5rem; height: 2rem; border-color: transparent; background: none; }
+
+/* ---------- simulação, níveis e pagamentos ---------- */
+.aviso-demo { display: grid; gap: 0.75rem; margin-bottom: 1rem; padding: 0.9rem 1rem; border-radius: 1rem; font-size: 0.86rem; line-height: 1.5; color: var(--claro-suave); background: rgb(210 170 94 / 0.07); border: 1px dashed var(--fio-forte); }
+.aviso-demo strong { color: var(--ouro-claro); font-weight: 500; }
+.selo-exemplo { display: inline-block; margin-left: 0.45rem; padding: 0 0.4rem; border-radius: 0.35rem; font-style: normal; font-size: 0.66rem; font-weight: 500; letter-spacing: 0.02em; vertical-align: 0.1em; color: var(--apagado); border: 1px dashed rgb(245 236 225 / 0.25); }
+.chip-ouro { color: #2a180c; background: var(--folha-ouro); border-color: transparent; }
+.chip-prata { color: #1f1d1b; background: linear-gradient(118deg, #8d8f94, #e8e9ec 40%, #b9bbc0 60%, #f4f4f6); border-color: transparent; }
+.ag-pag { grid-column: 1 / -1; }
+.pag-ok { color: #c9f0d1; }
+.pag-pendente { color: #ffd9d4; }
+.ag-links-off { font-size: 0.8rem; color: var(--apagado); text-align: center; margin-top: 0.5rem; }
+.acao-off { color: var(--apagado); border-style: dashed; cursor: default; font-size: 0.85rem; }
+.ordenar { display: flex; gap: 0.4rem; margin-top: 0.7rem; overflow-x: auto; }
+.ordenar button { flex: none; min-height: 2.2rem; padding: 0 0.9rem; border-radius: 999px; border: 1px solid var(--fio); background: none; color: var(--claro-suave); font-size: 0.82rem; cursor: pointer; }
+.ordenar button[aria-pressed="true"] { border-color: var(--ouro); color: var(--ouro-claro); background: rgb(210 170 94 / 0.12); }
+.cl-resumo { margin-top: 0.7rem; font-size: 0.8rem; color: var(--apagado); }
+.cl-linha .chip { margin-left: auto; flex: none; font-size: 0.72rem; padding: 0.2rem 0.65rem; }
+.cl-texto { flex: 1; }
