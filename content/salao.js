@@ -15,6 +15,12 @@ export const salao = {
   // Usuário do Instagram, sem o @.
   instagram: "ricafibra_unhas",
 
+  // Temas de época: ligam e desligam sozinhos pela data de Fortaleza.
+  // "anual" repete todo ano (mês-dia); "extra" cobre um período específico.
+  temas: {
+    natal: { anual: { inicio: "12-01", fim: "01-01" }, extra: [{ inicio: "2026-11-25", fim: "2027-01-01" }] },
+  },
+
   // Pix do sinal: chave = celular da Luana
   pix: { chave: "+5585996447096", exibicao: "(85) 99644-7096", nome: "Rica Fibras", cidade: "Fortaleza" },
 

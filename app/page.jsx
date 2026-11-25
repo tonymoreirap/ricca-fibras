@@ -1,5 +1,6 @@
 import Link from "next/link";
 import RedirecionarLogado from "../components/RedirecionarLogado";
+import { SoNoTema } from "../components/TemaSazonal";
 
 export default function Entrada() {
   return (
@@ -14,6 +15,9 @@ export default function Entrada() {
         fetchPriority="high"
       />
       <div className="entrada-painel">
+        <SoNoTema>
+          <p className="entrada-natal">Edição de Natal</p>
+        </SoNoTema>
         <h1>Bem-vinda à Rica Fibras</h1>
         <p>Acompanhe suas manutenções, seus horários e fale direto com a gente.</p>
         <div className="entrada-acoes">

@@ -1043,3 +1043,93 @@ button.kpi { cursor: pointer; }
 
 .sinal-informado, .pix-informado { margin-top: 0.6rem; padding: 0.6rem 0.8rem; border-radius: 0.8rem; font-size: 0.86rem; color: #c9f0d1; background: rgb(159 220 171 / 0.1); border: 1px solid rgb(159 220 171 / 0.35); }
 .sinal-foco, .mt-foco { box-shadow: 0 0 0 2px var(--ouro), 0 18px 40px -24px rgb(0 0 0 / 0.8); }
+
+/* ---------- tema de Natal (liga e desliga sozinho pela data) ---------- */
+:root[data-tema="natal"] { --rubi: #8e1f2f; --rubi-claro: #c9485a; }
+:root[data-tema="natal"] .app {
+  background:
+    radial-gradient(90% 38% at 50% 0%, rgb(142 31 47 / 0.28), transparent 70%),
+    radial-gradient(120% 50% at 50% 0%, rgb(210 170 94 / 0.09), transparent 60%),
+    var(--cafe);
+}
+/* fio de luzes no alto da tela */
+:root[data-tema="natal"] .app::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 25;
+  height: 7px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 6px 3px, #f6e3b0 0 2px, transparent 2.6px) 0 0 / 24px 7px repeat-x,
+    radial-gradient(circle at 18px 4px, var(--rubi-claro) 0 2px, transparent 2.6px) 0 0 / 24px 7px repeat-x;
+  filter: drop-shadow(0 0 4px rgb(246 227 176 / 0.8));
+  animation: piscar 2.4s ease-in-out infinite;
+}
+@keyframes piscar { 50% { opacity: 0.55; } }
+
+.natal-brilhos { position: fixed; inset: 0; z-index: 90; overflow: hidden; pointer-events: none; }
+.natal-brilhos span {
+  position: absolute;
+  top: -12px;
+  background: linear-gradient(135deg, #fff6da, #d2aa5e);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  animation: cair linear infinite;
+  filter: drop-shadow(0 0 3px rgb(246 227 176 / 0.9));
+}
+@keyframes cair {
+  0% { transform: translate(0, 0) rotate(0); opacity: 0; }
+  10% { opacity: 0.9; }
+  85% { opacity: 0.7; }
+  100% { transform: translate(var(--deriva), 105svh) rotate(200deg); opacity: 0; }
+}
+
+.faixa-natal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.6rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fff4ea;
+  background: linear-gradient(110deg, #6d1422, var(--rubi) 45%, #b3394b);
+  box-shadow: inset 0 0 0 1px rgb(246 227 176 / 0.55), 0 8px 18px -8px rgb(142 31 47 / 0.9);
+}
+.faixa-natal::before { content: ""; width: 0.6rem; height: 0.6rem; background: var(--folha-ouro); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+
+.entrada-natal {
+  display: inline-block;
+  margin-bottom: 0.6rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #fff4ea;
+  background: linear-gradient(110deg, #6d1422, var(--rubi) 50%, #b3394b);
+  box-shadow: inset 0 0 0 1px rgb(246 227 176 / 0.5);
+}
+
+/* faixa de presente no Cartão Rica */
+.cartao-natal {
+  position: absolute;
+  top: 1.05rem;
+  right: -2.3rem;
+  z-index: 2;
+  width: 9rem;
+  padding: 0.2rem 0;
+  transform: rotate(35deg);
+  text-align: center;
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: #fff4ea;
+  background: linear-gradient(90deg, #6d1422, var(--rubi), #6d1422);
+  box-shadow: 0 2px 6px rgb(60 10 18 / 0.5);
+}
+:root[data-tema="natal"] .cartao-nivel { margin-right: 2.2rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .natal-brilhos { display: none; }
+}

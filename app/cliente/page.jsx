@@ -9,6 +9,7 @@ import { real, hora, dataLonga, FUSO } from "../../lib/formato";
 import { STATUS, NIVEL, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import MenuApp from "../../components/MenuApp";
+import { SoNoTema } from "../../components/TemaSazonal";
 import {
   IconeCalendario, IconeCoroa, IconeConversa,
   IconeSeta, IconeRecibo, IlustracaoServico,
@@ -170,6 +171,9 @@ export default function Cliente() {
       <main className="tela">
         <section className="cartao-rica entra" aria-label="Cartão Rica">
           <span className="cartao-brilho" aria-hidden="true" />
+          <SoNoTema>
+            <span className="cartao-natal">Boas festas</span>
+          </SoNoTema>
           <div className="cartao-rica-topo">
             <img src="/monograma.webp" alt="" width="46" height="46" />
             <span className="cartao-nivel">

@@ -3,6 +3,7 @@ import BarraTopo from "../../components/BarraTopo";
 import ListaServicos from "../../components/ListaServicos";
 import StatusAberto from "../../components/StatusAberto";
 import { BotaoConta, RodapeVisitante } from "../../components/ContaVisitante";
+import { SoNoTema } from "../../components/TemaSazonal";
 import {
   IconeConversa,
   IconeBrilho,
@@ -37,6 +38,9 @@ export default function Visitante() {
           fetchPriority="high"
         />
         <div className="v-capa-texto entra">
+          <SoNoTema>
+            <p className="faixa-natal">Boas festas · garanta sua unha de Natal</p>
+          </SoNoTema>
           <p className="v-capa-ola">Olá, seja bem-vinda</p>
           <h1>Fibra de vidro com acabamento de joia.</h1>
           <StatusAberto />

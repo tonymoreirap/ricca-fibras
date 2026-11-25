@@ -10,6 +10,7 @@ import { STATUS, NIVEL, pagamento, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import NovoHorario from "../../components/admin/NovoHorario";
 import MenuApp from "../../components/MenuApp";
+import { useTema } from "../../components/TemaSazonal";
 import { useAlertas, useResumoDoDia, BotaoSino, FolhaAlertas, ModalResumo } from "../../components/admin/Alertas";
 import { IconeConversa, IconeMais, IconeBusca, IconeRecibo, IconeCheck, IlustracaoServico } from "../../components/Icones";
 
@@ -199,6 +200,7 @@ export default function Painel() {
   const [ordem, setOrdem] = useState("frequentes");
   const [limpar, setLimpar] = useState(false);
   const [verAlertas, setVerAlertas] = useState(false);
+  const tema = useTema();
   const alertas = useAlertas(dados);
   const resumoDia = useResumoDoDia(alertas.lista, Boolean(dados));
 
@@ -342,7 +344,7 @@ export default function Painel() {
     <div className="app app-admin">
       <header className="adm-topo">
         <div>
-          <p className="c-saudacao">Painel Rica Fibras</p>
+          <p className="c-saudacao">{tema === "natal" ? "Boas festas · Painel Rica Fibras" : "Painel Rica Fibras"}</p>
           <h1>
             Olá, {primeiroNome(eu.nome)}
             {eu.papel === "master" && <span className="selo selo-master">Master</span>}
