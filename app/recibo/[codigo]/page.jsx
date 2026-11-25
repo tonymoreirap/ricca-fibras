@@ -33,6 +33,8 @@ export default function Recibo() {
   const [arquivo, setArquivo] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [logada, setLogada] = useState(false);
+  const [informado, setInformado] = useState(false);
+  const [informando, setInformando] = useState(false);
 
   useEffect(() => {
     setOrigem(window.location.origin);
@@ -49,6 +51,7 @@ export default function Recibo() {
         } catch {}
         const reg = { ...l[0], cliente_celular: cel };
         setA(reg);
+        setInformado(Boolean(reg.pix_informado_em));
         guardarCodigo(reg.codigo);
         const p = pixCopiaECola({ ...salao.pix, valor: reg.sinal, identificador: reg.codigo });
         setPix(p);
@@ -176,6 +179,30 @@ export default function Recibo() {
                       O WhatsApp abre com o recibo e o link do PDF. É só anexar o comprovante do Pix e enviar.
                     </p>
                   </>
+                )}
+
+                <div className="pix-cabeca pix-cabeca-2">
+                  <span className="passo-num">3</span>
+                  <h2>Avise que pagou</h2>
+                </div>
+                {informado ? (
+                  <p className="pix-informado">A Luana foi avisada do seu Pix. Assim que ela conferir, o horário aparece como confirmado.</p>
+                ) : (
+                  <button
+                    type="button"
+                    className="botao-linha"
+                    disabled={informando}
+                    onClick={async () => {
+                      setInformando(true);
+                      try {
+                        const r = await rpc("informar_pix", { p_codigo: a.codigo });
+                        if (r.ok) setInformado(true);
+                      } catch {}
+                      setInformando(false);
+                    }}
+                  >
+                    {informando ? "Avisando…" : "Já enviei o Pix"}
+                  </button>
                 )}
               </section>
             )}

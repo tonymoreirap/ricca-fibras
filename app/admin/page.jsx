@@ -9,8 +9,9 @@ import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from
 import { STATUS, NIVEL, pagamento, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import NovoHorario from "../../components/admin/NovoHorario";
-import MenuApp, { sairDeTudo } from "../../components/MenuApp";
-import { IconeConversa, IconeMais, IconeSair, IconeBusca, IconeRecibo, IconeCheck, IlustracaoServico } from "../../components/Icones";
+import MenuApp from "../../components/MenuApp";
+import { useAlertas, useResumoDoDia, BotaoSino, FolhaAlertas, ModalResumo } from "../../components/admin/Alertas";
+import { IconeConversa, IconeMais, IconeBusca, IconeRecibo, IconeCheck, IlustracaoServico } from "../../components/Icones";
 
 const ICONE = { aplicacao: "fibra", manutencao: "manutencao" };
 const diaDe = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: FUSO }).format(new Date(d));
@@ -67,7 +68,7 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
   const st = STATUS[a.status];
   const pag = pagamento(a, real);
   return (
-    <li className={`ag-item ${aberto ? "aberto" : ""} ag-${a.status}`}>
+    <li className={`ag-item ${aberto ? "aberto" : ""} ag-${a.status}`} data-chave={a.codigo}>
       <button type="button" className="ag-linha" onClick={alternar} aria-expanded={aberto}>
         <span className="ag-hora">
           {hora(a.inicio)}
@@ -133,7 +134,7 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, origem }) {
   const conta = !c.tem_conta ? "Sem conta no app" : c.verificado ? "Conta verificada" : "Conta criada";
   const nv = NIVEL[c.nivel] || NIVEL.nova;
   return (
-    <li className={`cl-item vidro ${aberto ? "aberto" : ""}`}>
+    <li className={`cl-item vidro ${aberto ? "aberto" : ""}`} data-chave={c.celular}>
       <button type="button" className="cl-linha" onClick={alternar} aria-expanded={aberto}>
         <span className="avatar avatar-p" aria-hidden="true"><span>{c.nome[0]}</span></span>
         <span className="cl-texto">
@@ -197,6 +198,22 @@ export default function Painel() {
   const [busca, setBusca] = useState("");
   const [ordem, setOrdem] = useState("frequentes");
   const [limpar, setLimpar] = useState(false);
+  const [verAlertas, setVerAlertas] = useState(false);
+  const alertas = useAlertas(dados);
+  const resumoDia = useResumoDoDia(alertas.lista, Boolean(dados));
+
+  function irPara({ aba: destino, chave }) {
+    setVerAlertas(false);
+    resumoDia.fechar();
+    setAba(destino);
+    setAberto(chave);
+    setTimeout(() => document.querySelector(`[data-chave="${chave}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 120);
+  }
+  const abrirAlertas = () => {
+    resumoDia.fechar();
+    setVerAlertas(true);
+    alertas.marcarVistos();
+  };
   const [novo, setNovo] = useState(null);
   const [aviso, setAviso] = useState("");
   const [origem, setOrigem] = useState("");
@@ -262,8 +279,6 @@ export default function Painel() {
       sessaoExpirada(e) ? sairPorSessao() : setAviso("Sem conexão. Tente de novo.");
     }
   }
-
-  const sair = () => sairDeTudo(router);
 
   async function limparExemplos() {
     try {
@@ -333,9 +348,7 @@ export default function Painel() {
             {eu.papel === "master" && <span className="selo selo-master">Master</span>}
           </h1>
         </div>
-        <button type="button" className="adm-sair" onClick={sair} aria-label="Sair do painel">
-          <IconeSair />
-        </button>
+        <BotaoSino novos={alertas.novos} aoAbrir={abrirAlertas} />
       </header>
 
       <main className="tela">
@@ -429,7 +442,7 @@ export default function Painel() {
             ) : (
               <ul className="sinais">
                 {vis.sinais.map((a) => (
-                  <li key={a.codigo} className="sinal vidro">
+                  <li key={a.codigo} className={`sinal vidro ${aberto === a.codigo ? "sinal-foco" : ""}`} data-chave={a.codigo}>
                     <div className="sinal-topo">
                       <IlustracaoServico tipo={ICONE[a.servico] || "fibra"} tamanho={40} />
                       <span>
@@ -439,6 +452,7 @@ export default function Painel() {
                       <span className="sinal-valor">{real(a.sinal)}</span>
                     </div>
                     <p className="sinal-quando">{dataLonga(a.inicio)} · {hora(a.inicio)} às {hora(a.fim)}</p>
+                    {a.pix_informado_em && <p className="sinal-informado">A cliente avisou que enviou o Pix. Confira no banco e confirme.</p>}
                     <div className="sinal-acoes">
                       <button type="button" className="botao-ouro" disabled={ocupado} onClick={() => mudar(a.codigo, "confirmado")}>
                         <IconeCheck stroke="currentColor" width="20" height="20" /> Sinal recebido
@@ -506,7 +520,7 @@ export default function Painel() {
                   const p = Math.max(0, Math.min(1, (m.ciclo_dias - m.dias_restantes) / m.ciclo_dias));
                   const estado = m.dias_restantes < 0 ? "atrasada" : m.dias_restantes <= 5 ? "quase" : "ok";
                   return (
-                    <li key={c.celular} className={`mt-item vidro mt-${estado}`}>
+                    <li key={c.celular} className={`mt-item vidro mt-${estado} ${aberto === c.celular ? "mt-foco" : ""}`} data-chave={c.celular}>
                       <div className="mt-topo">
                         <span>
                           <strong>{c.nome}{c.demo && <em className="selo-exemplo">exemplo</em>}</strong>
@@ -558,6 +572,11 @@ export default function Painel() {
             carregar(sessao.token);
           }}
         />
+      )}
+
+      {verAlertas && <FolhaAlertas lista={alertas.lista} token={sessao.token} aoFechar={() => setVerAlertas(false)} aoIr={irPara} />}
+      {resumoDia.aberto && !verAlertas && (
+        <ModalResumo lista={alertas.lista} nome={primeiroNome(eu.nome)} aoFechar={resumoDia.fechar} aoVerTudo={abrirAlertas} />
       )}
 
       {aviso && <div className="toast" role="status">{aviso}</div>}

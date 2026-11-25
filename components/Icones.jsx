@@ -131,6 +131,14 @@ export const IconeRecibo = (p) => (
   </svg>
 );
 
+export const IconeSino = (p) => (
+  <svg {...base(p)}>
+    <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15Z" />
+    <path d="M10 20.5a2.2 2.2 0 0 0 4 0" />
+    <path d="M12 3v2" />
+  </svg>
+);
+
 /* ---------- ilustrações dos serviços (48×48, ouro + rosé) ---------- */
 const ilus = { width: 48, height: 48, viewBox: "0 0 48 48", fill: "none", "aria-hidden": true };
 const contorno = { stroke: "url(#g-ouro-48)", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" };
