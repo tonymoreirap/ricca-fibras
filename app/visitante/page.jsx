@@ -8,6 +8,7 @@ import {
   IconeCurso,
   IconeCamera,
   IconeRelogio,
+  IconeCalendario,
   IlustracaoServico,
 } from "../../components/Icones";
 import { salao, linkAgendar } from "../../content/salao";
@@ -46,9 +47,13 @@ export default function Visitante() {
       </section>
 
       <nav className="destaques entra" aria-label="Atalhos">
+        <Link href="/agendar">
+          <span className="destaque-anel"><IconeCalendario width="26" height="26" /></span>
+          Agendar
+        </Link>
         <a href={linkAgendar()} {...ext}>
           <span className="destaque-anel"><IconeConversa width="26" height="26" /></span>
-          Agendar
+          WhatsApp
         </a>
         <a href="#servicos">
           <span className="destaque-anel"><IconeBrilho width="26" height="26" /></span>
@@ -125,10 +130,10 @@ export default function Visitante() {
         </footer>
       </main>
 
-      <a className="cta-flutuante botao-ouro" href={linkAgendar()} {...ext}>
-        <IconeConversa stroke="currentColor" />
-        Falar com a {salao.contato}
-      </a>
+      <Link className="cta-flutuante botao-ouro" href="/agendar">
+        <IconeCalendario stroke="currentColor" />
+        Agendar horário
+      </Link>
     </div>
   );
 }

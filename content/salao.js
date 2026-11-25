@@ -15,6 +15,9 @@ export const salao = {
   // Usuário do Instagram, sem o @.
   instagram: "ricafibra_unhas",
 
+  // Pix do sinal: chave = celular da Luana
+  pix: { chave: "+5585996447096", exibicao: "(85) 99644-7096", nome: "Rica Fibras", cidade: "Fortaleza" },
+
   curso: {
     nome: "Método Rica em Mesa",
     descricao:
@@ -40,14 +43,16 @@ export const salao = {
       nome: "Alongamento em fibra de vidro",
       icone: "fibra",
       descricao: "Unhas longas, finas e resistentes, com aparência natural.",
-      preco: "",
+      preco: "R$ 190",
+      agendaOnline: "aplicacao",
       manutencaoDias: 25,
     },
     {
       nome: "Manutenção da fibra",
       icone: "manutencao",
       descricao: "Preenchimento do crescimento e reforço da estrutura.",
-      preco: "",
+      preco: "R$ 150",
+      agendaOnline: "manutencao",
       manutencaoDias: 25,
     },
     {

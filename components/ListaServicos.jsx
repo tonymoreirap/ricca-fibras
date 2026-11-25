@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { salao, linkAgendar, mensagemServico } from "../content/salao";
-import { IconeSeta, IconeConversa, IlustracaoServico } from "./Icones";
+import Link from "next/link";
+import { IconeSeta, IconeConversa, IconeCalendario, IlustracaoServico } from "./Icones";
 
 const [assinatura, ...outros] = salao.servicos;
 
@@ -88,15 +89,22 @@ export default function ListaServicos() {
                 </div>
               )}
             </dl>
-            <a
-              className="botao-ouro"
-              href={linkAgendar(mensagemServico(aberto.nome))}
-              target="_blank"
-              rel="noopener"
-            >
-              <IconeConversa stroke="currentColor" />
-              Agendar com a Luana
-            </a>
+            {aberto.agendaOnline ? (
+              <Link className="botao-ouro" href={`/agendar?servico=${aberto.agendaOnline}`}>
+                <IconeCalendario stroke="currentColor" />
+                Ver horários e agendar
+              </Link>
+            ) : (
+              <a
+                className="botao-ouro"
+                href={linkAgendar(mensagemServico(aberto.nome))}
+                target="_blank"
+                rel="noopener"
+              >
+                <IconeConversa stroke="currentColor" />
+                Agendar com a Luana
+              </a>
+            )}
             <button type="button" className="folha-fechar" onClick={() => setAberto(null)}>
               Fechar
             </button>

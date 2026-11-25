@@ -120,14 +120,10 @@ export default function Cliente() {
               </p>
             </div>
           </div>
-          <a
-            className="botao-ouro"
-            href={linkAgendar(`Oi, Luana! Sou a ${c.nome} e quero agendar minha manutenção da fibra.`)}
-            {...ext}
-          >
+          <Link className="botao-ouro" href="/agendar?servico=manutencao">
             <IconeCalendario stroke="currentColor" />
             Agendar manutenção
-          </a>
+          </Link>
         </section>
 
         <section className="bloco">
