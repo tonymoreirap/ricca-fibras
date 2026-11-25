@@ -29,6 +29,8 @@ export default function Recibo() {
   const [pix, setPix] = useState("");
   const [copiado, setCopiado] = useState(false);
   const [origem, setOrigem] = useState("");
+  const [arquivo, setArquivo] = useState(null);
+  const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
     setOrigem(window.location.origin);
@@ -47,6 +49,15 @@ export default function Recibo() {
         guardarCodigo(reg.codigo);
         const p = pixCopiaECola({ ...salao.pix, valor: reg.sinal, identificador: reg.codigo });
         setPix(p);
+        // prepara o PDF para o compartilhamento nativo (celular)
+        fetch(`/recibo/${reg.codigo}/pdf`)
+          .then((r) => (r.ok ? r.blob() : null))
+          .then((b) => {
+            if (!b) return;
+            const f = new File([b], `Recibo-${reg.codigo}-Rica-Fibras.pdf`, { type: "application/pdf" });
+            if (navigator.canShare?.({ files: [f] })) setArquivo(f);
+          })
+          .catch(() => {});
         setQr(
           await QRCode.toString(p, {
             type: "svg",
@@ -65,6 +76,25 @@ export default function Recibo() {
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2500);
     } catch {}
+  }
+
+  async function enviarPdf() {
+    if (!arquivo) {
+      window.open(whatsLuana, "_blank", "noopener");
+      return;
+    }
+    setEnviando(true);
+    try {
+      await navigator.share({
+        files: [arquivo],
+        title: `Recibo ${a.codigo} — Rica Fibras`,
+        text: `Recibo de agendamento ${a.codigo} — Rica Fibras`,
+      });
+    } catch (e) {
+      if (e?.name !== "AbortError") window.open(whatsLuana, "_blank", "noopener");
+    } finally {
+      setEnviando(false);
+    }
   }
 
   const whatsLuana = a
@@ -120,13 +150,30 @@ export default function Recibo() {
                   <span className="passo-num">2</span>
                   <h2>Envie o comprovante</h2>
                 </div>
-                <a className="botao-ouro" href={whatsLuana} target="_blank" rel="noopener">
-                  <IconeConversa stroke="currentColor" />
-                  Enviar recibo para a Luana
-                </a>
-                <p className="pix-nota">
-                  O WhatsApp abre com o recibo pronto. É só anexar o comprovante do Pix e enviar.
-                </p>
+                {arquivo ? (
+                  <>
+                    <button type="button" className="botao-ouro" onClick={enviarPdf} disabled={enviando}>
+                      <IconeConversa stroke="currentColor" />
+                      {enviando ? "Abrindo…" : "Enviar recibo em PDF"}
+                    </button>
+                    <p className="pix-nota">
+                      Escolha o WhatsApp e a conversa com a Luana. Depois envie também o comprovante do Pix.
+                    </p>
+                    <a className="botao-linha" href={whatsLuana} target="_blank" rel="noopener">
+                      Enviar como mensagem
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <a className="botao-ouro" href={whatsLuana} target="_blank" rel="noopener">
+                      <IconeConversa stroke="currentColor" />
+                      Enviar recibo para a Luana
+                    </a>
+                    <p className="pix-nota">
+                      O WhatsApp abre com o recibo e o link do PDF. É só anexar o comprovante do Pix e enviar.
+                    </p>
+                  </>
+                )}
               </section>
             )}
 
@@ -176,9 +223,9 @@ export default function Recibo() {
                   Falar com a Luana
                 </a>
               )}
-              <button type="button" className="botao-linha" onClick={() => window.print()}>
-                Salvar recibo em PDF
-              </button>
+              <a className="botao-linha" href={`/recibo/${a.codigo}/pdf`} target="_blank" rel="noopener">
+                Abrir recibo em PDF
+              </a>
               <Link href="/visitante" className="link-claro">
                 Voltar ao início
               </Link>

@@ -36,7 +36,7 @@ export function mensagemRecibo(a, origem) {
     `Restante no dia: ${real(restante)}`,
     "",
     "Segue o comprovante do Pix para confirmar meu horário.",
-    `Recibo: ${origem}/recibo/${a.codigo}`,
+    `Recibo em PDF: ${origem}/recibo/${a.codigo}/pdf`,
   ]
     .filter((l) => l !== null)
     .join("\n");
