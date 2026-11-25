@@ -60,10 +60,10 @@ export default function Visitante() {
           <span className="destaque-anel"><IconeBrilho width="26" height="26" /></span>
           Serviços
         </a>
-        <a href="#curso">
+        <Link href="/curso">
           <span className="destaque-anel"><IconeCurso width="26" height="26" /></span>
           Curso
-        </a>
+        </Link>
         <a href={`https://instagram.com/${salao.instagram}`} {...ext}>
           <span className="destaque-anel"><IconeCamera width="26" height="26" /></span>
           Trabalhos
@@ -99,13 +99,12 @@ export default function Visitante() {
               </div>
             </div>
             <p>{salao.curso.descricao}</p>
-            <a
-              className="botao-linha"
-              href={linkAgendar(`Oi, Luana! Quero saber sobre o curso ${salao.curso.nome}.`)}
-              {...ext}
-            >
-              Quero saber datas e valores
-            </a>
+            <Link className="botao-linha" href="/curso">
+              Conhecer o curso e as turmas
+            </Link>
+            <Link className="link-claro curso-rede" href="/rede">
+              Ver profissionais certificadas
+            </Link>
           </div>
         </section>
 

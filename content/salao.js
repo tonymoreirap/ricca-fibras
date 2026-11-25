@@ -18,7 +18,7 @@ export const salao = {
   // Temas de época: ligam e desligam sozinhos pela data de Fortaleza.
   // "anual" repete todo ano (mês-dia); "extra" cobre um período específico.
   temas: {
-    natal: { anual: { inicio: "12-01", fim: "01-01" }, extra: [{ inicio: "2026-11-25", fim: "2027-01-01" }] },
+    natal: { anual: { inicio: "12-01", fim: "12-31" }, extra: [{ inicio: "2026-11-25", fim: "2026-12-31" }] },
   },
 
   // Pix do sinal: chave = celular da Luana

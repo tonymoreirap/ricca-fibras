@@ -204,8 +204,12 @@ export default function Painel() {
   const alertas = useAlertas(dados);
   const resumoDia = useResumoDoDia(alertas.lista, Boolean(dados));
 
-  function irPara({ aba: destino, chave }) {
+  function irPara({ aba: destino, chave, href }) {
     setVerAlertas(false);
+    if (href) {
+      resumoDia.fechar();
+      return router.push(href);
+    }
     resumoDia.fechar();
     setAba(destino);
     setAberto(chave);
@@ -227,8 +231,8 @@ export default function Painel() {
 
   const carregar = useCallback(
     (token) =>
-      rpc("admin_painel", { p_token: token })
-        .then((d) => { setDados(d); setErro(""); })
+      Promise.all([rpc("admin_painel", { p_token: token }), rpc("admin_curso_novas", { p_token: token }).catch(() => 0)])
+        .then(([d, novas]) => { setDados({ ...d, curso_novas: novas || 0 }); setErro(""); })
         .catch((e) => (sessaoExpirada(e) ? sairPorSessao() : setErro("Não foi possível carregar o painel. Verifique a internet."))),
     [sairPorSessao]
   );
@@ -390,6 +394,15 @@ export default function Painel() {
             <small>todos os horários</small>
           </div>
         </section>
+
+        <Link href="/admin/curso" className="atalho-curso vidro">
+          <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="curso" tamanho={34} /></span>
+          <span className="atalho-curso-texto">
+            <strong>Curso e Rede</strong>
+            <small>{dados.curso_novas ? `${dados.curso_novas} ${dados.curso_novas === 1 ? "inscrição nova" : "inscrições novas"}` : "Turmas, inscrições e certificadas"}</small>
+          </span>
+          {dados.curso_novas > 0 && <i className="atalho-curso-n">{dados.curso_novas}</i>}
+        </Link>
 
         <nav className="segmento" aria-label="Seções">
           {[

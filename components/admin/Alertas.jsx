@@ -60,6 +60,10 @@ export function montarAlertas(dados) {
         titulo: `Manutenção vence em ${m.dias_restantes} ${m.dias_restantes === 1 ? "dia" : "dias"}: ${primeiroNome(c.nome)}`, texto: `Até ${dataDia(m.proxima)} · sem horário marcado` });
     }
   }
+  if (dados.curso_novas > 0) {
+    lista.push({ id: `curso-${dados.curso_novas}-${hoje}`, grupo: "novidades", nivel: "atencao", demo: false, ir: { href: "/admin/curso" },
+      titulo: `${dados.curso_novas} ${dados.curso_novas === 1 ? "inscrição nova" : "inscrições novas"} no curso`, texto: "Toque para ver e chamar no WhatsApp" });
+  }
   const peso = (x) => (x.id.startsWith("pix-") ? 0 : { urgente: 1, atencao: 2, info: 3, ok: 4 }[x.nivel]);
   return lista.sort((x, y) => peso(x) - peso(y));
 }
