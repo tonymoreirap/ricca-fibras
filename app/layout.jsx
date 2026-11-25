@@ -8,17 +8,17 @@ import RegistrarSW from "../components/RegistrarSW";
 
 export const metadata = {
   metadataBase: new URL("https://tonsdellas.com.br"),
-  title: "Ricca Fibras — alongamento em fibra de vidro",
+  title: "Rica Fibras — alongamento em fibra de vidro",
   description:
     "Alongamento em fibra de vidro, esmaltação em gel, manicure e design de sobrancelhas. Agende seu horário.",
-  appleWebApp: { capable: true, title: "Ricca Fibras", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Rica Fibras", statusBarStyle: "black-translucent" },
   icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
   openGraph: {
-    title: "Ricca Fibras",
+    title: "Rica Fibras",
     description: "Fibra de vidro com acabamento de joia.",
     locale: "pt_BR",
     type: "website",
-    images: [{ url: "/ricca-capa.webp", width: 720, height: 1279 }],
+    images: [{ url: "/rica-fundo.webp", width: 720, height: 1080 }],
   },
 };
 

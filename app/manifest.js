@@ -1,7 +1,7 @@
 export default function manifest() {
   return {
-    name: "Ricca Fibras",
-    short_name: "Ricca Fibras",
+    name: "Rica Fibras",
+    short_name: "Rica Fibras",
     description: "Alongamento em fibra de vidro e cuidados que duram.",
     start_url: "/",
     display: "standalone",

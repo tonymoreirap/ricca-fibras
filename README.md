@@ -1,6 +1,6 @@
-# Ricca Fibras
+# Rica Fibras
 
-Site da Ricca Fibras: responsivo e instalável no celular (PWA).
+Site da Rica Fibras: responsivo e instalável no celular (PWA).
 
 - Textos, serviços, contatos e horários: `content/salao.js`
 - Visual: `app/globals.css`

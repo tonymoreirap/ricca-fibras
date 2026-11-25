@@ -2,7 +2,7 @@
 // serviços, contatos e horários — o layout se ajusta sozinho.
 
 export const salao = {
-  nome: "Ricca Fibras",
+  nome: "Rica Fibras",
   titulo: "Fibra de vidro com acabamento de joia.",
   frase:
     "Alongamento em fibra, manutenção no tempo certo e um atendimento pensado em cada detalhe.",
@@ -10,7 +10,7 @@ export const salao = {
   // WhatsApp com DDI + DDD + número, só dígitos.
   whatsapp: "5585996447096",
   contato: "Luana",
-  mensagemWhatsapp: "Oi, Luana! Vim pelo site da Ricca Fibras e quero agendar um horário.",
+  mensagemWhatsapp: "Oi, Luana! Vim pelo site da Rica Fibras e quero agendar um horário.",
 
   // Usuário do Instagram, sem o @.
   instagram: "ricafibra_unhas",
@@ -68,7 +68,7 @@ export const salao = {
 };
 
 export function mensagemServico(nome) {
-  return `Oi, Luana! Vim pelo site da Ricca Fibras e quero agendar: ${nome}.`;
+  return `Oi, Luana! Vim pelo site da Rica Fibras e quero agendar: ${nome}.`;
 }
 
 export function linkAgendar(texto = salao.mensagemWhatsapp) {
