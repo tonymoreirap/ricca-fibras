@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { temaDoDia } from "../lib/tema";
 import { useSalao } from "./Empresa";
 
@@ -27,7 +28,7 @@ export function SoNoTema({ tema = "natal", children }) {
   return useTema() === tema ? children : null;
 }
 
-const BRILHOS = Array.from({ length: 16 }, (_, i) => ({
+const BRILHOS = Array.from({ length: 7 }, (_, i) => ({
   x: (i * 37 + 11) % 100,
   atraso: -((i * 53) % 140) / 10,
   duracao: 9 + ((i * 29) % 70) / 10,
@@ -37,11 +38,14 @@ const BRILHOS = Array.from({ length: 16 }, (_, i) => ({
 
 export default function TemaSazonal() {
   const tema = useTema();
+  const rota = usePathname() || "";
+  // telas de trabalho (painel, master) ficam sem os brilhos caindo
+  const trabalho = /^\/(admin|master)(\/|$)/.test(rota);
   useEffect(() => {
     if (tema) document.documentElement.dataset.tema = tema;
     else delete document.documentElement.dataset.tema;
   }, [tema]);
-  if (tema !== "natal") return null;
+  if (tema !== "natal" || trabalho) return null;
   return (
     <div className="natal-brilhos" aria-hidden="true">
       {BRILHOS.map((b, i) => (

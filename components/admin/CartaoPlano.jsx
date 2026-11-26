@@ -26,13 +26,16 @@ export function situacaoTexto(p) {
 }
 
 // Cartão "Meu plano" no painel da dona
-export default function CartaoPlano({ token }) {
+// soAlerta: aparece só quando pede atenção (teste, atraso ou perto de vencer)
+export default function CartaoPlano({ token, soAlerta = false }) {
   const [p, setP] = useState(null);
   useEffect(() => {
     if (token) rpc("admin_meu_plano", { p_token: token }).then(setP).catch(() => {});
   }, [token]);
   if (!p?.plano) return null;
   const alerta = p.situacao === "atrasada" || p.situacao === "suspensa";
+  const perto = p.situacao === "ativa" && p.vence_em && dias(p.vence_em) <= 7;
+  if (soAlerta && !alerta && !perto && p.situacao !== "teste") return null;
   return (
     <Link href="/admin/plano" className={`cartao-plano vidro ${alerta ? "cartao-plano-alerta" : ""}`}>
       <span>

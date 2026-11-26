@@ -1,3 +1,12 @@
+/* Algarismos dos títulos: a Marcellus desenha o "1" como um "I". Só os números usam a Jost. */
+@font-face {
+  font-family: "Digitos";
+  src: url("/fontes/jost-300-digitos.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+
 :root {
   --cafe: #1a100c;
   --cafe-2: #23150f;
@@ -12,6 +21,8 @@
   --rose: #e4afab;
   --superficie-3: #573623;
   --fundo-fora: #0f0907;
+  --ok: #b5ecc2;
+  --ok-rgb: 159 220 171;
   --rose-claro: #ffd9d4;
   --tinta: #2a180c;
   --tinta-2: #4a2e15;
@@ -25,7 +36,7 @@
   --fio-forte: rgb(210 170 94 / 0.55);
   --folha-ouro: linear-gradient(118deg, #8c6428 0%, #c9a35a 18%, #f6e3b0 38%, #d9b46a 52%, #b8893e 70%, #f1dca5 86%, #a57a38 100%);
 
-  --display: "Marcellus", "Trajan Pro", Georgia, serif;
+  --display: "Digitos", "Marcellus", "Trajan Pro", Georgia, serif;
   --texto: "Jost", system-ui, -apple-system, sans-serif;
   --margem: 1.25rem;
   --largura-app: 30rem;
@@ -1660,4 +1671,82 @@ body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--our
 .plano-historico li span { display: flex; flex-direction: column; }
 .plano-historico small { color: var(--apagado); font-size: 0.8rem; }
 .plano-historico strong { font-family: var(--display); font-weight: 400; }
+
+/* =====================================================================
+   LUXO CALMO (26/11/2026)
+   brilho onde a cliente vê o salão; telas de trabalho limpas e legíveis
+   ===================================================================== */
+
+/* 1. Números na fonte de texto, com algarismos alinhados (o "1" não vira "I") */
+.servico-preco, .horarios li span:last-child, .manut-numero, .escolha-preco, .vaga strong, .resumo-destaque strong,
+.pix-valor, .recibo-codigo strong, .recibo-total dd, .campo-codigo, .proximo-hora, .kpi strong, .ag-hora, .sinal-valor,
+.mt-dias, .pilulas button small, .cr-num, .cn-codigo, .conf-codigo, .emp-numeros dd, .emp-codigo strong,
+.promo-preco strong, .plano-preco, .emp-recebidas strong, .plano-historico strong, .fp-plano strong {
+  font-family: var(--texto);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.01em;
+}
+.kpi strong, .plano-preco, .pix-valor, .manut-numero, .resumo-destaque strong, .recibo-total dd { font-weight: 300; }
+.vaga strong, .ag-hora, .sinal-valor, .escolha-preco, .servico-preco, .emp-numeros dd, .promo-preco strong,
+.emp-recebidas strong, .plano-historico strong, .horarios li span:last-child { font-weight: 500; }
+.vaga strong { font-size: 1.2rem; }
+.ag-hora { font-size: 1.05rem; }
+.ag-hora small { font-weight: 400; }
+.kpi strong { font-size: 2rem; letter-spacing: -0.02em; }
+.kpi .kpi-valor { font-size: 1.3rem; font-weight: 400; }
+.emp-numeros dd { font-size: 1.15rem; }
+
+/* 2. Barra de baixo sólida: o conteúdo não aparece por trás */
+.abas { background: linear-gradient(rgb(var(--claro-rgb) / 0.035), rgb(var(--claro-rgb) / 0.035)), var(--cafe); backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+/* 3. Selos de situação com contraste em qualquer paleta */
+.chip-ok { color: var(--ok); background: rgb(var(--ok-rgb) / 0.16); border-color: rgb(var(--ok-rgb) / 0.5); font-weight: 600; }
+.chip-alerta { font-weight: 600; }
+.chip-apagado { color: var(--claro-suave); }
+
+/* 4. Brilho só na ação principal da tela */
+.botao-ouro { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -2px 5px rgb(120 80 30 / 0.25), 0 8px 18px -12px rgb(var(--ouro-rgb) / 0.6); }
+.botao-ouro::after { animation: none; display: none; }
+.acao-rodape .botao-ouro::after, .cta-flutuante::after { display: block; animation: reflexo 6s ease-in-out 1.5s infinite; }
+.acao-rodape .botao-ouro, .cta-flutuante { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 -2px 6px rgb(120 80 30 / 0.3), 0 14px 30px -14px rgb(var(--ouro-rgb) / 0.75); }
+@media (prefers-reduced-motion: reduce) { .acao-rodape .botao-ouro::after, .cta-flutuante::after { animation: none; display: none; } }
+
+/* brilhos de Natal: menos, mais discretos e atrás dos botões */
+.natal-brilhos { z-index: 25; }
+.natal-brilhos span { filter: none; }
+@keyframes cair {
+  0% { transform: translate(0, 0) rotate(0); opacity: 0; }
+  10% { opacity: 0.55; }
+  85% { opacity: 0.4; }
+  100% { transform: translate(var(--deriva), 105svh) rotate(200deg); opacity: 0; }
+}
+
+/* 5. Painel: grade "Gerenciar" compacta, agenda mais perto do topo */
+.gerenciar { margin-top: 1.4rem; }
+.gerenciar-titulo { margin-bottom: 0.6rem; font-size: 0.8rem; font-weight: 500; color: var(--apagado); }
+.gerenciar-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+.ger-item {
+  position: relative;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;
+  min-height: 5.6rem; padding: 0.75rem 0.7rem 0.7rem;
+  border-radius: 1rem; border: 1px solid var(--fio);
+  background: rgb(var(--claro-rgb) / 0.045);
+  color: var(--champanhe); text-align: left; text-decoration: none; cursor: pointer;
+}
+.ger-item:active { transform: scale(0.98); }
+.ger-arte { display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 0.7rem; background: rgb(var(--ouro-rgb) / 0.1); }
+.ger-texto { display: flex; flex-direction: column; gap: 0.05rem; min-width: 0; width: 100%; }
+.ger-texto strong { font-size: 0.86rem; font-weight: 500; line-height: 1.2; }
+.ger-texto small { font-size: 0.72rem; color: var(--apagado); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ger-n { position: absolute; top: 0.5rem; right: 0.5rem; min-width: 1.3rem; height: 1.3rem; padding: 0 0.35rem; border-radius: 999px; font-style: normal; font-size: 0.72rem; font-weight: 600; line-height: 1.3rem; text-align: center; background: var(--rose); color: var(--tinta); }
+.ger-cadeado { position: absolute; top: 0.55rem; right: 0.55rem; color: var(--apagado); }
+.ger-travado .ger-arte { opacity: 0.55; }
+.ger-travado .ger-texto small { color: var(--ouro-claro); }
+.adm-topo-acoes { display: flex; align-items: center; gap: 0.5rem; }
+.adm-empresas { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 1rem; border-radius: 999px; border: 1px solid var(--fio-forte); color: var(--ouro-claro); font-size: 0.85rem; font-weight: 500; text-decoration: none; }
+.cartao-plano { margin-top: 0.75rem; }
+.kpis { margin-top: 0.25rem; }
+.segmento { margin-top: 1.4rem; }
+.adm-topo > div:first-child { min-width: 0; }
+.adm-topo .c-saudacao { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 

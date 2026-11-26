@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
 import { useSalao } from "../../components/Empresa";
-import { Atalho, FolhaPlano } from "../../components/admin/Cadeado";
+import { FolhaPlano, IconeCadeado } from "../../components/admin/Cadeado";
 import CartaoPlano from "../../components/admin/CartaoPlano";
-import { temRecurso } from "../../lib/planos";
+import { temRecurso, NOME_PLANO, RECURSOS } from "../../lib/planos";
 import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from "../../lib/formato";
 import { STATUS, nivelDe, pagamento, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
@@ -457,7 +457,10 @@ export default function Painel() {
             {eu.papel === "master" && <span className="selo selo-master">Master</span>}
           </h1>
         </div>
-        <BotaoSino novos={alertas.novos} aoAbrir={abrirAlertas} />
+        <div className="adm-topo-acoes">
+          {eu.papel === "master" && <Link href="/master" className="adm-empresas">Empresas</Link>}
+          <BotaoSino novos={alertas.novos} aoAbrir={abrirAlertas} />
+        </div>
       </header>
 
       <main className="tela">
@@ -498,64 +501,40 @@ export default function Painel() {
           </div>
         </section>
 
-        <CartaoPlano token={sessao.token} />
+        <CartaoPlano token={sessao.token} soAlerta />
 
-        <Link href="/admin/salao" className="atalho-curso vidro">
-          <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="flor" tamanho={32} /></span>
-          <span className="atalho-curso-texto">
-            <strong>Meu salão</strong>
-            <small>Fotos, cores, WhatsApp, Instagram, Pix e horários</small>
-          </span>
-        </Link>
-
-        <Atalho
-          href="/admin/promocoes"
-          liberado={temRecurso(salao, "promocoes")}
-          recurso="promocoes"
-          arte={<IlustracaoServico tipo="batom" tamanho={32} />}
-          titulo="Promoções"
-          texto="Ofertas com data para entrar e sair do ar"
-          aoTravado={setTravado}
-        />
-
-        {eu.papel === "master" && (
-          <Link href="/master" className="atalho-curso vidro">
-            <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="brilho" tamanho={32} /></span>
-            <span className="atalho-curso-texto">
-              <strong>Empresas</strong>
-              <small>Salões, módulos e acessos das donas</small>
-            </span>
-          </Link>
-        )}
-
-        <Atalho
-          href="/admin/curso"
-          liberado={temRecurso(salao, "curso") || temRecurso(salao, "rede")}
-          recurso="curso"
-          arte={<IlustracaoServico tipo="curso" tamanho={34} />}
-          titulo="Curso e Rede"
-          texto={dados.curso_novas ? `${dados.curso_novas} ${dados.curso_novas === 1 ? "inscrição nova" : "inscrições novas"}` : "Turmas, inscrições e certificadas"}
-          extra={dados.curso_novas > 0 && <i className="atalho-curso-n">{dados.curso_novas}</i>}
-          aoTravado={setTravado}
-        />
-
-        <Link href="/admin/servicos" className="atalho-curso vidro">
-          <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="brilho" tamanho={32} /></span>
-          <span className="atalho-curso-texto">
-            <strong>Serviços e valores</strong>
-            <small>Editar preços, ocultar e criar serviços</small>
-          </span>
-        </Link>
-
-        <Link href="/admin/equipe" className="atalho-curso vidro">
-          <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="flor" tamanho={32} /></span>
-          <span className="atalho-curso-texto">
-            <strong>Equipe</strong>
-            <small>
-              {ativas.length} de {dados.limite_equipe} {dados.limite_equipe === 1 ? "profissional" : "profissionais"} no seu plano
-            </small>
-          </span>
-        </Link>
+        <section className="gerenciar" aria-labelledby="ger-titulo">
+          <h2 id="ger-titulo" className="gerenciar-titulo">Gerenciar</h2>
+          <div className="gerenciar-grade">
+            {[
+              { href: "/admin/salao", titulo: "Meu salão", sub: "Fotos, cores, Pix", arte: "flor" },
+              { href: "/admin/servicos", titulo: "Serviços", sub: "Preços e ofertas", arte: "brilho" },
+              { href: "/admin/equipe", titulo: "Equipe", sub: `${ativas.length} de ${dados.limite_equipe}`, arte: "manicure" },
+              { href: "/admin/promocoes", titulo: "Promoções", sub: "Com data", arte: "batom", recurso: "promocoes", liberado: temRecurso(salao, "promocoes") },
+              { href: "/admin/curso", titulo: "Curso e Rede", sub: dados.curso_novas ? `${dados.curso_novas} ${dados.curso_novas === 1 ? "nova" : "novas"}` : "Turmas", arte: "curso", recurso: "curso", liberado: temRecurso(salao, "curso") || temRecurso(salao, "rede"), n: dados.curso_novas },
+              { href: "/admin/plano", titulo: "Meu plano", sub: NOME_PLANO[salao.plano] || "", arte: "gel" },
+            ].map((g) => {
+              const travado = g.liberado === false;
+              const corpo = (
+                <>
+                  <span className="ger-arte" aria-hidden="true"><IlustracaoServico tipo={g.arte} tamanho={24} /></span>
+                  <span className="ger-texto">
+                    <strong>{g.titulo}</strong>
+                    <small>{travado ? `Plano ${NOME_PLANO[RECURSOS[g.recurso]?.plano] || ""}` : g.sub}</small>
+                  </span>
+                  {travado ? <span className="ger-cadeado"><IconeCadeado width="14" height="14" /></span> : g.n > 0 && <i className="ger-n">{g.n}</i>}
+                </>
+              );
+              return travado ? (
+                <button key={g.href} type="button" className="ger-item ger-travado" onClick={() => setTravado(g.recurso)} aria-label={`${g.titulo}: disponível no plano ${NOME_PLANO[RECURSOS[g.recurso]?.plano] || ""}`}>
+                  {corpo}
+                </button>
+              ) : (
+                <Link key={g.href} href={g.href} className="ger-item">{corpo}</Link>
+              );
+            })}
+          </div>
+        </section>
 
         <nav className="segmento" aria-label="Seções">
           {[
