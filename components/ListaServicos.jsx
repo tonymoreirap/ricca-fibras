@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { salao, linkAgendar, mensagemServico } from "../content/salao";
+import { precoServico, linhaServico } from "../lib/servicos";
 import Link from "next/link";
 import { IconeSeta, IconeConversa, IconeCalendario, IlustracaoServico } from "./Icones";
 
-const [assinatura, ...outros] = salao.servicos;
-
-export default function ListaServicos() {
+export default function ListaServicos({ servicos = [] }) {
   const [aberto, setAberto] = useState(null);
+  const assinatura = servicos.find((s) => s.destaque);
+  const outros = servicos.filter((s) => s !== assinatura);
 
   useEffect(() => {
     if (!aberto) return;
@@ -21,40 +22,42 @@ export default function ListaServicos() {
     };
   }, [aberto]);
 
+  if (!servicos.length) return <p className="bloco-vazio">Serviços em atualização. Fale com a gente pelo WhatsApp.</p>;
+
   return (
     <>
+      {assinatura && (
       <button type="button" className="assinatura vidro" onClick={() => setAberto(assinatura)}>
         <span className="assinatura-arte" aria-hidden="true">
           <span className="assinatura-halo" />
           <IlustracaoServico tipo={assinatura.icone} tamanho={112} />
         </span>
         <span className="assinatura-texto">
-          <span className="selo">Assinatura da casa</span>
+          {assinatura.selo && <span className="selo">{assinatura.selo}</span>}
           <span className="assinatura-nome">{assinatura.nome}</span>
-          <span className="assinatura-desc">{assinatura.descricao}</span>
+          {assinatura.descricao && <span className="assinatura-desc">{assinatura.descricao}</span>}
           <span className="assinatura-rodape">
-            <span className="chip">Manutenção a cada {assinatura.manutencaoDias} dias</span>
+            <span className="chip">{linhaServico(assinatura) || precoServico(assinatura.valor)}</span>
             <span className="assinatura-ver">
               Ver detalhes <IconeSeta />
             </span>
           </span>
         </span>
       </button>
+      )}
 
       <ul className="servicos-lista">
         {outros.map((s, i) => (
-          <li key={s.nome} style={{ "--i": i }}>
+          <li key={s.codigo} style={{ "--i": i }}>
             <button type="button" className="servico vidro" onClick={() => setAberto(s)}>
               <span className="servico-icone">
                 <IlustracaoServico tipo={s.icone} tamanho={38} />
               </span>
               <span className="servico-texto">
                 <span className="servico-nome">{s.nome}</span>
-                <span className="servico-sub">
-                  {s.manutencaoDias ? `Manutenção a cada ${s.manutencaoDias} dias` : "Cuidado completo"}
-                </span>
+                {linhaServico(s) && <span className="servico-sub">{linhaServico(s)}</span>}
               </span>
-              <span className="servico-preco">{s.preco || "Consulte"}</span>
+              <span className="servico-preco">{precoServico(s.valor)}</span>
               <IconeSeta />
             </button>
           </li>
@@ -76,21 +79,21 @@ export default function ListaServicos() {
               <IlustracaoServico tipo={aberto.icone} tamanho={96} />
             </div>
             <h2 id="folha-titulo">{aberto.nome}</h2>
-            <p>{aberto.descricao}</p>
+            {aberto.descricao && <p>{aberto.descricao}</p>}
             <dl className="folha-dados">
               <div>
                 <dt>Valor</dt>
-                <dd>{aberto.preco || "Consulte"}</dd>
+                <dd>{precoServico(aberto.valor)}</dd>
               </div>
-              {aberto.manutencaoDias && (
+              {aberto.ciclo_dias && (
                 <div>
                   <dt>Manutenção</dt>
-                  <dd>a cada {aberto.manutencaoDias} dias</dd>
+                  <dd>a cada {aberto.ciclo_dias} dias</dd>
                 </div>
               )}
             </dl>
-            {aberto.agendaOnline ? (
-              <Link className="botao-ouro" href={`/agendar?servico=${aberto.agendaOnline}`}>
+            {aberto.agenda_online ? (
+              <Link className="botao-ouro" href={`/agendar?servico=${aberto.codigo}`}>
                 <IconeCalendario stroke="currentColor" />
                 Ver horários e agendar
               </Link>
@@ -102,7 +105,7 @@ export default function ListaServicos() {
                 rel="noopener"
               >
                 <IconeConversa stroke="currentColor" />
-                Agendar com a Luana
+                Agendar com a {salao.contato}
               </a>
             )}
             <button type="button" className="folha-fechar" onClick={() => setAberto(null)}>

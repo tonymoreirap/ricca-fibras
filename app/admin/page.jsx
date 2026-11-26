@@ -486,6 +486,14 @@ export default function Painel() {
           {dados.curso_novas > 0 && <i className="atalho-curso-n">{dados.curso_novas}</i>}
         </Link>
 
+        <Link href="/admin/servicos" className="atalho-curso vidro">
+          <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="brilho" tamanho={32} /></span>
+          <span className="atalho-curso-texto">
+            <strong>Serviços e valores</strong>
+            <small>Editar preços, ocultar e criar serviços</small>
+          </span>
+        </Link>
+
         <nav className="segmento" aria-label="Seções">
           {[
             ["agenda", "Agenda", 0],

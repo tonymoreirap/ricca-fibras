@@ -14,12 +14,16 @@ import {
   IlustracaoServico,
 } from "../../components/Icones";
 import { salao, linkAgendar } from "../../content/salao";
+import { carregarCatalogo } from "../../lib/servicos";
 
 export const metadata = { title: "Serviços e valores — Rica Fibras" };
+// a página se atualiza sozinha com o que a dona edita no painel
+export const revalidate = 30;
 
 const ext = { target: "_blank", rel: "noopener" };
 
-export default function Visitante() {
+export default async function Visitante() {
+  const servicos = await carregarCatalogo();
   return (
     <div className="app app-visitante">
       <BarraTopo
@@ -80,7 +84,7 @@ export default function Visitante() {
             <h2>Serviços e valores</h2>
             <span className="bloco-fio" aria-hidden="true" />
           </div>
-          <ListaServicos />
+          <ListaServicos servicos={servicos} />
         </section>
 
         <section id="curso" className="bloco">

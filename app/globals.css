@@ -1297,3 +1297,45 @@ button.kpi { cursor: pointer; }
 .conf-info strong { color: var(--champanhe); font-weight: 500; }
 .conf-conferir { margin-top: 0.75rem; min-height: 3rem; }
 .conf-dica { margin: 0.4rem 0 0.75rem; text-align: center; font-size: 0.78rem; color: var(--apagado); }
+
+/* ---------- serviços e valores (painel) ---------- */
+.sv-intro { margin-bottom: 0.4rem; color: var(--claro-suave); font-size: 0.92rem; }
+.sv-lista { list-style: none; padding: 0; display: grid; gap: 0.6rem; margin-top: 0.8rem; }
+.sv-item { padding: 0.35rem 0.35rem 0.75rem; }
+.sv-oculto { opacity: 0.62; }
+.sv-linha { display: flex; align-items: center; gap: 0.8rem; width: 100%; padding: 0.6rem 0.65rem; border: none; background: none; text-align: left; cursor: pointer; }
+.sv-texto { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.sv-texto strong { font-weight: 500; }
+.sv-texto small { color: var(--claro-suave); font-size: 0.84rem; }
+.sv-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.35rem; }
+.sv-chips .chip { font-size: 0.7rem; padding: 0.15rem 0.55rem; }
+.sv-acoes { display: flex; gap: 0.4rem; padding: 0 0.65rem; }
+.sv-acoes .acao { flex: 1; min-height: 2.5rem; font-size: 0.86rem; }
+.sv-seta { width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--fio); background: none; color: var(--ouro-claro); font-size: 1.05rem; cursor: pointer; }
+.sv-seta:disabled { opacity: 0.3; }
+.sv-previa { margin: 0.25rem 0 0.5rem; padding: 0.7rem; border-radius: 1.1rem; border: 1px dashed var(--fio-forte); }
+.sv-previa-rotulo { display: block; margin-bottom: 0.45rem; font-size: 0.75rem; color: var(--apagado); }
+.sv-previa .servico { pointer-events: none; }
+.sv-icones { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; }
+.sv-icones button { display: grid; place-items: center; aspect-ratio: 1; border-radius: 0.9rem; border: 1px solid var(--fio); background: rgb(255 236 210 / 0.03); cursor: pointer; }
+.sv-icones button[aria-checked="true"] { border-color: var(--ouro); background: rgb(210 170 94 / 0.14); box-shadow: 0 0 0 2px rgb(210 170 94 / 0.35); }
+.sv-chaves { display: grid; gap: 0.5rem; margin: 1rem 0; }
+.interruptor { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.8rem 0.9rem; border-radius: 1rem; background: rgb(255 236 210 / 0.04); border: 1px solid var(--fio); cursor: pointer; }
+.interruptor span { display: flex; flex-direction: column; }
+.interruptor strong { font-weight: 500; }
+.interruptor small { color: var(--claro-suave); font-size: 0.8rem; }
+.interruptor input { position: absolute; opacity: 0; pointer-events: none; }
+.interruptor i { flex: none; position: relative; width: 2.9rem; height: 1.7rem; border-radius: 999px; background: rgb(245 236 225 / 0.15); transition: background 0.2s; }
+.interruptor i::after { content: ""; position: absolute; top: 0.2rem; left: 0.2rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--champanhe); transition: transform 0.2s; }
+.interruptor input:checked + i { background: var(--folha-ouro); }
+.interruptor input:checked + i::after { transform: translateX(1.2rem); background: #2a180c; }
+.interruptor:focus-within { box-shadow: 0 0 0 2px var(--ouro); }
+.sv-agenda { display: grid; gap: 0.45rem; padding: 0.2rem 0.2rem 0.4rem; }
+.sv-agenda .ordenar { flex-wrap: wrap; margin-top: 0; }
+.sv-nota { font-size: 0.82rem; color: var(--claro-suave); }
+.sv-excluir { width: 100%; margin-top: 0.6rem; }
+@media (prefers-reduced-motion: reduce) { .interruptor i, .interruptor i::after { transition: none; } }
+.sv-editor { overflow-x: hidden; }
+.sv-editor .form input, .sv-editor .form textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+.duas > div { min-width: 0; }
+.sv-icones button { min-width: 0; }

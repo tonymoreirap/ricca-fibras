@@ -212,7 +212,58 @@ export function IlustracaoServico({ tipo, tamanho = 48 }) {
           <circle cx="44" cy="31" r="2" fill="url(#g-rose-48)" />
         </svg>
       );
+    case "cilios":
+      return (
+        <svg {...t}>
+          <path d="M6 26c5.5 6.5 11.5 9.5 18 9.5S36.5 32.5 42 26" {...contorno} />
+          <path d="M6 26c5.5-6 11.5-9 18-9s12.5 3 18 9" stroke="url(#g-rose-48)" strokeWidth="1.6" fill="none" />
+          <circle cx="24" cy="26" r="5.2" fill="url(#g-rose-48)" {...contorno} />
+          <circle cx="22.5" cy="24.6" r="1.2" fill="#fff" fillOpacity="0.8" />
+          <path d="M9 22.5 6 18M13.5 19.5l-2-4.8M18.5 17.6l-1-5.2M24 17v-5.4M29.5 17.6l1-5.2M34.5 19.5l2-4.8M39 22.5l3-4.5" stroke="url(#g-ouro-48)" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      );
+    case "tesoura":
+      return (
+        <svg {...t}>
+          <circle cx="13" cy="35" r="6" {...contorno} />
+          <circle cx="13" cy="13" r="6" {...contorno} />
+          <path d="M17.5 31 42 9M17.5 17 42 39" stroke="url(#g-ouro-48)" strokeWidth="2.6" strokeLinecap="round" />
+          <circle cx="27" cy="24" r="1.8" fill="url(#g-rose-48)" />
+        </svg>
+      );
+    case "batom":
+      return (
+        <svg {...t}>
+          <path d="M19 6.5 29 4v13H19Z" fill="url(#g-rose-48)" {...contorno} />
+          <rect x="16.5" y="17" width="15" height="6" rx="1.5" fill="url(#g-ouro-48)" />
+          <rect x="14.5" y="23" width="19" height="21" rx="3" {...contorno} />
+          <path d="M18.5 27v12" stroke="#fff" strokeOpacity="0.5" strokeWidth="2" strokeLinecap="round" />
+          <path d="M40 10l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9Z" fill="url(#g-ouro-48)" />
+        </svg>
+      );
+    case "flor":
+      return (
+        <svg {...t}>
+          <path d="M24 8c4.5 4.5 5.5 11.5 0 18-5.5-6.5-4.5-13.5 0-18Z" fill="url(#g-rose-48)" {...contorno} />
+          <path d="M8 18c6.4-.4 12 3.5 16 10.5-8 1.8-14-2.4-16-10.5ZM40 18c-6.4-.4-12 3.5-16 10.5 8 1.8 14-2.4 16-10.5Z" fill="url(#g-rose-48)" fillOpacity="0.75" {...contorno} />
+          <path d="M6 34c7 5 29 5 36 0" {...contorno} />
+          <path d="M11 40c5 2.6 21 2.6 26 0" stroke="url(#g-ouro-48)" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+        </svg>
+      );
+    case "brilho":
+      return (
+        <svg {...t}>
+          <path d="M22 6l3.2 10.3L35.5 19.5l-10.3 3.2L22 33l-3.2-10.3L8.5 19.5l10.3-3.2Z" fill="url(#g-ouro-48)" />
+          <path d="M37 29l1.6 5 5 1.6-5 1.6-1.6 5-1.6-5-5-1.6 5-1.6Z" fill="url(#g-rose-48)" />
+          <path d="M11 33.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9Z" fill="url(#g-ouro-48)" />
+        </svg>
+      );
     default:
       return null;
   }
 }
+
+export const ICONES_SERVICO = [
+  ["fibra", "Fibra"], ["manutencao", "Manutenção"], ["gel", "Gel"], ["manicure", "Manicure"], ["sobrancelha", "Sobrancelha"],
+  ["cilios", "Cílios"], ["tesoura", "Cabelo"], ["batom", "Maquiagem"], ["flor", "Spa"], ["brilho", "Outro"],
+];
