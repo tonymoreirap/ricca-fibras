@@ -77,8 +77,11 @@ export default function Agendamento() {
 
   // serviços com preço vindo do servidor
   useEffect(() => {
-    rpc("servicos_agendaveis")
-      .then((lista) => {
+    // ícones vêm do catálogo (o mesmo que a dona edita em Serviços e valores)
+    Promise.all([rpc("servicos_agendaveis"), rpc("servicos_catalogo").catch(() => [])])
+      .then(([base, catalogo]) => {
+        const icones = Object.fromEntries((catalogo || []).map((c) => [c.codigo, c.icone]));
+        const lista = base.map((x) => ({ ...x, icone: x.icone || icones[x.codigo] }));
         setServicos(lista);
         const pedido = lista.find((s) => s.codigo === params.get("servico"));
         if (pedido) {
