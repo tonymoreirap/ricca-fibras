@@ -10,6 +10,7 @@ import { mascaraCelular } from "../../lib/formato";
 import { lerSessao, salvarSessao } from "../../lib/sessao";
 import { useSalao, LogoDe } from "../../components/Empresa";
 import BotaoGoogle from "../../components/BotaoGoogle";
+import Assinatura from "../../components/Assinatura";
 import { aContato, AContato, linkWhats } from "../../lib/empresa";
 
 function Formulario() {
@@ -156,6 +157,7 @@ function Formulario() {
       <p className="tela-equipe">
         <Link href="/admin/entrar?primeiro=1">Equipe: recebeu um código de primeiro acesso?</Link>
       </p>
+      <Assinatura />
     </main>
   );
 }

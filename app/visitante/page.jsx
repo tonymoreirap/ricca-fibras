@@ -17,6 +17,7 @@ import { linkAgendar } from "../../lib/empresa";
 import { carregarCatalogo } from "../../lib/servicos";
 import { empresaDoPedido, hostDoPedido, rpcDoPedido } from "../../lib/empresaServidor";
 import Promocoes from "../../components/Promocoes";
+import Assinatura from "../../components/Assinatura";
 import { LogoDe } from "../../components/Empresa";
 
 export async function generateMetadata() {
@@ -161,6 +162,7 @@ export default async function Visitante() {
           <p>{salao.nome}</p>
           {salao.instagram && <span>@{salao.instagram}</span>}
           {salao.endereco && <span>{salao.endereco}{salao.bairroCidade ? `, ${salao.bairroCidade}` : ""}</span>}
+          <Assinatura />
         </footer>
       </main>
 

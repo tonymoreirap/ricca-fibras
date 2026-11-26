@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
 import { useSalao } from "../../components/Empresa";
+import { Atalho, FolhaPlano } from "../../components/admin/Cadeado";
+import CartaoPlano from "../../components/admin/CartaoPlano";
+import { temRecurso } from "../../lib/planos";
 import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from "../../lib/formato";
 import { STATUS, nivelDe, pagamento, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
@@ -259,6 +262,7 @@ export default function Painel() {
   const [ordem, setOrdem] = useState("frequentes");
   const [limpar, setLimpar] = useState(false);
   const [verAlertas, setVerAlertas] = useState(false);
+  const [travado, setTravado] = useState(null);
   const tema = useTema();
   const alertas = useAlertas(dados);
   const resumoDia = useResumoDoDia(alertas.lista, Boolean(dados));
@@ -482,6 +486,8 @@ export default function Painel() {
           </div>
         </section>
 
+        <CartaoPlano token={sessao.token} />
+
         <Link href="/admin/salao" className="atalho-curso vidro">
           <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="flor" tamanho={32} /></span>
           <span className="atalho-curso-texto">
@@ -490,15 +496,15 @@ export default function Painel() {
           </span>
         </Link>
 
-        {salao.modulos.promocoes && (
-          <Link href="/admin/promocoes" className="atalho-curso vidro">
-            <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="batom" tamanho={32} /></span>
-            <span className="atalho-curso-texto">
-              <strong>Promoções</strong>
-              <small>Ofertas com data para entrar e sair do ar</small>
-            </span>
-          </Link>
-        )}
+        <Atalho
+          href="/admin/promocoes"
+          liberado={temRecurso(salao, "promocoes")}
+          recurso="promocoes"
+          arte={<IlustracaoServico tipo="batom" tamanho={32} />}
+          titulo="Promoções"
+          texto="Ofertas com data para entrar e sair do ar"
+          aoTravado={setTravado}
+        />
 
         {eu.papel === "master" && (
           <Link href="/master" className="atalho-curso vidro">
@@ -510,14 +516,16 @@ export default function Painel() {
           </Link>
         )}
 
-        {(salao.modulos.curso || salao.modulos.rede) && <Link href="/admin/curso" className="atalho-curso vidro">
-          <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="curso" tamanho={34} /></span>
-          <span className="atalho-curso-texto">
-            <strong>Curso e Rede</strong>
-            <small>{dados.curso_novas ? `${dados.curso_novas} ${dados.curso_novas === 1 ? "inscrição nova" : "inscrições novas"}` : "Turmas, inscrições e certificadas"}</small>
-          </span>
-          {dados.curso_novas > 0 && <i className="atalho-curso-n">{dados.curso_novas}</i>}
-        </Link>}
+        <Atalho
+          href="/admin/curso"
+          liberado={temRecurso(salao, "curso") || temRecurso(salao, "rede")}
+          recurso="curso"
+          arte={<IlustracaoServico tipo="curso" tamanho={34} />}
+          titulo="Curso e Rede"
+          texto={dados.curso_novas ? `${dados.curso_novas} ${dados.curso_novas === 1 ? "inscrição nova" : "inscrições novas"}` : "Turmas, inscrições e certificadas"}
+          extra={dados.curso_novas > 0 && <i className="atalho-curso-n">{dados.curso_novas}</i>}
+          aoTravado={setTravado}
+        />
 
         <Link href="/admin/servicos" className="atalho-curso vidro">
           <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="brilho" tamanho={32} /></span>
@@ -731,8 +739,18 @@ export default function Painel() {
         />
       )}
 
-      {verAlertas && <FolhaAlertas lista={alertas.lista} token={sessao.token} aoFechar={() => setVerAlertas(false)} aoIr={irPara} />}
-      {resumoDia.aberto && !verAlertas && (
+      {verAlertas && (
+        <FolhaAlertas
+          lista={alertas.lista}
+          token={sessao.token}
+          push={temRecurso(salao, "push")}
+          aoTravado={(r) => { setVerAlertas(false); setTravado(r); }}
+          aoFechar={() => setVerAlertas(false)}
+          aoIr={irPara}
+        />
+      )}
+      {travado && <FolhaPlano recurso={travado} aoFechar={() => setTravado(null)} />}
+      {resumoDia.aberto && !verAlertas && temRecurso(salao, "resumo") && (
         <ModalResumo lista={alertas.lista} nome={primeiroNome(eu.nome)} aoFechar={resumoDia.fechar} aoVerTudo={abrirAlertas} />
       )}
 

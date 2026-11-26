@@ -1524,3 +1524,86 @@ body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--our
 .privacidade h2 { margin-top: 1.6rem; font-family: var(--display); font-weight: 400; font-size: 1.25rem; color: var(--ouro-claro); }
 .privacidade p, .privacidade li { margin-top: 0.6rem; color: var(--claro-suave); line-height: 1.6; }
 .privacidade ul { padding-left: 1.2rem; }
+.sem-salao .botao-ouro { justify-self: center; margin-top: 0.6rem; padding: 0 1.6rem; }
+.sem-salao-dona { margin-top: 1.5rem; font-size: 0.82rem; color: var(--apagado); }
+
+/* ---------- Planos e cadeados ---------- */
+.atalho-travado { width: 100%; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; opacity: 0.82; }
+.atalho-travado .atalho-curso-texto small { color: var(--ouro-claro); }
+.atalho-cadeado { flex: none; display: grid; place-items: center; width: 2.2rem; height: 2.2rem; margin-left: auto; border-radius: 50%; color: var(--ouro-claro); background: rgb(var(--ouro-rgb) / 0.12); }
+.folha-plano { text-align: center; }
+.fp-cadeado { display: grid; place-items: center; width: 3.6rem; height: 3.6rem; margin: 0.4rem auto 0.6rem; border-radius: 50%; color: var(--ouro-claro); background: rgb(var(--ouro-rgb) / 0.14); }
+.fp-texto { margin-top: 0.4rem; color: var(--claro-suave); }
+.fp-plano { display: grid; gap: 0.15rem; margin: 1.1rem 0; padding: 0.9rem; border-radius: 1rem; border: 1px dashed var(--fio-forte); }
+.fp-plano span { font-size: 0.82rem; color: var(--apagado); }
+.fp-plano strong { font-family: var(--display); font-weight: 400; font-size: 1.6rem; color: var(--ouro-claro); }
+.fp-plano small { color: var(--claro-suave); }
+.folha-plano .botao-linha { width: 100%; margin-top: 0.6rem; }
+.avisos-travado { display: grid; gap: 0.3rem; width: 100%; border: 1px dashed var(--fio-forte); background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.ms-cor-travada { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; width: 100%; border: 0; border-top: 1px solid var(--fio); background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.ms-cor-travada span { display: grid; gap: 0.15rem; }
+.ms-cor-travada small { font-size: 0.82rem; color: var(--ouro-claro); }
+.ms-cor-travada svg { color: var(--ouro-claro); flex: none; }
+
+.cartao-plano { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 1rem; padding: 0.85rem 1rem; border-radius: 1.1rem; text-decoration: none; }
+.cartao-plano > span:first-child { display: grid; }
+.cartao-plano small { font-size: 0.75rem; color: var(--apagado); }
+.cartao-plano strong { font-family: var(--display); font-weight: 400; font-size: 1.25rem; color: var(--ouro-claro); }
+.cartao-plano-sit { font-size: 0.82rem; color: var(--claro-suave); text-align: right; }
+.cartao-plano-alerta { box-shadow: inset 0 0 0 1px rgb(var(--rose-rgb) / 0.6); }
+.cartao-plano-alerta .cartao-plano-sit { color: var(--rose-claro); }
+
+.plano-atual { display: grid; gap: 0.25rem; padding: 1.1rem; border-radius: 1.25rem; }
+.plano-atual small { font-size: 0.8rem; color: var(--apagado); }
+.plano-atual strong { font-family: var(--display); font-weight: 400; font-size: 2rem; color: var(--ouro-claro); }
+.plano-atual p { color: var(--claro-suave); }
+.plano-alerta { box-shadow: inset 0 0 0 1px rgb(var(--rose-rgb) / 0.6); }
+.plano-alerta p { color: var(--rose-claro); }
+.plano-nota { font-size: 0.85rem; }
+.plano-atual .botao-ouro { margin-top: 0.7rem; }
+.planos-grade { display: grid; gap: 0.9rem; margin-top: 1.2rem; }
+.plano-cartao { position: relative; display: grid; gap: 0.35rem; padding: 1.2rem 1.1rem; border-radius: 1.3rem; }
+.plano-meu { box-shadow: inset 0 0 0 1.5px var(--ouro); }
+.plano-selo { position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; color: var(--tinta); background: var(--folha-ouro); }
+.plano-cartao h2 { font-family: var(--display); font-weight: 400; font-size: 1.6rem; }
+.plano-desc { color: var(--claro-suave); font-size: 0.92rem; }
+.plano-preco { margin-top: 0.3rem; font-family: var(--display); font-size: 2rem; color: var(--ouro-claro); }
+.plano-preco small { margin-left: 0.2rem; font-family: var(--texto); font-size: 0.9rem; color: var(--apagado); }
+.plano-equipe { font-size: 0.88rem; color: var(--champanhe); }
+.plano-cartao ul { display: grid; gap: 0.45rem; margin: 0.6rem 0 0.4rem; padding: 0; list-style: none; }
+.plano-cartao li { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.9rem; }
+.plano-cartao li svg { flex: none; margin-top: 0.15rem; color: var(--ouro-claro); stroke: currentColor; }
+.plano-cartao li span { flex: none; width: 16px; text-align: center; color: var(--apagado); }
+.plano-nao { color: var(--apagado); }
+.plano-cartao .botao-ouro, .plano-cartao .botao-linha { margin-top: 0.5rem; }
+.plano-rodape { margin-top: 1.2rem; font-size: 0.85rem; color: var(--apagado); text-align: center; }
+
+/* ---------- Assinatura e página de planos ---------- */
+.assinatura-tons { display: block; margin-top: 1.6rem; font-size: 0.75rem; color: var(--apagado); text-align: center; text-decoration: none; }
+.assinatura-tons strong { font-weight: 500; color: var(--claro-suave); }
+.pl-topo { display: flex; align-items: center; justify-content: space-between; padding: calc(1rem + env(safe-area-inset-top)) var(--margem) 0.5rem; }
+.pl-marca { font-family: var(--display); font-size: 1.35rem; letter-spacing: 0.04em; color: var(--ouro-claro); }
+.pl-capa { display: grid; gap: 0.9rem; padding: 2rem 0 0.5rem; }
+.pl-capa h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2.1rem, 9vw, 2.8rem); line-height: 1.08; text-wrap: balance; }
+.pl-capa p { color: var(--claro-suave); }
+.pl-capa small { color: var(--apagado); text-align: center; }
+.pl-base { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+.pl-base li { display: flex; gap: 0.6rem; align-items: flex-start; color: var(--claro-suave); }
+.pl-base svg { flex: none; margin-top: 0.15rem; color: var(--ouro-claro); stroke: currentColor; }
+.pl-nome { font-family: var(--display); font-weight: 400; font-size: 1.6rem; }
+.pl-faq { display: grid; gap: 0.6rem; }
+.pl-faq details { padding: 0.9rem 1rem; border-radius: 1rem; }
+.pl-faq summary { cursor: pointer; font-weight: 500; }
+.pl-faq p { margin-top: 0.5rem; color: var(--claro-suave); }
+.pl-fim { display: grid; gap: 0.7rem; margin-top: 2.5rem; text-align: center; }
+.pl-fim h2 { font-family: var(--display); font-weight: 400; font-size: 1.5rem; }
+.pl-fim p { color: var(--claro-suave); }
+.emp-precos { margin-top: 1rem; padding: 0.9rem 1rem; border-radius: 1.2rem; }
+.emp-precos-topo { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; width: 100%; padding: 0; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.emp-precos-topo span:first-child { display: grid; gap: 0.15rem; }
+.emp-precos-topo small { font-size: 0.8rem; color: var(--apagado); }
+.emp-precos-topo > span:last-child { font-size: 1.4rem; color: var(--ouro-claro); }
+.emp-modulos { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.emp-modulos .chip { font-size: 0.72rem; padding: 0.2rem 0.6rem; }
+.emp-planos { flex-wrap: wrap; }
+.emp-pago { width: 100%; margin-top: 0.6rem; }

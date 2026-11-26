@@ -10,14 +10,11 @@ import MenuApp from "../../components/MenuApp";
 import Interruptor from "../../components/admin/Interruptor";
 import { LogoDe } from "../../components/Empresa";
 import { IconeMais } from "../../components/Icones";
+import { RECURSOS, NOME_PLANO, precoPlano } from "../../lib/planos";
 
-const MODULOS = [
-  ["agenda", "Agenda online", "Clientes marcam horário e pagam o sinal por Pix."],
-  ["curso", "Curso", "Página do curso com turmas e inscrições."],
-  ["rede", "Rede de profissionais", "Vitrine de certificadas e verificação de certificado."],
-  ["promocoes", "Promoções", "Ofertas com data para entrar e sair do ar, com preço no agendamento."],
-  ["natal", "Tema de Natal", "Enfeites de dezembro, que somem sozinhos em janeiro."],
-];
+const SITUACOES = [["teste", "Em teste"], ["ativa", "Ativa"], ["atrasada", "Atrasada"], ["suspensa", "Suspensa"]];
+const SIT_CHIP = { teste: "chip-ouro", ativa: "chip-ok", atrasada: "chip-alerta", suspensa: "chip-apagado" };
+const dataBr = (iso) => (iso ? String(iso).split("-").reverse().slice(0, 2).join("/") : "");
 
 const apelidoDe = (nome) =>
   nome.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 40);
@@ -32,19 +29,38 @@ function msgDona(r, dona) {
   ].join("\n\n");
 }
 
-function Folha({ inicial, token, aoFechar, aoSalvo }) {
+function Folha({ inicial, token, planos, aoFechar, aoSalvo }) {
   const novo = !inicial.id;
   const [f, setF] = useState({
     nome: "", slug: "", dominio: "", ativa: true, paleta: "cafe-ouro", dona_nome: "", dona_email: "",
-    modulos: { agenda: true, curso: false, rede: false, promocoes: false, natal: true },
+    modulos: { agenda: true, curso: true, rede: true, promocoes: true, natal: true },
+    plano: "essencial", situacao: "teste", teste_ate: "", vence_em: "", cortesias: [],
     ...inicial,
     dominio: inicial.dominio || "",
+    teste_ate: inicial.teste_ate || "",
+    vence_em: inicial.vence_em || "",
+    cortesias: inicial.cortesias || [],
   });
+  const recPlano = planos.find((p) => p.codigo === f.plano)?.recursos || [];
+  const extras = Object.keys(RECURSOS).filter((r) => r !== "agenda" && !recPlano.includes(r));
   const [mexeuSlug, setMexeuSlug] = useState(!novo);
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [pronto, setPronto] = useState(null);
   const muda = (k) => (v) => setF((x) => ({ ...x, [k]: v?.target ? v.target.value : v }));
+
+  async function registrarPagamento() {
+    setEnviando(true);
+    setErro("");
+    try {
+      const r = await rpc("master_empresa_plano", { p_token: token, p_id: f.id, p: { plano: f.plano, pago: true } });
+      if (!r.ok) throw new Error(r.erro);
+      aoSalvo(`Pagamento registrado. Vence em ${dataBr(r.vence_em)}.`);
+    } catch (e) {
+      setErro(e.message);
+      setEnviando(false);
+    }
+  }
 
   async function salvar() {
     setEnviando(true);
@@ -52,6 +68,13 @@ function Folha({ inicial, token, aoFechar, aoSalvo }) {
     try {
       const r = await rpc("master_empresa_salvar", { p_token: token, p: { ...f, id: f.id || "" } });
       if (!r.ok) throw new Error(r.erro);
+      const cort = f.cortesias.filter((c) => !recPlano.includes(c));
+      const plano = await rpc("master_empresa_plano", {
+        p_token: token,
+        p_id: novo ? r.id : f.id,
+        p: novo ? { plano: f.plano, cortesias: cort } : { plano: f.plano, situacao: f.situacao, teste_ate: f.teste_ate, vence_em: f.vence_em, cortesias: cort },
+      });
+      if (!plano.ok) throw new Error(plano.erro);
       if (novo) setPronto(r);
       else aoSalvo("Empresa atualizada.");
     } catch (e) {
@@ -133,12 +156,50 @@ function Folha({ inicial, token, aoFechar, aoSalvo }) {
           </>
         )}
 
-        <span className="cr-rotulo">O que aparece para esta empresa</span>
-        <div className="sv-chaves">
-          {MODULOS.map(([k, nome, texto]) => (
-            <Interruptor key={k} ligado={Boolean(f.modulos[k])} rotulo={nome} texto={texto}
-              aoMudar={(v) => setF((x) => ({ ...x, modulos: { ...x.modulos, [k]: v } }))} />
+        <span className="cr-rotulo">Plano</span>
+        <div className="ordenar emp-planos" role="radiogroup" aria-label="Plano">
+          {planos.map((p) => (
+            <button key={p.codigo} type="button" role="radio" aria-checked={f.plano === p.codigo} aria-pressed={f.plano === p.codigo} onClick={() => muda("plano")(p.codigo)}>
+              {p.nome} · {precoPlano(p.preco)}
+            </button>
           ))}
+        </div>
+        {novo && <small className="ms-dica">Começa com 30 dias de teste grátis com os recursos do Profissional.</small>}
+
+        {!novo && (
+          <div className="form form-compacto">
+            <label htmlFor="emp-sit">Situação</label>
+            <select id="emp-sit" value={f.situacao} onChange={muda("situacao")}>
+              {SITUACOES.map(([k, t]) => <option key={k} value={k}>{t}</option>)}
+            </select>
+            <div className="duas">
+              <div>
+                <label htmlFor="emp-teste">Teste até</label>
+                <input id="emp-teste" type="date" value={f.teste_ate} onChange={muda("teste_ate")} />
+              </div>
+              <div>
+                <label htmlFor="emp-vence">Vence em</label>
+                <input id="emp-vence" type="date" value={f.vence_em} onChange={muda("vence_em")} />
+              </div>
+            </div>
+            <small className="ms-dica">Sem data de vencimento, o salão não sai do ar sozinho (cortesia).</small>
+          </div>
+        )}
+
+        {extras.length > 0 && (
+          <>
+            <span className="cr-rotulo">Cortesias (além do plano)</span>
+            <div className="sv-chaves">
+              {extras.map((r) => (
+                <Interruptor key={r} ligado={f.cortesias.includes(r)} rotulo={RECURSOS[r].nome}
+                  texto={`Normalmente no plano ${NOME_PLANO[RECURSOS[r].plano]}`}
+                  aoMudar={(v) => setF((x) => ({ ...x, cortesias: v ? [...x.cortesias, r] : x.cortesias.filter((c) => c !== r) }))} />
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="sv-chaves">
           {!novo && (
             <Interruptor ligado={f.ativa} aoMudar={muda("ativa")} rotulo="App no ar"
               texto={f.ativa ? "Clientes acessam normalmente." : "O app mostra que está fora do ar."} />
@@ -149,6 +210,11 @@ function Folha({ inicial, token, aoFechar, aoSalvo }) {
         <button type="button" className="botao-ouro" disabled={enviando || f.nome.trim().length < 2 || !f.slug} onClick={salvar}>
           {enviando ? "Salvando…" : novo ? "Criar empresa" : "Salvar"}
         </button>
+        {!novo && (
+          <button type="button" className="botao-linha emp-pago" disabled={enviando} onClick={registrarPagamento}>
+            Registrar pagamento de 1 mês ({NOME_PLANO[f.plano]})
+          </button>
+        )}
         <button type="button" className="folha-fechar" onClick={aoFechar}>Fechar</button>
       </div>
     </div>
@@ -173,7 +239,11 @@ function Empresa({ e, aoEditar, aoNovoAcesso }) {
         <div><dt>Serviços</dt><dd>{e.servicos}</dd></div>
       </dl>
       <p className="emp-modulos">
-        {MODULOS.filter(([k]) => e.modulos?.[k]).map(([, nome]) => nome).join(" · ") || "Nenhum módulo ligado"}
+        <span className="chip chip-ouro">{NOME_PLANO[e.plano] || e.plano}</span>
+        <span className={`chip ${SIT_CHIP[e.situacao] || ""}`}>
+          {e.situacao === "teste" ? `Teste até ${dataBr(e.teste_ate)}` : e.situacao === "ativa" ? (e.vence_em ? `Ativa até ${dataBr(e.vence_em)}` : "Ativa") : e.situacao === "atrasada" ? `Atrasada desde ${dataBr(e.vence_em)}` : "Suspensa"}
+        </span>
+        {e.cortesias?.length > 0 && <span className="chip">+{e.cortesias.length} cortesia{e.cortesias.length > 1 ? "s" : ""}</span>}
       </p>
       {dona && (
         <p className="emp-dona">
@@ -188,8 +258,63 @@ function Empresa({ e, aoEditar, aoNovoAcesso }) {
   );
 }
 
+// Preços dos planos e WhatsApp de vendas
+function PlanosPrecos({ token, dados, aoSalvo }) {
+  const [aberto, setAberto] = useState(false);
+  const [precos, setPrecos] = useState({});
+  const [whats, setWhats] = useState("");
+  const [erro, setErro] = useState("");
+  useEffect(() => {
+    if (!dados) return;
+    setPrecos(Object.fromEntries(dados.planos.map((p) => [p.codigo, String(p.preco).replace(".", ",")])));
+    setWhats(dados.whatsapp || "");
+  }, [dados]);
+  async function salvar() {
+    setErro("");
+    try {
+      const r = await rpc("master_planos_salvar", {
+        p_token: token,
+        p: { planos: Object.entries(precos).map(([codigo, preco]) => ({ codigo, preco: preco || "0" })), whatsapp: whats },
+      });
+      if (!r.ok) throw new Error(r.erro);
+      aoSalvo(r);
+      setAberto(false);
+    } catch (e) {
+      setErro(e.message);
+    }
+  }
+  if (!dados) return null;
+  return (
+    <section className="emp-precos vidro">
+      <button type="button" className="emp-precos-topo" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
+        <span>
+          <strong>Planos e preços</strong>
+          <small>{dados.planos.map((p) => `${p.nome} ${precoPlano(p.preco)}`).join(" · ")}</small>
+        </span>
+        <span aria-hidden="true">{aberto ? "−" : "+"}</span>
+      </button>
+      {aberto && (
+        <div className="form form-compacto">
+          {dados.planos.map((p) => (
+            <div key={p.codigo}>
+              <label htmlFor={`pp-${p.codigo}`}>{p.nome} (R$ por mês)</label>
+              <input id={`pp-${p.codigo}`} inputMode="decimal" value={precos[p.codigo] || ""} onChange={(e) => setPrecos((x) => ({ ...x, [p.codigo]: e.target.value.replace(/[^\d,.]/g, "") }))} />
+            </div>
+          ))}
+          <label htmlFor="pp-whats">WhatsApp de vendas</label>
+          <input id="pp-whats" inputMode="tel" value={whats} onChange={(e) => setWhats(e.target.value)} placeholder="(85) 99999-9999" />
+          <small className="ms-dica">Para onde vão os botões “Quero este plano” de todos os salões e da página de planos.</small>
+          {erro && <p className="erro">{erro}</p>}
+          <button type="button" className="botao-ouro" onClick={salvar}>Salvar preços</button>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function Master() {
   const router = useRouter();
+  const [planos, setPlanos] = useState(null);
   const [token, setToken] = useState(null);
   const [lista, setLista] = useState(null);
   const [editar, setEditar] = useState(null);
@@ -212,6 +337,7 @@ export default function Master() {
     if (s.papel && s.papel !== "master") return router.replace("/admin");
     setToken(s.token);
     carregar(s.token);
+    rpc("planos_publicos").then(setPlanos).catch(() => {});
   }, [router, carregar]);
 
   useEffect(() => {
@@ -243,8 +369,9 @@ export default function Master() {
 
       <main className="tela">
         <p className="sv-intro">
-          Cada empresa tem o próprio endereço, clientes, agenda e cores. Ligue só os módulos que ela contratou.
+          Cada empresa tem o próprio endereço, clientes, agenda e cores. O plano define o que ela usa; cortesias liberam extras.
         </p>
+        <PlanosPrecos token={token} dados={planos} aoSalvo={(r) => { setPlanos(r); setAviso("Preços salvos."); }} />
         <button type="button" className="botao-linha nova-cliente" onClick={() => setEditar({})}>
           <IconeMais width="20" height="20" /> Nova empresa
         </button>
@@ -265,6 +392,7 @@ export default function Master() {
       {editar && (
         <Folha
           token={token}
+          planos={planos?.planos || []}
           inicial={editar}
           aoFechar={() => setEditar(null)}
           aoSalvo={(msg) => {

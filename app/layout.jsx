@@ -8,6 +8,7 @@ import RegistrarSW from "../components/RegistrarSW";
 import Gradientes from "../components/Gradientes";
 import TemaSazonal from "../components/TemaSazonal";
 import { EmpresaProvider } from "../components/Empresa";
+import Bloqueio from "../components/Bloqueio";
 import { empresaDoPedido, hostDoPedido } from "../lib/empresaServidor";
 import { cssPaleta, corDeFundo } from "../lib/paletas";
 
@@ -61,13 +62,11 @@ export default async function RootLayout({ children }) {
       <body className={s ? `marca-${s.slug}` : undefined}>
         {!s ? (
           <SemSalao titulo="Salão não encontrado" texto="Confira o endereço que você recebeu. Se o link estiver certo, fale com o salão." />
-        ) : !s.ativa ? (
-          <SemSalao titulo={s.nome} texto="Este app está temporariamente fora do ar. Fale com o salão pelo WhatsApp ou Instagram." />
         ) : (
           <EmpresaProvider salao={s}>
             <Gradientes />
             <TemaSazonal />
-            {children}
+            <Bloqueio>{children}</Bloqueio>
             <RegistrarSW />
           </EmpresaProvider>
         )}

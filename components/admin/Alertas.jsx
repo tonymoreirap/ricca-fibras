@@ -172,13 +172,20 @@ function ItemAlerta({ a, aoIr }) {
   );
 }
 
-export function FolhaAlertas({ lista, token, aoFechar, aoIr }) {
+export function FolhaAlertas({ lista, token, push = true, aoTravado, aoFechar, aoIr }) {
   return (
     <div className="folha-fundo" onClick={aoFechar}>
       <div className="folha folha-alta folha-alertas" role="dialog" aria-modal="true" aria-labelledby="alertas-titulo" onClick={(e) => e.stopPropagation()}>
         <span className="folha-alca" aria-hidden="true" />
         <h2 id="alertas-titulo" className="folha-titulo">Alertas</h2>
-        <AvisosCelular token={token} />
+        {push ? (
+          <AvisosCelular token={token} />
+        ) : (
+          <button type="button" className="avisos-cel avisos-travado" onClick={() => aoTravado?.("push")}>
+            <p><strong>Avisos no celular</strong> · plano Profissional</p>
+            <p>Receba reservas novas, Pix informado e lembretes da agenda mesmo com o app fechado. Toque para conhecer.</p>
+          </button>
+        )}
         {lista.length === 0 && <p className="bloco-vazio">Tudo em dia. Nenhum alerta agora.</p>}
         {GRUPOS.map(([g, t]) => {
           const itens = lista.filter((a) => a.grupo === g);

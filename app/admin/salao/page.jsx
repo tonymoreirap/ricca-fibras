@@ -8,7 +8,9 @@ import { lerSessao, limparSessao, sessaoExpirada } from "../../../lib/sessao";
 import { PALETAS, aplicarPaleta, variaveisPaleta, corValida } from "../../../lib/paletas";
 import { prepararImagem } from "../../../lib/imagem";
 import MenuApp from "../../../components/MenuApp";
-import { LogoDe } from "../../../components/Empresa";
+import { LogoDe, useSalao } from "../../../components/Empresa";
+import { FolhaPlano, IconeCadeado } from "../../../components/admin/Cadeado";
+import { temRecurso } from "../../../lib/planos";
 
 const DIAS = [
   [1, "Segunda"], [2, "Terça"], [3, "Quarta"], [4, "Quinta"], [5, "Sexta"], [6, "Sábado"], [0, "Domingo"],
@@ -102,7 +104,7 @@ function Foto({ tipo, atual, token, aoEnviar, nome }) {
   );
 }
 
-function Paletas({ paleta, cor, aoMudar }) {
+function Paletas({ paleta, cor, aoMudar, corLiberada, aoTravado }) {
   const livre = corValida(cor);
   return (
     <>
@@ -121,6 +123,15 @@ function Paletas({ paleta, cor, aoMudar }) {
           );
         })}
       </div>
+      {!corLiberada ? (
+        <button type="button" className="ms-cor ms-cor-travada" onClick={aoTravado}>
+          <span>
+            <strong>Cor principal da marca</strong>
+            <small>Use a cor exata da sua marca · plano Profissional</small>
+          </span>
+          <IconeCadeado width="20" height="20" />
+        </button>
+      ) : (
       <div className="ms-cor">
         <label htmlFor="ms-cor">
           <strong>Cor principal</strong>
@@ -133,6 +144,7 @@ function Paletas({ paleta, cor, aoMudar }) {
           </button>
         )}
       </div>
+      )}
     </>
   );
 }
@@ -175,6 +187,8 @@ function Horarios({ lista, aoMudar }) {
 }
 
 export default function MeuSalao() {
+  const salao = useSalao();
+  const [travado, setTravado] = useState(null);
   const router = useRouter();
   const [token, setToken] = useState(null);
   const [e, setE] = useState(null);
@@ -303,7 +317,7 @@ export default function MeuSalao() {
         </Bloco>
 
         <Bloco titulo="Cores do app" texto="Toque numa paleta para ver o app inteiro com ela. Só fica valendo depois de salvar.">
-          <Paletas paleta={e.paleta} cor={e.cor_principal} aoMudar={trocarCores} />
+          <Paletas paleta={e.paleta} cor={e.cor_principal} aoMudar={trocarCores} corLiberada={temRecurso(salao, "cor_livre")} aoTravado={() => setTravado("cor_livre")} />
         </Bloco>
 
         <Bloco titulo="Contato" texto="Para onde vão os botões de WhatsApp e Instagram do app.">
@@ -380,6 +394,7 @@ export default function MeuSalao() {
       )}
 
       <MenuApp quem={{ tipo: "admin" }} />
+      {travado && <FolhaPlano recurso={travado} aoFechar={() => setTravado(null)} />}
       {aviso && <div className="toast" role="status">{aviso}</div>}
     </div>
   );
