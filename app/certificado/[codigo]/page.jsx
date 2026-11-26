@@ -35,10 +35,12 @@ export default function Certificado() {
               <LogoDe salao={salao} tamanho={80} />
               <p className="cert-rotulo">Certificado de conclusão</p>
               <h1>{c.nome}</h1>
-              <p className="cert-texto">concluiu o curso <strong>{salao.curso.nome}</strong>{c.turma ? ` (${c.turma})` : ""}, ministrado por {salao.contato}, da {salao.nome}.</p>
+              <p className="cert-texto">concluiu o curso <strong>{salao.curso.nome}</strong>{c.turma ? ` (${c.turma})` : ""}, ministrado por {salao.certificado.assinatura || `${salao.contato}, da ${salao.nome}`}.</p>
+              {salao.certificado.texto && <p className="cert-texto cert-extra">{salao.certificado.texto}</p>}
               <dl className="cert-dados">
                 <div><dt>Certificada em</dt><dd>{dataCompleta(c.certificada_em)}</dd></div>
                 <div><dt>Cidade</dt><dd>{c.cidade} · {c.uf}</dd></div>
+                {salao.curso.carga_horaria && <div><dt>Carga horária</dt><dd>{salao.curso.carga_horaria}</dd></div>}
                 <div><dt>Código</dt><dd>{c.codigo}</dd></div>
               </dl>
               <p className="cert-valido">✓ Certificado verificado pela {salao.nome}</p>

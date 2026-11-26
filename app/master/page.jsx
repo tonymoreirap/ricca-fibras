@@ -15,7 +15,7 @@ const MODULOS = [
   ["agenda", "Agenda online", "Clientes marcam horário e pagam o sinal por Pix."],
   ["curso", "Curso", "Página do curso com turmas e inscrições."],
   ["rede", "Rede de profissionais", "Vitrine de certificadas e verificação de certificado."],
-  ["promocoes", "Promoções", "Ofertas com prazo na página do salão (em breve)."],
+  ["promocoes", "Promoções", "Ofertas com data para entrar e sair do ar, com preço no agendamento."],
   ["natal", "Tema de Natal", "Enfeites de dezembro, que somem sozinhos em janeiro."],
 ];
 

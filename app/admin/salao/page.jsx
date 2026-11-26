@@ -209,7 +209,8 @@ export default function MeuSalao() {
             instagram: c.instagram ? `@${c.instagram}` : "", ola: c.ola || "", titulo: c.titulo || "", frase: c.frase || "",
             descricao_site: c.descricao_site || "", endereco: c.endereco || "", bairro_cidade: c.bairro_cidade || "",
             pix: { chave: "", exibicao: "", nome: "", cidade: "", ...(c.pix || {}) },
-            curso: { nome: "", descricao: "", ...(c.curso || {}) },
+            curso: { nome: "", descricao: "", chamada: "", carga_horaria: "", ...(c.curso || {}), topicos: (c.curso?.topicos || []).join("\n") },
+            certificado: { assinatura: "", cargo: "", texto: "", ...(c.certificado || {}) },
           },
         };
         original.current = { paleta: x.paleta, cor: x.cor_principal };
@@ -254,7 +255,10 @@ export default function MeuSalao() {
     try {
       const r = await rpc("admin_empresa_salvar", {
         p_token: token,
-        p: { nome: e.nome, paleta: e.paleta, cor_principal: e.cor_principal || "", config: e.config, horarios: e.horarios },
+        p: {
+          nome: e.nome, paleta: e.paleta, cor_principal: e.cor_principal || "", horarios: e.horarios,
+          config: { ...e.config, curso: { ...e.config.curso, topicos: e.config.curso.topicos.split("\n").map((t) => t.trim()).filter(Boolean) } },
+        },
       });
       if (!r.ok) throw new Error(r.erro);
       original.current = { paleta: e.paleta, cor: e.cor_principal };
@@ -343,10 +347,23 @@ export default function MeuSalao() {
         </Bloco>
 
         {temCurso && (
-          <Bloco titulo="Curso">
+          <Bloco titulo="Curso" texto="Textos da página do curso. O que ficar vazio usa o texto padrão.">
             <div className="form form-compacto">
               <Campo id="ms-curso" rotulo="Nome do curso" maxLength={60} value={c.curso.nome} onChange={mudaSub("curso", "nome")} />
-              <Campo id="ms-curso-d" rotulo="Descrição" area maxLength={300} value={c.curso.descricao} onChange={mudaSub("curso", "descricao")} />
+              <Campo id="ms-curso-d" rotulo="Descrição curta" dica="Aparece no cartão do curso, na página do salão." area maxLength={300} value={c.curso.descricao} onChange={mudaSub("curso", "descricao")} />
+              <Campo id="ms-curso-ch" rotulo="Chamada da página do curso" area maxLength={200} value={c.curso.chamada} onChange={mudaSub("curso", "chamada")} placeholder="Ex.: Aprenda a técnica e saia com certificado." />
+              <Campo id="ms-curso-t" rotulo="O que a aluna aprende" dica="Um tópico por linha, até 12." area rows={6} value={c.curso.topicos} onChange={mudaSub("curso", "topicos")} placeholder={"Preparação da unha natural\nAplicação passo a passo"} />
+              <Campo id="ms-curso-c" rotulo="Carga horária" maxLength={20} value={c.curso.carga_horaria} onChange={mudaSub("curso", "carga_horaria")} placeholder="Ex.: 16 horas" />
+            </div>
+          </Bloco>
+        )}
+
+        {temCurso && (
+          <Bloco titulo="Certificado" texto="Vai no certificado em PDF e na página de verificação.">
+            <div className="form form-compacto">
+              <Campo id="ms-cert-a" rotulo="Nome na assinatura" maxLength={60} value={c.certificado.assinatura} onChange={mudaSub("certificado", "assinatura")} placeholder={`${c.contato || "Nome"} · ${e.nome}`} />
+              <Campo id="ms-cert-c" rotulo="Cargo abaixo da assinatura" maxLength={60} value={c.certificado.cargo} onChange={mudaSub("certificado", "cargo")} placeholder="Ex.: Instrutora responsável" />
+              <Campo id="ms-cert-t" rotulo="Frase extra (opcional)" area maxLength={160} value={c.certificado.texto} onChange={mudaSub("certificado", "texto")} placeholder="Ex.: Formação teórica e prática em alongamento de fibra de vidro." />
             </div>
           </Bloco>
         )}

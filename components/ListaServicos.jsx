@@ -4,6 +4,16 @@ import { useEffect, useState } from "react";
 import { linkAgendar, mensagemServico, aContato } from "../lib/empresa";
 import { useSalao } from "./Empresa";
 import { precoServico, linhaServico } from "../lib/servicos";
+
+// preço com a promoção que estiver valendo (o normal aparece riscado)
+function Preco({ s }) {
+  if (!s.promocao) return precoServico(s.valor);
+  return (
+    <>
+      <s className="preco-cheio">{precoServico(s.valor)}</s> {precoServico(s.promocao.preco)}
+    </>
+  );
+}
 import Link from "next/link";
 import { IconeSeta, IconeConversa, IconeCalendario, IlustracaoServico } from "./Icones";
 
@@ -39,7 +49,11 @@ export default function ListaServicos({ servicos = [] }) {
           <span className="assinatura-nome">{assinatura.nome}</span>
           {assinatura.descricao && <span className="assinatura-desc">{assinatura.descricao}</span>}
           <span className="assinatura-rodape">
-            <span className="chip">{linhaServico(assinatura) || precoServico(assinatura.valor)}</span>
+            {assinatura.promocao ? (
+              <span className="chip chip-promo"><Preco s={assinatura} /></span>
+            ) : (
+              <span className="chip">{linhaServico(assinatura) || precoServico(assinatura.valor)}</span>
+            )}
             <span className="assinatura-ver">
               Ver detalhes <IconeSeta />
             </span>
@@ -57,9 +71,13 @@ export default function ListaServicos({ servicos = [] }) {
               </span>
               <span className="servico-texto">
                 <span className="servico-nome">{s.nome}</span>
-                {linhaServico(s) && <span className="servico-sub">{linhaServico(s)}</span>}
+                {s.promocao ? (
+                  <span className="servico-sub servico-promo">{s.promocao.titulo}</span>
+                ) : (
+                  linhaServico(s) && <span className="servico-sub">{linhaServico(s)}</span>
+                )}
               </span>
-              <span className="servico-preco">{precoServico(s.valor)}</span>
+              <span className="servico-preco"><Preco s={s} /></span>
               <IconeSeta />
             </button>
           </li>
@@ -84,8 +102,8 @@ export default function ListaServicos({ servicos = [] }) {
             {aberto.descricao && <p>{aberto.descricao}</p>}
             <dl className="folha-dados">
               <div>
-                <dt>Valor</dt>
-                <dd>{precoServico(aberto.valor)}</dd>
+                <dt>{aberto.promocao ? `Valor (${aberto.promocao.titulo})` : "Valor"}</dt>
+                <dd><Preco s={aberto} /></dd>
               </div>
               {aberto.ciclo_dias && (
                 <div>

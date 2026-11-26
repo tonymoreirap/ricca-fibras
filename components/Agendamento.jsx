@@ -32,7 +32,7 @@ export function mensagemRecibo(salao, a, origem) {
     `Data: ${dataLonga(a.inicio)}`,
     `Horário: ${hora(a.inicio)} às ${hora(a.fim)}`,
     `Valor do serviço: ${real(a.valor)}`,
-    `Sinal (30%) pago via Pix: ${real(a.sinal)}`,
+    `Sinal (${Math.round((Number(a.sinal) / Number(a.valor)) * 100)}%) pago via Pix: ${real(a.sinal)}`,
     `Restante no dia: ${real(restante)}`,
     "",
     "Segue o comprovante do Pix para confirmar meu horário.",
@@ -226,7 +226,7 @@ export default function Agendamento() {
                   }}
                 >
                   <span className="escolha-arte" aria-hidden="true">
-                    <IlustracaoServico tipo={ICONE[s.codigo]} tamanho={54} />
+                    <IlustracaoServico tipo={s.icone || ICONE[s.codigo] || "brilho"} tamanho={54} />
                   </span>
                   <span className="escolha-texto">
                     <span className="escolha-nome">{s.nome}</span>
@@ -234,8 +234,12 @@ export default function Agendamento() {
                       <span className="escolha-info">
                         <IconeRelogio width="15" height="15" /> {Math.round(s.duracao_min / 60)} horas
                       </span>
-                      <span className="escolha-preco">{real(s.valor)}</span>
+                      <span className="escolha-preco">
+                        {s.valor_cheio && <s className="preco-cheio">{real(s.valor_cheio)}</s>}
+                        {real(s.valor)}
+                      </span>
                     </span>
+                    {s.promocao && <span className="chip chip-promo escolha-promo">{s.promocao}</span>}
                     <span className="escolha-sinal">Sinal de {real(s.sinal)} para reservar</span>
                   </span>
                   <IconeSeta />
@@ -268,7 +272,7 @@ export default function Agendamento() {
         {etapa === "data" && servico && (
           <section className="etapa entra">
             <div className="resumo-mini">
-              <IlustracaoServico tipo={ICONE[servico.codigo]} tamanho={34} />
+              <IlustracaoServico tipo={servico.icone || ICONE[servico.codigo] || "brilho"} tamanho={34} />
               <span>
                 <strong>{servico.nome}</strong>
                 <small>{Math.round(servico.duracao_min / 60)} horas · {real(servico.valor)}</small>
@@ -408,11 +412,14 @@ export default function Agendamento() {
                 </strong>
               </div>
               <div className="resumo-linha">
-                <span>Valor do serviço</span>
-                <strong>{real(servico.valor)}</strong>
+                <span>Valor do serviço{servico.valor_cheio ? " (promoção)" : ""}</span>
+                <strong>
+                  {servico.valor_cheio && <s className="preco-cheio">{real(servico.valor_cheio)}</s>}
+                  {real(servico.valor)}
+                </strong>
               </div>
               <div className="resumo-linha resumo-destaque">
-                <span>Sinal agora (30%)</span>
+                <span>Sinal agora ({Math.round(Number(servico.sinal_pct))}%)</span>
                 <strong>{real(servico.sinal)}</strong>
               </div>
               <div className="resumo-linha">

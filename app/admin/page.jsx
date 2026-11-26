@@ -490,6 +490,16 @@ export default function Painel() {
           </span>
         </Link>
 
+        {salao.modulos.promocoes && (
+          <Link href="/admin/promocoes" className="atalho-curso vidro">
+            <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="batom" tamanho={32} /></span>
+            <span className="atalho-curso-texto">
+              <strong>Promoções</strong>
+              <small>Ofertas com data para entrar e sair do ar</small>
+            </span>
+          </Link>
+        )}
+
         {eu.papel === "master" && (
           <Link href="/master" className="atalho-curso vidro">
             <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="brilho" tamanho={32} /></span>

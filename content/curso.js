@@ -29,8 +29,8 @@ export const curso = {
   ],
 };
 
-// Curso do salão do endereço. Tópicos fixos só da Rica (os dos outros salões
-// passam a ser editáveis no painel na fase 2).
+// Curso do salão do endereço. Chamada e tópicos vêm do "Meu salão"; sem
+// nada preenchido, a Rica usa o texto acima e os outros salões, um texto neutro.
 export function cursoDo(salao) {
   const rica = salao?.slug === "rica";
   const quem = salao?.contato || "a equipe";
@@ -38,9 +38,10 @@ export function cursoDo(salao) {
   return {
     ...curso,
     nome: salao?.curso?.nome || curso.nome,
-    chamada: rica ? curso.chamada : salao?.curso?.descricao || "Aprenda com quem faz todos os dias e saia com certificado verificável.",
+    chamada: salao?.curso?.chamada || (rica ? curso.chamada : salao?.curso?.descricao || "Aprenda com quem faz todos os dias e saia com certificado verificável."),
+    cargaHoraria: salao?.curso?.carga_horaria || "",
     formatos: curso.formatos.map((f) => ({ ...f, texto: troca(f.texto) })),
-    topicos: rica ? curso.topicos : [],
+    topicos: salao?.curso?.topicos?.length ? salao.curso.topicos : rica ? curso.topicos : [],
     caminho: curso.caminho.map((p) => ({ titulo: troca(p.titulo), texto: troca(p.texto) })),
   };
 }

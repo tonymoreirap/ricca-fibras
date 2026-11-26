@@ -84,6 +84,7 @@ export default function Curso() {
         <p className="cr-sobre">Curso com {aContato(salao)}</p>
         <h1>{curso.nome}</h1>
         <p className="cr-chamada">{curso.chamada}</p>
+        {curso.cargaHoraria && <p className="cr-carga">Carga horária: {curso.cargaHoraria}</p>}
         <div className="cr-acoes">
           <button type="button" className="botao-ouro" onClick={() => irParaForm()}>
             Quero fazer o curso

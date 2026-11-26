@@ -17,6 +17,11 @@ export async function GET(request, { params }) {
     curso: salao.curso.nome,
     contato: salao.contato,
     salao: salao.nome,
+    assinatura: salao.certificado.assinatura,
+    cargo: salao.certificado.cargo || (salao.slug === "rica" ? "Criadora do método" : ""),
+    texto: salao.certificado.texto,
+    carga: salao.curso.carga_horaria,
+    selo: salao.slug === "rica" ? ["MÉTODO", "RICA"] : null,
     urlVerificar: `${origem}/certificado/${c.codigo}`,
   });
   return new Response(bytes, {

@@ -15,7 +15,8 @@ import {
 } from "../../components/Icones";
 import { linkAgendar } from "../../lib/empresa";
 import { carregarCatalogo } from "../../lib/servicos";
-import { empresaDoPedido, hostDoPedido } from "../../lib/empresaServidor";
+import { empresaDoPedido, hostDoPedido, rpcDoPedido } from "../../lib/empresaServidor";
+import Promocoes from "../../components/Promocoes";
 import { LogoDe } from "../../components/Empresa";
 
 export async function generateMetadata() {
@@ -29,6 +30,7 @@ export default async function Visitante() {
   const salao = await empresaDoPedido();
   const servicos = await carregarCatalogo(await hostDoPedido(), salao.slug === "rica");
   const m = salao.modulos;
+  const promocoes = m.promocoes ? await rpcDoPedido("promocoes_publicas").catch(() => []) : [];
   return (
     <div className="app app-visitante">
       <BarraTopo
@@ -98,6 +100,8 @@ export default async function Visitante() {
       </nav>
 
       <main className="tela">
+        <Promocoes lista={promocoes || []} />
+
         <section id="servicos" className="bloco">
           <div className="bloco-cabeca">
             <h2>Serviços e valores</h2>

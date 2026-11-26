@@ -703,7 +703,7 @@ button { font: inherit; color: inherit; }
 .escolha-arte { flex: none; display: grid; place-items: center; width: 4rem; height: 4rem; border-radius: 1rem; background: radial-gradient(circle at 30% 25%, var(--superficie-3), var(--superficie)); box-shadow: inset 0 0 0 1px rgb(var(--ouro-rgb) / 0.4); }
 .escolha-texto { flex: 1; display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
 .escolha-nome { font-family: var(--display); font-size: 1.2rem; line-height: 1.2; }
-.escolha-info { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; color: var(--apagado); }
+.escolha-info { display: inline-flex; white-space: nowrap; align-items: center; gap: 0.3rem; font-size: 0.82rem; color: var(--apagado); }
 .escolha-linha { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; margin-top: 0.15rem; }
 .escolha-preco { font-family: var(--display); font-size: 1.15rem; color: var(--ouro-claro); white-space: nowrap; }
 .escolha-sinal { font-size: 0.8rem; color: var(--claro-suave); }
@@ -1464,3 +1464,34 @@ img.entrar-monograma, .barra-marca img, .v-rodape img, .rede-capa img, .cert img
 .emp-codigo strong { font-family: var(--display); font-weight: 400; font-size: 2rem; letter-spacing: 0.12em; color: var(--ouro-claro); }
 .emp-codigo small { font-size: 0.8rem; color: var(--apagado); }
 .folha .ms-paletas { margin-bottom: 0.5rem; }
+
+/* ---------- Promoções ---------- */
+.preco-cheio { margin-right: 0.35em; font-family: var(--texto); font-size: 0.8em; font-weight: 400; color: var(--apagado); text-decoration-thickness: 1px; }
+.chip-promo { color: var(--tinta); background: var(--folha-ouro); border-color: transparent; font-weight: 600; }
+.chip-promo .preco-cheio { color: var(--tinta-2); }
+.servico-promo { color: var(--rose); }
+.escolha-promo { justify-self: start; margin-top: 0.3rem; font-size: 0.72rem; padding: 0.15rem 0.6rem; }
+
+.promos { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.promos-varias { grid-auto-flow: column; grid-auto-columns: 86%; overflow-x: auto; scroll-snap-type: x mandatory; margin-right: calc(-1 * var(--margem)); padding-right: var(--margem); scrollbar-width: none; }
+.promos-varias::-webkit-scrollbar { display: none; }
+.promo { display: grid; grid-template-rows: auto 1fr; overflow: hidden; padding: 0; border-radius: 1.4rem; scroll-snap-align: start; }
+.promo-foto { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.promo-corpo { display: grid; gap: 0.45rem; align-content: start; padding: 1rem 1.05rem 1.1rem; }
+.promo-prazo { justify-self: start; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.74rem; font-weight: 500; color: var(--rose-claro); background: rgb(var(--rose-rgb) / 0.16); border: 1px solid rgb(var(--rose-rgb) / 0.4); }
+.promo h3 { font-family: var(--display); font-weight: 400; font-size: 1.45rem; line-height: 1.15; }
+.promo-corpo > p { color: var(--claro-suave); font-size: 0.95rem; }
+.promo-preco { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.3rem; margin-top: 0.15rem; }
+.promo-servico { flex-basis: 100%; font-size: 0.82rem; color: var(--apagado); }
+.promo-preco strong { font-family: var(--display); font-weight: 400; font-size: 1.7rem; color: var(--ouro-claro); }
+.promo .botao-ouro, .promo .botao-linha { margin-top: 0.4rem; }
+
+.pr-foto { display: grid; place-items: center; width: 100%; aspect-ratio: 16 / 9; margin-top: 1rem; overflow: hidden; border-radius: 1rem; border: 1px dashed var(--fio-forte); background: rgb(var(--claro-rgb) / 0.04); color: var(--apagado); font-size: 0.85rem; text-align: center; cursor: pointer; }
+.pr-foto img { width: 100%; height: 100%; object-fit: cover; }
+.pr-tirar { margin-top: 0.5rem; }
+.pr-mini { flex: none; width: 3.2rem; height: 3.2rem; border-radius: 0.8rem; object-fit: cover; }
+.pr-mini-vazia { display: grid; place-items: center; font-family: var(--display); font-size: 1.3rem; color: var(--ouro-claro); background: rgb(var(--ouro-rgb) / 0.12); }
+
+.cr-carga { margin-top: 0.5rem; font-size: 0.9rem; color: var(--ouro-claro); }
+.cert-extra { margin-top: 0.4rem; font-size: 0.9rem; }
+.escolha-linha { flex-wrap: wrap; row-gap: 0.15rem; }
