@@ -9,6 +9,8 @@ import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from
 import { STATUS, NIVEL, pagamento, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import NovoHorario from "../../components/admin/NovoHorario";
+import FolhaCliente from "../../components/admin/FolhaCliente";
+import { whatsCliente, msgBoasVindas } from "../../lib/mensagens";
 import MenuApp from "../../components/MenuApp";
 import { useTema } from "../../components/TemaSazonal";
 import { useAlertas, useResumoDoDia, BotaoSino, FolhaAlertas, ModalResumo } from "../../components/admin/Alertas";
@@ -130,8 +132,14 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
   );
 }
 
-function Cliente({ c, aberto, alternar, liberar, agendarPara, origem }) {
+function Cliente({ c, aberto, alternar, liberar, agendarPara, editar, gerarAcesso, origem }) {
   const [confirmar, setConfirmar] = useState(false);
+  const [convite, setConvite] = useState(null);
+  const pedirAcesso = async (fn) => {
+    const cod = await fn(c.celular);
+    if (cod) setConvite(cod);
+    setConfirmar(false);
+  };
   const conta = !c.tem_conta ? "Sem conta no app" : c.verificado ? "Conta verificada" : "Conta criada";
   const nv = NIVEL[c.nivel] || NIVEL.nova;
   return (
@@ -154,18 +162,29 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, origem }) {
             <div><dt>Total pago</dt><dd className="pag-ok">{real(c.pago)}</dd></div>
             <div><dt>Nível</dt><dd>{nv.texto}</dd></div>
             <div><dt>App</dt><dd>{conta}</dd></div>
+            {c.aniversario && <div><dt>Aniversário</dt><dd>{dataDia(String(c.aniversario).slice(0, 10)).replace(/ de \d{4}$/, "")}</dd></div>}
+            {c.observacoes && <div className="ag-pag"><dt>Observações</dt><dd>{c.observacoes}</dd></div>}
           </dl>
           <div className="ag-acoes">
             <button type="button" className="acao acao-forte" onClick={() => agendarPara(c)}>
               <IconeMais stroke="currentColor" width="18" height="18" /> Agendar para ela
             </button>
-            {c.tem_conta && (
+            <button type="button" className="acao" onClick={() => editar(c)}>Editar cadastro</button>
+            {convite && !c.demo ? (
+              <a className="acao acao-forte" href={whatsCliente(c.celular, msgBoasVindas(c, convite, origem))} target="_blank" rel="noopener">
+                <IconeConversa stroke="currentColor" width="18" height="18" /> Enviar link de acesso
+              </a>
+            ) : c.tem_conta ? (
               <button
                 type="button"
                 className={`acao ${confirmar ? "armada" : ""}`}
-                onClick={() => (confirmar ? liberar(c.celular) : setConfirmar(true))}
+                onClick={() => (confirmar ? pedirAcesso(liberar) : setConfirmar(true))}
               >
                 {confirmar ? "Toque de novo para liberar" : "Liberar nova senha"}
+              </button>
+            ) : !c.demo && (
+              <button type="button" className="acao" onClick={() => pedirAcesso(gerarAcesso)}>
+                {c.convite_pendente ? "Reenviar acesso ao app" : "Enviar acesso ao app"}
               </button>
             )}
           </div>
@@ -221,6 +240,7 @@ export default function Painel() {
     alertas.marcarVistos();
   };
   const [novo, setNovo] = useState(null);
+  const [fichaCliente, setFichaCliente] = useState(null);
   const [aviso, setAviso] = useState("");
   const [origem, setOrigem] = useState("");
 
@@ -276,11 +296,24 @@ export default function Painel() {
     setOcupado(false);
   }
 
+  async function gerarAcesso(celular) {
+    try {
+      const r = await rpc("admin_cliente_convite", { p_token: sessao.token, p_celular: celular });
+      if (!r.ok) { setAviso(r.erro); return null; }
+      setAviso("Link pronto: toque em Enviar link de acesso.");
+      return r.convite;
+    } catch (e) {
+      sessaoExpirada(e) ? sairPorSessao() : setAviso("Sem conexão. Tente de novo.");
+      return null;
+    }
+  }
+
   async function liberar(celular) {
     try {
       const r = await rpc("admin_liberar_senha", { p_token: sessao.token, p_celular: celular });
-      setAviso(r.ok ? "Liberado: ela cria uma nova senha em “Primeira vez”." : r.erro);
-      if (r.ok) carregar(sessao.token);
+      setAviso(r.ok ? "Senha liberada: envie o link de acesso para ela criar outra." : r.erro);
+      if (r.ok) { carregar(sessao.token); return r.convite; }
+      return null;
     } catch (e) {
       sessaoExpirada(e) ? sairPorSessao() : setAviso("Sem conexão. Tente de novo.");
     }
@@ -489,6 +522,9 @@ export default function Painel() {
 
         {aba === "clientes" && (
           <section className="adm-secao">
+            <button type="button" className="botao-linha nova-cliente" onClick={() => setFichaCliente({})}>
+              <IconeMais width="20" height="20" /> Nova cliente
+            </button>
             <label className="busca">
               <IconeBusca width="20" height="20" />
               <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar por nome ou celular" aria-label="Buscar cliente" />
@@ -515,6 +551,8 @@ export default function Painel() {
                     aberto={aberto === c.celular}
                     alternar={() => alternar(c.celular)}
                     liberar={liberar}
+                    gerarAcesso={gerarAcesso}
+                    editar={(x) => setFichaCliente(x)}
                     agendarPara={(x) => setNovo({ nome: x.nome, celular: x.celular })}
                     origem={origem}
                   />
@@ -579,13 +617,19 @@ export default function Painel() {
         <NovoHorario
           token={sessao.token}
           inicial={novo}
+          clientes={dados.clientes}
           aoFechar={() => setNovo(null)}
-          aoSalvar={(a) => {
-            setNovo(null);
-            setAviso(`Horário salvo: ${a.cliente_nome}, ${curta(a.inicio)} às ${hora(a.inicio)}`);
-            setAba("agenda");
-            carregar(sessao.token);
-          }}
+          aoSalvar={() => carregar(sessao.token)}
+        />
+      )}
+
+      {fichaCliente && (
+        <FolhaCliente
+          token={sessao.token}
+          inicial={fichaCliente}
+          aoFechar={() => setFichaCliente(null)}
+          aoSalvo={() => carregar(sessao.token)}
+          aoAgendar={(c) => { setFichaCliente(null); setNovo(c); }}
         />
       )}
 

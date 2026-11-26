@@ -14,6 +14,7 @@ function Formulario() {
   const router = useRouter();
   const busca = useSearchParams();
   const [modo, setModo] = useState(busca.get("nova") === "1" ? "criar" : "entrar");
+  const convite = (busca.get("convite") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
   const [nome, setNome] = useState("");
   const [celular, setCelular] = useState("");
   const [senha, setSenha] = useState("");
@@ -30,14 +31,16 @@ function Formulario() {
         setCelular(salvo.celular ? mascaraCelular(salvo.celular) : "");
       }
     } catch {}
-  }, [router]);
+    const c = (busca.get("c") || "").replace(/\D/g, "");
+    if (c) setCelular(mascaraCelular(c));
+  }, [router, busca]);
 
   // no "Já tenho conta" o mesmo campo aceita celular (cliente) ou e-mail (dona e equipe)
   const ehEmail = modo === "entrar" && /[a-z@]/i.test(celular);
   const digitos = celular.replace(/\D/g, "");
   const valido = ehEmail
     ? /^\S+@\S+\.\S+$/.test(celular.trim()) && senha.length > 0
-    : digitos.length >= 10 && senha.length >= 6 && (modo === "entrar" || nome.trim().length >= 2);
+    : digitos.length >= 10 && senha.length >= 6 && (modo === "entrar" || convite || nome.trim().length >= 2);
 
   async function enviar(e) {
     e.preventDefault();
@@ -59,7 +62,7 @@ function Formulario() {
       const r =
         modo === "entrar"
           ? await rpc("cliente_entrar", { p_celular: digitos, p_senha: senha })
-          : await rpc("cliente_criar_conta", { p_nome: nome.trim(), p_celular: digitos, p_senha: senha });
+          : await rpc("cliente_criar_conta", { p_nome: nome.trim(), p_celular: digitos, p_senha: senha, p_convite: convite || null });
       if (!r.ok) {
         setErro(r.erro);
         if (r.sem_conta) setModo("criar");
@@ -100,7 +103,10 @@ function Formulario() {
       </div>
 
       <form className="form" onSubmit={enviar}>
-        {modo === "criar" && (
+        {modo === "criar" && convite && (
+          <p className="convite-ok">A {salao.contato} já fez o seu cadastro. Só falta criar a sua senha.</p>
+        )}
+        {modo === "criar" && !convite && (
           <>
             <label htmlFor="nome">Seu nome</label>
             <input id="nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Como a Luana te chama" />

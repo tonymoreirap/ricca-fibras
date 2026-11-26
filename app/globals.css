@@ -1248,3 +1248,32 @@ button.kpi { cursor: pointer; }
 .turma-barra span { display: block; height: 100%; border-radius: inherit; background: var(--folha-ouro); }
 .rede-ver { display: block; margin-top: 0.3rem; }
 .adm-topo .barra-link { flex: none; }
+
+/* ---------- cadastro rápido e agendamento em poucos toques ---------- */
+.nova-cliente { margin: 0.5rem 0 0.2rem; }
+.pronto { display: grid; justify-items: center; gap: 0.5rem; padding: 0.5rem 0 0.25rem; text-align: center; }
+.pronto .reservado-icone { width: 2.6rem; height: 2.6rem; font-size: 1.2rem; }
+.pronto .folha-titulo { margin-top: 0.2rem; }
+.pronto-sub { font-family: var(--display); font-size: 1.25rem; color: var(--ouro-claro); }
+.pronto-quando { font-weight: 500; }
+.pronto-quando::first-letter { text-transform: uppercase; }
+.pronto-nota { font-size: 0.85rem; color: var(--claro-suave); max-width: 22rem; }
+.pronto .botao-ouro { margin-top: 0.5rem; }
+.pronto .botao-linha { margin-top: 0.4rem; }
+.nh-rotulo { margin: 1rem 0 0.45rem; font-size: 0.85rem; color: var(--claro-suave); }
+.nh-cliente { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.9rem; border-radius: 1rem; background: rgb(210 170 94 / 0.08); border: 1px solid var(--fio-forte); }
+.nh-cliente-texto { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.nh-cliente-texto strong { font-weight: 500; }
+.nh-cliente-texto small { color: var(--claro-suave); font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.nh-busca .busca { margin-top: 0; }
+.nh-sugestoes { list-style: none; padding: 0; margin-top: 0.4rem; display: grid; gap: 0.3rem; }
+.nh-sugestoes button { display: flex; flex-direction: column; width: 100%; padding: 0.65rem 0.9rem; border-radius: 0.9rem; border: 1px solid var(--fio); background: rgb(255 236 210 / 0.04); text-align: left; cursor: pointer; }
+.nh-sugestoes small { color: var(--apagado); font-size: 0.8rem; }
+.nh-nova-btn, .nh-outro { display: block; margin: 0.6rem auto 0; font-size: 0.88rem; }
+.nh-nova { margin-top: 0; }
+.pilulas-lado { grid-template-columns: 1fr 1fr; margin-top: 1rem; }
+.pilulas-lado button { flex-direction: column; justify-content: center; align-items: flex-start; gap: 0; min-height: 3.6rem; }
+.nh-vagas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+.nh-vagas .vaga { gap: 0; padding: 0.6rem; }
+.nh-vagas .vaga small { text-transform: capitalize; }
+.convite-ok { padding: 0.75rem 0.9rem; border-radius: 0.9rem; font-size: 0.9rem; color: #c9f0d1; background: rgb(159 220 171 / 0.1); border: 1px solid rgb(159 220 171 / 0.35); }
