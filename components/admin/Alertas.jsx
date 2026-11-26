@@ -60,15 +60,22 @@ export function montarAlertas(dados) {
         titulo: `Manutenção vence em ${m.dias_restantes} ${m.dias_restantes === 1 ? "dia" : "dias"}: ${primeiroNome(c.nome)}`, texto: `Até ${dataDia(m.proxima)} · sem horário marcado` });
     }
   }
+  for (const c of dados.confirmacoes || []) {
+    lista.push({ id: `conta-${c.celular}-${c.pedida_em || "n"}`, grupo: "contas", nivel: c.pedida_em ? "urgente" : "atencao", demo: false,
+      ir: { aba: "clientes", chave: `conf-${c.celular}` },
+      titulo: `Confirmar conta: ${primeiroNome(c.nome)}`,
+      texto: c.pedida_em ? `Enviou o código ${c.codigo} pelo WhatsApp. Confira e confirme.` : `Código ${c.codigo} · ainda não enviou` });
+  }
   if (dados.curso_novas > 0) {
     lista.push({ id: `curso-${dados.curso_novas}-${hoje}`, grupo: "novidades", nivel: "atencao", demo: false, ir: { href: "/admin/curso" },
       titulo: `${dados.curso_novas} ${dados.curso_novas === 1 ? "inscrição nova" : "inscrições novas"} no curso`, texto: "Toque para ver e chamar no WhatsApp" });
   }
-  const peso = (x) => (x.id.startsWith("pix-") ? 0 : { urgente: 1, atencao: 2, info: 3, ok: 4 }[x.nivel]);
+  const peso = (x) => (x.id.startsWith("pix-") || x.id.startsWith("conta-") ? 0 : { urgente: 1, atencao: 2, info: 3, ok: 4 }[x.nivel]);
   return lista.sort((x, y) => peso(x) - peso(y));
 }
 
 const GRUPOS = [
+  ["contas", "Contas para confirmar"],
   ["pagamentos", "Pagamentos"],
   ["hoje", "Hoje"],
   ["amanha", "Amanhã"],

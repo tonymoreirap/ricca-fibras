@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
-import { linkAgendar } from "../../content/salao";
+import { linkAgendar, salao } from "../../content/salao";
 import { real, hora, dataLonga, FUSO } from "../../lib/formato";
 import { STATUS, NIVEL, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
@@ -115,6 +115,37 @@ function Proximo({ a }) {
   );
 }
 
+function ConfirmarNumero({ conta, token }) {
+  const [pedido, setPedido] = useState(Boolean(conta.confirmacao_pedida_em));
+  const texto = `Oi, ${salao.contato}! Sou ${conta.nome}. Meu código de confirmação do app é ${conta.codigo}.`;
+  const href = `https://wa.me/${salao.whatsapp}?text=${encodeURIComponent(texto)}`;
+  const avisar = () => {
+    setPedido(true);
+    rpc("cliente_pedir_confirmacao", { p_token: token }).catch(() => {});
+  };
+  return (
+    <section className="confirmar-numero vidro entra" aria-labelledby="cn-titulo">
+      <h2 id="cn-titulo">Confirme que este número é seu</h2>
+      <p>
+        Este celular já tem histórico no salão. Para proteger os dados, envie o código abaixo para a {salao.contato} pelo
+        WhatsApp. Assim que ela conferir, seus atendimentos e recibos aparecem aqui.
+      </p>
+      <p className="cn-codigo" aria-label={`Código ${conta.codigo}`}>{conta.codigo}</p>
+      {pedido ? (
+        <>
+          <p className="cn-enviado">Código enviado. Agora é só aguardar a {salao.contato} confirmar.</p>
+          <a className="link-botao cn-de-novo" href={href} target="_blank" rel="noopener" onClick={avisar}>Enviar de novo</a>
+        </>
+      ) : (
+        <a className="botao-ouro" href={href} target="_blank" rel="noopener" onClick={avisar}>
+          <IconeConversa stroke="currentColor" /> Enviar código pelo WhatsApp
+        </a>
+      )}
+      <p className="cn-nota">Você já pode agendar normalmente enquanto isso.</p>
+    </section>
+  );
+}
+
 export default function Cliente() {
   const router = useRouter();
   const [dados, setDados] = useState(null);
@@ -194,7 +225,9 @@ export default function Cliente() {
           </div>
         </section>
 
-        {!conta.verificado && (
+        {conta.precisa_confirmar && <ConfirmarNumero conta={conta} token={lerSessao("cliente")?.token} />}
+
+        {!conta.verificado && !conta.precisa_confirmar && (
           <p className="aviso-verificar">
             Seu histórico completo aparece aqui assim que a Luana confirmar o seu primeiro sinal.
           </p>

@@ -206,6 +206,41 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, editar, gerarAcess
   );
 }
 
+function ConfirmacaoConta({ c, decidir }) {
+  const [recusar, setRecusar] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
+  const agir = async (aprovar) => { setOcupado(true); await decidir(c.celular, aprovar); setOcupado(false); };
+  const outroNome = c.nome_no_salao && c.nome_no_salao.trim().toLowerCase() !== c.nome.trim().toLowerCase();
+  return (
+    <li className="conf vidro" data-chave={`conf-${c.celular}`}>
+      <div className="conf-topo">
+        <span>
+          <strong>{c.nome}</strong>
+          <small>{celularFormatado(c.celular)} · conta criada {curta(c.criado_em)}</small>
+        </span>
+        <span className="conf-codigo">{c.codigo}</span>
+      </div>
+      <p className="conf-info">
+        {c.pedida_em ? `Disse que enviou o código em ${curta(c.pedida_em)} às ${hora(c.pedida_em)}.` : "Ainda não enviou o código."}
+        {outroNome && <> No salão esse número está como <strong>{c.nome_no_salao}</strong>.</>}
+        {c.atendimentos > 0 && <> {c.atendimentos} {c.atendimentos === 1 ? "atendimento" : "atendimentos"} no histórico.</>}
+      </p>
+      <a className="botao-linha conf-conferir" href={`https://wa.me/55${c.celular}`} target="_blank" rel="noopener">
+        <IconeConversa width="20" height="20" /> Conferir a conversa no WhatsApp
+      </a>
+      <p className="conf-dica">Se a mensagem com o código {c.codigo} veio desta conversa, o número é dela.</p>
+      <div className="mt-acoes">
+        <button type="button" className="acao acao-forte" disabled={ocupado} onClick={() => agir(true)}>
+          <IconeCheck stroke="currentColor" width="18" height="18" /> Confirmar
+        </button>
+        <button type="button" className={`acao acao-perigo ${recusar ? "armada" : ""}`} disabled={ocupado} onClick={() => (recusar ? agir(false) : setRecusar(true))}>
+          {recusar ? "Toque de novo: tirar acesso" : "Recusar"}
+        </button>
+      </div>
+    </li>
+  );
+}
+
 export default function Painel() {
   const router = useRouter();
   const [sessao, setSessao] = useState(null);
@@ -251,8 +286,12 @@ export default function Painel() {
 
   const carregar = useCallback(
     (token) =>
-      Promise.all([rpc("admin_painel", { p_token: token }), rpc("admin_curso_novas", { p_token: token }).catch(() => 0)])
-        .then(([d, novas]) => { setDados({ ...d, curso_novas: novas || 0 }); setErro(""); })
+      Promise.all([
+        rpc("admin_painel", { p_token: token }),
+        rpc("admin_curso_novas", { p_token: token }).catch(() => 0),
+        rpc("admin_confirmacoes", { p_token: token }).catch(() => []),
+      ])
+        .then(([d, novas, conf]) => { setDados({ ...d, curso_novas: novas || 0, confirmacoes: conf || [] }); setErro(""); })
         .catch((e) => (sessaoExpirada(e) ? sairPorSessao() : setErro("Não foi possível carregar o painel. Verifique a internet."))),
     [sairPorSessao]
   );
@@ -294,6 +333,16 @@ export default function Painel() {
       sessaoExpirada(e) ? sairPorSessao() : setAviso("Sem conexão. Tente de novo.");
     }
     setOcupado(false);
+  }
+
+  async function decidirConta(celular, aprovar) {
+    try {
+      const r = await rpc("admin_conta_confirmar", { p_token: sessao.token, p_celular: celular, p_aprovar: aprovar });
+      setAviso(r.ok ? (aprovar ? "Conta confirmada: ela já vê o histórico." : "Acesso retirado. Se for a dona do número, envie o link de acesso.") : r.erro);
+      if (r.ok) carregar(sessao.token);
+    } catch (e) {
+      sessaoExpirada(e) ? sairPorSessao() : setAviso("Sem conexão. Tente de novo.");
+    }
   }
 
   async function gerarAcesso(celular) {
@@ -441,7 +490,7 @@ export default function Painel() {
           {[
             ["agenda", "Agenda", 0],
             ["sinais", "Sinais", vis.sinais.length],
-            ["clientes", "Clientes", 0],
+            ["clientes", "Clientes", dados.confirmacoes?.length || 0],
             ["manut", "Manutenção", vis.vencendo],
           ].map(([k, t, n]) => (
             <button key={k} type="button" aria-pressed={aba === k} onClick={() => { setAba(k); setAberto(null); }}>
@@ -522,6 +571,14 @@ export default function Painel() {
 
         {aba === "clientes" && (
           <section className="adm-secao">
+            {dados.confirmacoes?.length > 0 && (
+              <div className="conf-bloco">
+                <h2 className="ag-dia-titulo"><span>Aguardando confirmação</span><small>{dados.confirmacoes.length}</small></h2>
+                <ul className="conf-lista">
+                  {dados.confirmacoes.map((c) => <ConfirmacaoConta key={c.celular} c={c} decidir={decidirConta} />)}
+                </ul>
+              </div>
+            )}
             <button type="button" className="botao-linha nova-cliente" onClick={() => setFichaCliente({})}>
               <IconeMais width="20" height="20" /> Nova cliente
             </button>
