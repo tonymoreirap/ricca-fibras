@@ -1349,6 +1349,7 @@ button.kpi { cursor: pointer; }
 .sv-editor { overflow-x: hidden; }
 .sv-editor .form input, .sv-editor .form textarea { width: 100%; min-width: 0; box-sizing: border-box; }
 .duas > div { min-width: 0; }
+.duas input, .duas select, .duas textarea { width: 100%; min-width: 0; }
 .sv-icones button { min-width: 0; }
 
 /* ---------- marca do salão (logo enviada ou iniciais) ---------- */
