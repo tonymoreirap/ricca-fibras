@@ -1517,3 +1517,10 @@ img.entrar-monograma, .barra-marca img, .v-rodape img, .rede-capa img, .cert img
 /* carregando: fora da Rica, um anel nas cores do salão no lugar do monograma */
 body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--ouro-rgb) / 0.25); border-top-color: var(--ouro); animation: girar 0.9s linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }
+
+/* ---------- Política de privacidade ---------- */
+.privacidade h1 { font-family: var(--display); font-weight: 400; font-size: 2rem; margin-top: 0.5rem; }
+.privacidade-data { margin-top: 0.3rem; font-size: 0.85rem; color: var(--apagado); }
+.privacidade h2 { margin-top: 1.6rem; font-family: var(--display); font-weight: 400; font-size: 1.25rem; color: var(--ouro-claro); }
+.privacidade p, .privacidade li { margin-top: 0.6rem; color: var(--claro-suave); line-height: 1.6; }
+.privacidade ul { padding-left: 1.2rem; }
