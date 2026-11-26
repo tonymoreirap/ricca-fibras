@@ -1464,10 +1464,10 @@ img.entrar-monograma, .barra-marca img, .v-rodape img, .rede-capa img, .cert img
 .emp-nome strong { font-family: var(--display); font-weight: 400; font-size: 1.2rem; }
 .emp-nome a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.85rem; color: var(--ouro-claro); text-underline-offset: 3px; }
 .emp-topo .chip { flex: none; font-size: 0.72rem; padding: 0.2rem 0.6rem; }
-.emp-numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(4.6rem, 1fr)); gap: 0.5rem; margin: 0.9rem 0 0; }
+.emp-numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.4rem, 1fr)); gap: 0.5rem; margin: 0.9rem 0 0; }
 .emp-numeros div { padding: 0.55rem 0.6rem; border-radius: 0.8rem; background: rgb(var(--claro-rgb) / 0.04); }
 .emp-numeros dt { font-size: 0.72rem; color: var(--apagado); line-height: 1.25; }
-.emp-numeros dd { margin: 0.15rem 0 0; font-family: var(--display); font-size: 1.25rem; }
+.emp-numeros dd { margin: 0.15rem 0 0; font-family: var(--display); font-size: 1.25rem; white-space: nowrap; }
 .emp-modulos, .emp-dona { margin-top: 0.7rem; font-size: 0.85rem; color: var(--claro-suave); }
 .emp-dona { margin-top: 0.3rem; color: var(--apagado); overflow-wrap: anywhere; }
 .emp-acoes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.85rem; }
