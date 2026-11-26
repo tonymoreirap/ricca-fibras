@@ -7,6 +7,7 @@ import CampoSenha from "../../../components/CampoSenha";
 import { rpc } from "../../../lib/supabase";
 import { lerSessao, salvarSessao } from "../../../lib/sessao";
 import { useSalao, LogoDe } from "../../../components/Empresa";
+import BotaoGoogle from "../../../components/BotaoGoogle";
 
 export default function EntrarEquipe() {
   const salao = useSalao();
@@ -73,6 +74,8 @@ export default function EntrarEquipe() {
             ? "Agenda, sinais, clientes e manutenções."
             : "Use o código que você recebeu e crie a sua senha."}
         </p>
+
+        {modo === "entrar" && <BotaoGoogle texto="Entrar com Google" />}
 
         <form className="form" onSubmit={enviar}>
           <label htmlFor="email">E-mail</label>

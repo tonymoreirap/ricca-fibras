@@ -58,7 +58,7 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
       <head>{paleta && <style id="paleta" dangerouslySetInnerHTML={{ __html: paleta }} />}</head>
-      <body>
+      <body className={s ? `marca-${s.slug}` : undefined}>
         {!s ? (
           <SemSalao titulo="Salão não encontrado" texto="Confira o endereço que você recebeu. Se o link estiver certo, fale com o salão." />
         ) : !s.ativa ? (

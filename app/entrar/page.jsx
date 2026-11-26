@@ -9,6 +9,7 @@ import { rpc } from "../../lib/supabase";
 import { mascaraCelular } from "../../lib/formato";
 import { lerSessao, salvarSessao } from "../../lib/sessao";
 import { useSalao, LogoDe } from "../../components/Empresa";
+import BotaoGoogle from "../../components/BotaoGoogle";
 import { aContato, AContato, linkWhats } from "../../lib/empresa";
 
 function Formulario() {
@@ -103,6 +104,8 @@ function Formulario() {
           Primeira vez
         </button>
       </div>
+
+      <BotaoGoogle convite={convite} texto={convite ? "Ativar meu acesso com Google" : "Continuar com Google"} />
 
       <form className="form" onSubmit={enviar}>
         {modo === "criar" && convite && (
