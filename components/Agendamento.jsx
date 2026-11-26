@@ -5,12 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { rpc } from "../lib/supabase";
 import { useSalao } from "./Empresa";
-import { aContato, AContato, linkWhats } from "../lib/empresa";
+import { aContato, AContato, linkWhats, iniciais } from "../lib/empresa";
 import {
   real, mascaraCelular, celularFormatado, hojeISO, somaDias, diaSemana, instante,
   hora, dataLonga,
 } from "../lib/formato";
-import { blocosDoDia, paraIntervalos, primeiroNome } from "../lib/agenda";
+import { blocosEquipe, ocupadosDaEquipe, primeiroNome } from "../lib/agenda";
 import { lerSessao, salvarSessao, limparSessao } from "../lib/sessao";
 import CampoSenha from "./CampoSenha";
 import { IlustracaoServico, IconeSeta, IconeVoltar, IconeRelogio, IconeCadeado } from "./Icones";
@@ -66,6 +66,8 @@ export default function Agendamento() {
   const [carregandoAgenda, setCarregandoAgenda] = useState(false);
   const [dia, setDia] = useState(null);
   const [inicio, setInicio] = useState(null);
+  const [equipe, setEquipe] = useState([]);
+  const [prof, setProf] = useState(null); // null = qualquer uma
 
   const [nome, setNome] = useState("");
   const [celular, setCelular] = useState("");
@@ -107,17 +109,37 @@ export default function Agendamento() {
     const de = `${mesBase}-01`;
     const ate = somaDias(`${mesBase}-01`, 41);
     setCarregandoAgenda(true);
-    rpc("horarios_ocupados", { p_de: de, p_ate: ate })
-      .then((l) => setOcupados(paraIntervalos(l)))
+    ocupadosDaEquipe(rpc, de, ate)
+      .then(setOcupados)
       .catch(() => setOcupados([]))
       .finally(() => setCarregandoAgenda(false));
   }, [mesBase, etapa]);
+
+  // quem faz o serviço escolhido
+  useEffect(() => {
+    if (!servico) return;
+    let vivo = true;
+    rpc("equipe_publica", { p_servico: servico.codigo })
+      .then((l) => {
+        if (!vivo) return;
+        const lista = Array.isArray(l) ? l : [];
+        setEquipe(lista);
+        setProf((p) => (lista.some((x) => x.id === p) ? p : null));
+      })
+      .catch(() => vivo && setEquipe([]));
+    return () => {
+      vivo = false;
+    };
+  }, [servico]);
+
+  const ids = prof ? [prof] : equipe.map((x) => x.id);
+  const escolhida = equipe.find((x) => x.id === prof);
 
   const limite = somaDias(hoje, JANELA_DIAS);
 
   function vagasDoDia(iso) {
     if (!servico || iso < hoje || iso > limite) return [];
-    return blocosDoDia(salao, iso, servico.duracao_min, ocupados, 60);
+    return blocosEquipe(salao, iso, servico.duracao_min, ocupados, ids, 60);
   }
 
   // grade do mês
@@ -149,13 +171,14 @@ export default function Agendamento() {
     setErro("");
     try {
       const logada = Boolean(sessao?.token);
-      const r = await rpc("agendar", {
+      const r = await rpc(equipe.length ? "agendar_com" : "agendar", {
         p_servico: servico.codigo,
         p_inicio: new Date(inicio).toISOString(),
         p_nome: logada ? sessao.nome : nome.trim(),
         p_celular: logada ? sessao.celular : digitos,
         p_senha: logada ? null : senha,
         p_token: sessao?.token || null,
+        ...(equipe.length ? { p_profissional: prof } : {}),
       });
       if (!r.ok) {
         if (logada) {
@@ -179,8 +202,8 @@ export default function Agendamento() {
       if (/reservado/i.test(e.message)) {
         setInicio(null);
         setEtapa("data");
-        rpc("horarios_ocupados", { p_de: `${mesBase}-01`, p_ate: somaDias(`${mesBase}-01`, 41) })
-          .then((l) => setOcupados(paraIntervalos(l)))
+        ocupadosDaEquipe(rpc, `${mesBase}-01`, somaDias(`${mesBase}-01`, 41))
+          .then(setOcupados)
           .catch(() => {});
       }
       setEnviando(false);
@@ -281,6 +304,37 @@ export default function Agendamento() {
                 <small>{Math.round(servico.duracao_min / 60)} horas · {real(servico.valor)}</small>
               </span>
             </div>
+
+            {equipe.length > 1 && (
+              <div className="com-quem">
+                <h2 className="etapa-titulo">Com quem?</h2>
+                <div className="com-quem-lista" role="radiogroup" aria-label="Profissional">
+                  {[{ id: null, nome: "Qualquer uma" }, ...equipe].map((p) => (
+                    <button
+                      key={p.id || "qualquer"}
+                      type="button"
+                      role="radio"
+                      aria-checked={prof === p.id}
+                      className={`com-quem-item ${prof === p.id ? "ativo" : ""}`}
+                      onClick={() => {
+                        setProf(p.id);
+                        setInicio(null);
+                      }}
+                    >
+                      <span className="com-quem-avatar" aria-hidden="true">
+                        {p.id ? iniciais(p.nome) : "✦"}
+                      </span>
+                      <span className="com-quem-nome">{p.id ? primeiroNome(p.nome) : p.nome}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="com-quem-nota">
+                  {escolhida
+                    ? `Mostrando só os horários de ${primeiroNome(escolhida.nome)}.`
+                    : "Mostramos todos os horários livres. O salão escolhe quem estiver disponível."}
+                </p>
+              </div>
+            )}
 
             <h1 className="etapa-titulo">Escolha o dia</h1>
             <div className="calendario vidro">
@@ -414,6 +468,12 @@ export default function Agendamento() {
                   {hora(inicio)} às {hora(inicio + servico.duracao_min * 60000)}
                 </strong>
               </div>
+              {equipe.length > 1 && (
+                <div className="resumo-linha">
+                  <span>Profissional</span>
+                  <strong>{escolhida ? escolhida.nome : "Quem estiver livre"}</strong>
+                </div>
+              )}
               <div className="resumo-linha">
                 <span>Valor do serviço{servico.valor_cheio ? " (promoção)" : ""}</span>
                 <strong>

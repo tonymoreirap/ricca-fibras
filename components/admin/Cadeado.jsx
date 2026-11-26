@@ -16,7 +16,8 @@ export const IconeCadeado = (p) => (
 let planosCache;
 
 // Folha que explica o recurso travado e leva para o plano que o libera
-export function FolhaPlano({ recurso, aoFechar }) {
+// "extra": em vez de trocar de plano, pede profissionais extras (plano Salão)
+export function FolhaPlano({ recurso, aoFechar, extra }) {
   const salao = useSalao();
   const r = RECURSOS[recurso] || {};
   const [dados, setDados] = useState(planosCache || null);
@@ -25,21 +26,27 @@ export function FolhaPlano({ recurso, aoFechar }) {
     rpc("planos_publicos").then((d) => setDados((planosCache = d))).catch(() => setDados({ planos: [] }));
   }, []);
   const plano = dados?.planos?.find((p) => p.codigo === r.plano);
-  const msg = `Oi! Sou de ${salao.nome} (${salao.slug}.tonsdellas.com.br) e quero mudar para o plano ${NOME_PLANO[r.plano]} para usar: ${r.nome}.`;
+  const msg = extra
+    ? `Oi! Sou de ${salao.nome} (${salao.slug}.tonsdellas.com.br) e quero adicionar profissionais extras na minha equipe.`
+    : `Oi! Sou de ${salao.nome} (${salao.slug}.tonsdellas.com.br) e quero mudar para o plano ${NOME_PLANO[r.plano]} para usar: ${r.nome}.`;
   return (
     <div className="folha-fundo" onClick={aoFechar}>
       <div className="folha folha-plano" role="dialog" aria-modal="true" aria-labelledby="fp-titulo" onClick={(e) => e.stopPropagation()}>
         <span className="folha-alca" aria-hidden="true" />
         <span className="fp-cadeado" aria-hidden="true"><IconeCadeado width="26" height="26" /></span>
-        <h2 id="fp-titulo" className="folha-titulo">{r.nome}</h2>
-        {r.texto && <p className="fp-texto">{r.texto}</p>}
+        <h2 id="fp-titulo" className="folha-titulo">{extra ? "Equipe completa" : r.nome}</h2>
+        {extra ? (
+          <p className="fp-texto">Sua equipe chegou ao limite do plano. Cada profissional a mais entra na mensalidade.</p>
+        ) : (
+          r.texto && <p className="fp-texto">{r.texto}</p>
+        )}
         <div className="fp-plano">
-          <span>Disponível a partir do plano</span>
-          <strong>{NOME_PLANO[r.plano]}</strong>
-          {plano && <small>{precoPlano(plano.preco)} por mês</small>}
+          <span>{extra ? "Profissional extra" : "Disponível a partir do plano"}</span>
+          <strong>{extra ? (plano?.extra_profissional ? `+ ${precoPlano(plano.extra_profissional)}` : "Sob consulta") : NOME_PLANO[r.plano]}</strong>
+          {extra ? <small>por mês, cada uma</small> : plano && <small>{precoPlano(plano.preco)} por mês</small>}
         </div>
         <a className="botao-ouro" href={linkVendas(dados?.whatsapp, msg)} target="_blank" rel="noopener">
-          Quero o plano {NOME_PLANO[r.plano]}
+          {extra ? "Quero adicionar profissionais" : `Quero o plano ${NOME_PLANO[r.plano]}`}
         </a>
         <Link className="botao-linha" href="/admin/plano">Comparar os planos</Link>
         <button type="button" className="folha-fechar" onClick={aoFechar}>Agora não</button>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { rpc } from "../../lib/supabase";
 import { real, hora, hojeISO, somaDias, mascaraCelular, celularFormatado, dataLonga, instante, FUSO } from "../../lib/formato";
-import { blocosDoDia, horarioDoDia, paraIntervalos, primeiroNome } from "../../lib/agenda";
+import { blocosEquipe, horarioDoDia, ocupadosDaEquipe, primeiroNome } from "../../lib/agenda";
 import { whatsCliente, msgConfirmacao } from "../../lib/mensagens";
 import { useSalao } from "../Empresa";
 import { IconeBusca, IconeConversa } from "../Icones";
@@ -30,16 +30,31 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [feito, setFeito] = useState(null);
+  const [equipe, setEquipe] = useState([]);
+  const [prof, setProf] = useState(inicial?.profissional || null); // null = quem estiver livre
 
   const ficha = useMemo(() => (cliente ? clientes.find((c) => c.celular === cliente.celular) : null), [cliente, clientes]);
 
   useEffect(() => {
     rpc("servicos_agendaveis").then(setServicos).catch(() => setErro("Não foi possível carregar os serviços."));
     const hoje = hojeISO();
-    rpc("horarios_ocupados", { p_de: hoje, p_ate: somaDias(hoje, DIAS) })
-      .then((l) => setOcupados(paraIntervalos(l)))
+    ocupadosDaEquipe(rpc, hoje, somaDias(hoje, DIAS))
+      .then(setOcupados)
       .catch(() => setOcupados([]));
   }, []);
+
+  // quem faz o serviço escolhido
+  useEffect(() => {
+    if (!servico) return;
+    rpc("equipe_publica", { p_servico: servico.codigo })
+      .then((l) => {
+        const lista = Array.isArray(l) ? l : [];
+        setEquipe(lista);
+        setProf((p) => (lista.some((x) => x.id === p) ? p : null));
+      })
+      .catch(() => setEquipe([]));
+  }, [servico]);
+  const ids = prof ? [prof] : equipe.map((x) => x.id);
 
   // serviço sugerido: quem já fez fibra vai para manutenção
   useEffect(() => {
@@ -54,17 +69,17 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
     const lista = [];
     for (let i = 0; i <= DIAS && lista.length < 8; i++) {
       const iso = somaDias(hojeISO(), i);
-      for (const b of blocosDoDia(salao, iso, servico.duracao_min, ocupados, 0)) if (b.livre && lista.length < 8) lista.push(b);
+      for (const b of blocosEquipe(salao, iso, servico.duracao_min, ocupados, ids, 0)) if (b.livre && lista.length < 8) lista.push(b);
     }
     return lista;
-  }, [servico, ocupados]);
+  }, [servico, ocupados, prof, equipe]);
 
   const [ocupadosDia, setOcupadosDia] = useState([]);
   useEffect(() => {
     if (!outroDia || !dia) return;
-    rpc("horarios_ocupados", { p_de: dia, p_ate: somaDias(dia, 1) }).then((l) => setOcupadosDia(paraIntervalos(l))).catch(() => setOcupadosDia([]));
+    ocupadosDaEquipe(rpc, dia, somaDias(dia, 1)).then(setOcupadosDia).catch(() => setOcupadosDia([]));
   }, [outroDia, dia]);
-  const blocosDia = servico && outroDia ? blocosDoDia(salao, dia, servico.duracao_min, ocupadosDia, -180) : [];
+  const blocosDia = servico && outroDia ? blocosEquipe(salao, dia, servico.duracao_min, ocupadosDia, ids, -180) : [];
 
   const sugestoes = useMemo(() => {
     const t = busca.trim().toLowerCase();
@@ -80,13 +95,14 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
     setEnviando(true);
     setErro("");
     try {
-      const r = await rpc("admin_agendar", {
+      const r = await rpc(equipe.length ? "admin_agendar_com" : "admin_agendar", {
         p_token: token,
         p_servico: servico.codigo,
         p_inicio: new Date(inicio).toISOString(),
         p_nome: quem.nome,
         p_celular: quem.celular,
         p_confirmado: pago,
+        ...(equipe.length ? { p_profissional: prof } : {}),
       });
       if (!r.ok) throw new Error(r.erro);
       setFeito({ ...r.agendamento, convite: r.convite, demo: ficha?.demo });
@@ -107,6 +123,7 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
             <h2 id="nh-ok" className="folha-titulo">Horário marcado</h2>
             <p className="pronto-sub">{feito.cliente_nome}</p>
             <p className="pronto-quando">{dataLonga(feito.inicio)} · {hora(feito.inicio)} às {hora(feito.fim)}</p>
+            {equipe.length > 1 && feito.profissional_nome && <p className="pronto-nota">Com {feito.profissional_nome}</p>}
             <p className="pronto-nota">{feito.servico_nome} · {feito.status === "confirmado" ? "sinal recebido" : `sinal de ${real(feito.sinal)} pendente`}</p>
             {feito.demo ? (
               <p className="ag-links-off">Cliente de exemplo: WhatsApp desligado.</p>
@@ -179,6 +196,19 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
             </button>
           ))}
         </div>
+
+        {equipe.length > 1 && (
+          <>
+            <p className="nh-rotulo">Com quem</p>
+            <div className="pilulas pilulas-lado nh-equipe" role="radiogroup" aria-label="Profissional">
+              {[{ id: null, nome: "Quem estiver livre" }, ...equipe].map((p) => (
+                <button key={p.id || "qualquer"} type="button" role="radio" aria-checked={prof === p.id} onClick={() => { setProf(p.id); setInicio(null); }}>
+                  {p.id ? primeiroNome(p.nome) : p.nome}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
         <p className="nh-rotulo">{outroDia ? "Escolha o dia e o horário" : "Próximos horários livres"}</p>
         {!outroDia ? (

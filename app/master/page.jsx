@@ -34,7 +34,7 @@ function Folha({ inicial, token, planos, aoFechar, aoSalvo }) {
   const [f, setF] = useState({
     nome: "", slug: "", dominio: "", ativa: true, paleta: "cafe-ouro", dona_nome: "", dona_email: "",
     modulos: { agenda: true, curso: true, rede: true, promocoes: true, natal: true },
-    plano: "essencial", situacao: "teste", teste_ate: "", vence_em: "", cortesias: [],
+    plano: "essencial", situacao: "teste", teste_ate: "", vence_em: "", cortesias: [], profissionais_extra: 0,
     ...inicial,
     dominio: inicial.dominio || "",
     teste_ate: inicial.teste_ate || "",
@@ -42,7 +42,8 @@ function Folha({ inicial, token, planos, aoFechar, aoSalvo }) {
     cortesias: inicial.cortesias || [],
   });
   const recPlano = planos.find((p) => p.codigo === f.plano)?.recursos || [];
-  const extras = Object.keys(RECURSOS).filter((r) => r !== "agenda" && !recPlano.includes(r));
+  const extras = Object.keys(RECURSOS).filter((r) => r !== "agenda" && !r.startsWith("equipe") && !recPlano.includes(r));
+  const planoAtual = planos.find((p) => p.codigo === f.plano);
   const [mexeuSlug, setMexeuSlug] = useState(!novo);
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -72,7 +73,7 @@ function Folha({ inicial, token, planos, aoFechar, aoSalvo }) {
       const plano = await rpc("master_empresa_plano", {
         p_token: token,
         p_id: novo ? r.id : f.id,
-        p: novo ? { plano: f.plano, cortesias: cort } : { plano: f.plano, situacao: f.situacao, teste_ate: f.teste_ate, vence_em: f.vence_em, cortesias: cort },
+        p: novo ? { plano: f.plano, cortesias: cort } : { plano: f.plano, situacao: f.situacao, teste_ate: f.teste_ate, vence_em: f.vence_em, cortesias: cort, profissionais_extra: String(f.profissionais_extra || 0) },
       });
       if (!plano.ok) throw new Error(plano.erro);
       if (novo) setPronto(r);
@@ -183,6 +184,17 @@ function Folha({ inicial, token, planos, aoFechar, aoSalvo }) {
               </div>
             </div>
             <small className="ms-dica">Sem data de vencimento, o salão não sai do ar sozinho (cortesia).</small>
+            {planoAtual?.extra_profissional > 0 && (
+              <>
+                <label htmlFor="emp-extra">Profissionais extras ({precoPlano(planoAtual.extra_profissional)} cada)</label>
+                <input id="emp-extra" inputMode="numeric" value={f.profissionais_extra}
+                  onChange={(e) => muda("profissionais_extra")(e.target.value.replace(/\D/g, "").slice(0, 2))} />
+                <small className="ms-dica">
+                  Equipe de até {planoAtual.profissionais + Number(f.profissionais_extra || 0)} profissionais
+                  {Number(f.profissionais_extra) > 0 ? ` · mensalidade ${precoPlano(Number(planoAtual.preco) + Number(planoAtual.extra_profissional) * Number(f.profissionais_extra))}` : ""}.
+                </small>
+              </>
+            )}
           </div>
         )}
 
@@ -237,6 +249,7 @@ function Empresa({ e, aoEditar, aoNovoAcesso }) {
         <div><dt>Clientes</dt><dd>{e.clientes}</dd></div>
         <div><dt>Agendamentos 30 dias</dt><dd>{e.agendamentos_30d}</dd></div>
         <div><dt>Serviços</dt><dd>{e.servicos}</dd></div>
+        {e.limite_equipe != null && <div><dt>Equipe</dt><dd>{e.equipe_ativa} de {e.limite_equipe}</dd></div>}
       </dl>
       <p className="emp-modulos">
         <span className="chip chip-ouro">{NOME_PLANO[e.plano] || e.plano}</span>

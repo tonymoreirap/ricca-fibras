@@ -71,7 +71,7 @@ function msgManutencao(salao, c, origem) {
   ].join("\n");
 }
 
-function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
+function Item({ a, aberto, alternar, mudar, ocupado, origem, comEquipe }) {
   const salao = useSalao();
   const [confirmarCancelar, setConfirmarCancelar] = useState(false);
   const st = STATUS[a.status];
@@ -85,7 +85,11 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
         </span>
         <span className="ag-texto">
           <strong>{a.cliente_nome}</strong>
-          <small>{a.servico_nome}{a.demo && <em className="selo-exemplo">exemplo</em>}</small>
+          <small>
+            {a.servico_nome}
+            {comEquipe && a.profissional_nome && <span className="ag-prof"> · com {primeiroNome(a.profissional_nome)}</span>}
+            {a.demo && <em className="selo-exemplo">exemplo</em>}
+          </small>
         </span>
         <span className={`chip ${st.classe}`}>{st.texto}</span>
       </button>
@@ -263,6 +267,7 @@ export default function Painel() {
   const [limpar, setLimpar] = useState(false);
   const [verAlertas, setVerAlertas] = useState(false);
   const [travado, setTravado] = useState(null);
+  const [filtroProf, setFiltroProf] = useState(null);
   const tema = useTema();
   const alertas = useAlertas(dados);
   const resumoDia = useResumoDoDia(alertas.lista, Boolean(dados));
@@ -299,8 +304,12 @@ export default function Painel() {
         rpc("admin_painel", { p_token: token }),
         rpc("admin_curso_novas", { p_token: token }).catch(() => 0),
         rpc("admin_confirmacoes", { p_token: token }).catch(() => []),
+        rpc("admin_equipe", { p_token: token }).catch(() => null),
       ])
-        .then(([d, novas, conf]) => { setDados({ ...d, curso_novas: novas || 0, confirmacoes: conf || [] }); setErro(""); })
+        .then(([d, novas, conf, eq]) => {
+          setDados({ ...d, curso_novas: novas || 0, confirmacoes: conf || [], equipe: eq?.equipe || [], limite_equipe: eq?.limite || 1 });
+          setErro("");
+        })
         .catch((e) => (sessaoExpirada(e) ? sairPorSessao() : setErro("Não foi possível carregar o painel. Verifique a internet."))),
     [sairPorSessao]
   );
@@ -393,8 +402,9 @@ export default function Painel() {
     const agora = Date.now();
     const hoje = hojeISO();
     const lista = dados.agendamentos;
-    const futuros = lista.filter((a) => diaDe(a.inicio) >= hoje && a.status !== "cancelado");
-    const passados = lista.filter((a) => diaDe(a.inicio) < hoje).reverse();
+    const daAgenda = filtroProf ? lista.filter((a) => a.profissional_id === filtroProf) : lista;
+    const futuros = daAgenda.filter((a) => diaDe(a.inicio) >= hoje && a.status !== "cancelado");
+    const passados = daAgenda.filter((a) => diaDe(a.inicio) < hoje).reverse();
     const agrupar = (l) => {
       const g = new Map();
       l.forEach((a) => { const k = diaDe(a.inicio); if (!g.has(k)) g.set(k, []); g.get(k).push(a); });
@@ -420,7 +430,7 @@ export default function Painel() {
       vencendo: manut.filter((c) => c.manutencao.dias_restantes <= 5 && !c.proximo).length,
       clientes,
     };
-  }, [dados, busca, ordem]);
+  }, [dados, busca, ordem, filtroProf]);
 
   if (!dados || !vis) {
     return (
@@ -433,6 +443,8 @@ export default function Painel() {
   }
 
   const { eu, resumo } = dados;
+  const ativas = dados.equipe.filter((q) => q.ativo);
+  const comEquipe = ativas.length > 1;
   const alternar = (k) => setAberto((v) => (v === k ? null : k));
 
   return (
@@ -535,6 +547,16 @@ export default function Painel() {
           </span>
         </Link>
 
+        <Link href="/admin/equipe" className="atalho-curso vidro">
+          <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="flor" tamanho={32} /></span>
+          <span className="atalho-curso-texto">
+            <strong>Equipe</strong>
+            <small>
+              {ativas.length} de {dados.limite_equipe} {dados.limite_equipe === 1 ? "profissional" : "profissionais"} no seu plano
+            </small>
+          </span>
+        </Link>
+
         <nav className="segmento" aria-label="Seções">
           {[
             ["agenda", "Agenda", 0],
@@ -551,13 +573,22 @@ export default function Painel() {
 
         {aba === "agenda" && (
           <section className="adm-secao">
+            {comEquipe && (
+              <div className="ag-filtro" role="radiogroup" aria-label="Agenda de quem">
+                {[{ id: null, nome: "Todas" }, ...ativas].map((q) => (
+                  <button key={q.id || "todas"} type="button" role="radio" aria-checked={filtroProf === q.id} onClick={() => { setFiltroProf(q.id); setAberto(null); }}>
+                    {q.id ? primeiroNome(q.nome) : q.nome}
+                  </button>
+                ))}
+              </div>
+            )}
             {vis.dias.length === 0 && <p className="bloco-vazio">Nenhum horário marcado daqui pra frente.</p>}
             {vis.dias.map(([dia, itens]) => (
               <div key={dia} className="ag-dia">
                 <h2 className="ag-dia-titulo"><span>{rotuloDia(dia)}</span><small>{itens.length}</small></h2>
                 <ul className="ag-lista vidro">
                   {itens.map((a) => (
-                    <Item key={a.codigo} a={a} aberto={aberto === a.codigo} alternar={() => alternar(a.codigo)} mudar={mudar} ocupado={ocupado} origem={origem} />
+                    <Item key={a.codigo} a={a} aberto={aberto === a.codigo} alternar={() => alternar(a.codigo)} mudar={mudar} ocupado={ocupado} origem={origem} comEquipe={comEquipe} />
                   ))}
                 </ul>
               </div>
@@ -573,7 +604,7 @@ export default function Painel() {
                   <h2 className="ag-dia-titulo"><span>{rotuloDia(dia)}</span><small>{itens.length}</small></h2>
                   <ul className="ag-lista vidro">
                     {itens.map((a) => (
-                      <Item key={a.codigo} a={a} aberto={aberto === a.codigo} alternar={() => alternar(a.codigo)} mudar={mudar} ocupado={ocupado} origem={origem} />
+                      <Item key={a.codigo} a={a} aberto={aberto === a.codigo} alternar={() => alternar(a.codigo)} mudar={mudar} ocupado={ocupado} origem={origem} comEquipe={comEquipe} />
                     ))}
                   </ul>
                 </div>
