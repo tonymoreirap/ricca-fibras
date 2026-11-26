@@ -41,7 +41,8 @@ export default function Recibo() {
   useEffect(() => {
     setOrigem(window.location.origin);
     setLogada(Boolean(lerSessao("cliente")?.token));
-    rpc("consultar_agendamento", { p_codigo: String(codigo) })
+    rpc("consultar_reserva", { p_codigo: String(codigo) })
+      .catch(() => rpc("consultar_agendamento", { p_codigo: String(codigo) }))
       .then(async (l) => {
         if (!l.length) {
           setErro("Recibo não encontrado. Confira o código.");
@@ -241,6 +242,7 @@ export default function Recibo() {
 
               <dl className="recibo-linhas">
                 <div><dt>Cliente</dt><dd>{a.cliente_nome}</dd></div>
+                {a.profissional_nome && <div><dt>Profissional</dt><dd>{a.profissional_nome}</dd></div>}
                 <div><dt>Valor do serviço</dt><dd>{real(a.valor)}</dd></div>
                 <div><dt>Sinal (30%) via Pix</dt><dd>{real(a.sinal)}</dd></div>
                 <div className="recibo-total"><dt>Restante no dia</dt><dd>{real(Number(a.valor) - Number(a.sinal))}</dd></div>

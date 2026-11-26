@@ -11,7 +11,9 @@ export async function GET(request, { params }) {
   try {
     const salao = await empresaDoPedido();
     if (!salao) return new Response("Salão não encontrado.", { status: 404 });
-    const lista = await rpcDoPedido("consultar_agendamento", { p_codigo: limpo });
+    const lista = await rpcDoPedido("consultar_reserva", { p_codigo: limpo }).catch(() =>
+      rpcDoPedido("consultar_agendamento", { p_codigo: limpo })
+    );
     if (!lista?.length) return new Response("Recibo não encontrado.", { status: 404 });
     const a = lista[0];
     const origem = new URL(request.url).origin;

@@ -29,6 +29,7 @@ export function mensagemRecibo(salao, a, origem) {
     `Cliente: ${a.cliente_nome}`,
     a.cliente_celular ? `Celular: ${celularFormatado(a.cliente_celular)}` : null,
     `Serviço: ${a.servico_nome}`,
+    a.profissional_nome ? `Profissional: ${a.profissional_nome}` : null,
     `Data: ${dataLonga(a.inicio)}`,
     `Horário: ${hora(a.inicio)} às ${hora(a.fim)}`,
     `Valor do serviço: ${real(a.valor)}`,

@@ -105,7 +105,8 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
         ...(equipe.length ? { p_profissional: prof } : {}),
       });
       if (!r.ok) throw new Error(r.erro);
-      setFeito({ ...r.agendamento, convite: r.convite, demo: ficha?.demo });
+      // nome da profissional só nas mensagens quando o salão tem equipe
+      setFeito({ ...r.agendamento, profissional_nome: equipe.length > 1 ? r.agendamento.profissional_nome : null, convite: r.convite, demo: ficha?.demo });
       aoSalvar(r.agendamento);
     } catch (e) {
       setErro(e.message);
