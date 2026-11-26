@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
-import { salao } from "../../content/salao";
+import { useSalao } from "../../components/Empresa";
 import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from "../../lib/formato";
-import { STATUS, NIVEL, pagamento, primeiroNome } from "../../lib/agenda";
+import { STATUS, nivelDe, pagamento, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import NovoHorario from "../../components/admin/NovoHorario";
 import FolhaCliente from "../../components/admin/FolhaCliente";
@@ -47,26 +47,29 @@ const ACOES = {
   cancelado: [{ para: "aguardando_sinal", texto: "Reativar horário" }],
 };
 
-function msgSinal(a, origem) {
+const ola = (salao, nome) => `Oi, ${primeiroNome(nome)}! Aqui é ${salao.contato !== salao.nome ? `a ${salao.contato}, da ` : "a equipe da "}${salao.nome}.`;
+
+function msgSinal(salao, a, origem) {
   return [
-    `Oi, ${primeiroNome(a.cliente_nome)}! Aqui é a Luana, da Rica Fibras.`,
+    ola(salao, a.cliente_nome),
     `Seu horário de ${a.servico_nome} está reservado para ${dataLonga(a.inicio)}, às ${hora(a.inicio)}.`,
-    `Para confirmar, falta o sinal de ${real(a.sinal)} via Pix. Chave: ${salao.pix.exibicao}.`,
+    `Para confirmar, falta o sinal de ${real(a.sinal)} via Pix. Chave: ${salao.pix.exibicao || salao.pix.chave}.`,
     `Seu recibo: ${origem}/recibo/${a.codigo}`,
   ].join("\n");
 }
 
-function msgManutencao(c, origem) {
+function msgManutencao(salao, c, origem) {
   const m = c.manutencao;
   const quando = m.dias_restantes < 0 ? `venceu em ${dataDia(m.proxima)}` : `vence em ${dataDia(m.proxima)}`;
   return [
-    `Oi, ${primeiroNome(c.nome)}! Aqui é a Luana, da Rica Fibras.`,
-    `Sua manutenção da fibra ${quando}. Vamos garantir seu horário?`,
+    ola(salao, c.nome),
+    `Sua manutenção${salao.slug === "rica" ? " da fibra" : ""} ${quando}. Vamos garantir seu horário?`,
     `Agende pelo app: ${origem}/agendar?servico=manutencao`,
   ].join("\n");
 }
 
 function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
+  const salao = useSalao();
   const [confirmarCancelar, setConfirmarCancelar] = useState(false);
   const st = STATUS[a.status];
   const pag = pagamento(a, real);
@@ -119,7 +122,7 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
             )}
           </div>
           <div className="ag-links">
-            {a.demo ? <span className="ag-links-off">WhatsApp desligado nos exemplos</span> : <a href={whats(a.cliente_celular, a.status === "aguardando_sinal" ? msgSinal(a, origem) : `Oi, ${primeiroNome(a.cliente_nome)}! Aqui é a Luana, da Rica Fibras.`)} target="_blank" rel="noopener">
+            {a.demo ? <span className="ag-links-off">WhatsApp desligado nos exemplos</span> : <a href={whats(a.cliente_celular, a.status === "aguardando_sinal" ? msgSinal(salao, a, origem) : ola(salao, a.cliente_nome))} target="_blank" rel="noopener">
               <IconeConversa width="18" height="18" /> WhatsApp
             </a>}
             <a href={`/recibo/${a.codigo}/pdf`} target="_blank" rel="noopener">
@@ -133,6 +136,7 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem }) {
 }
 
 function Cliente({ c, aberto, alternar, liberar, agendarPara, editar, gerarAcesso, origem }) {
+  const salao = useSalao();
   const [confirmar, setConfirmar] = useState(false);
   const [convite, setConvite] = useState(null);
   const pedirAcesso = async (fn) => {
@@ -141,7 +145,7 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, editar, gerarAcess
     setConfirmar(false);
   };
   const conta = !c.tem_conta ? "Sem conta no app" : c.verificado ? "Conta verificada" : "Conta criada";
-  const nv = NIVEL[c.nivel] || NIVEL.nova;
+  const nv = nivelDe(c.nivel, salao);
   return (
     <li className={`cl-item vidro ${aberto ? "aberto" : ""}`} data-chave={c.celular}>
       <button type="button" className="cl-linha" onClick={alternar} aria-expanded={aberto}>
@@ -171,7 +175,7 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, editar, gerarAcess
             </button>
             <button type="button" className="acao" onClick={() => editar(c)}>Editar cadastro</button>
             {convite && !c.demo ? (
-              <a className="acao acao-forte" href={whatsCliente(c.celular, msgBoasVindas(c, convite, origem))} target="_blank" rel="noopener">
+              <a className="acao acao-forte" href={whatsCliente(c.celular, msgBoasVindas(salao, c, convite, origem))} target="_blank" rel="noopener">
                 <IconeConversa stroke="currentColor" width="18" height="18" /> Enviar link de acesso
               </a>
             ) : c.tem_conta ? (
@@ -190,11 +194,11 @@ function Cliente({ c, aberto, alternar, liberar, agendarPara, editar, gerarAcess
           </div>
           <div className="ag-links">
             {c.demo ? <span className="ag-links-off">WhatsApp desligado nos exemplos</span> : <>
-            <a href={whats(c.celular, `Oi, ${primeiroNome(c.nome)}! Aqui é a Luana, da Rica Fibras.`)} target="_blank" rel="noopener">
+            <a href={whats(c.celular, ola(salao, c.nome))} target="_blank" rel="noopener">
               <IconeConversa width="18" height="18" /> WhatsApp
             </a>
             {c.manutencao && (
-              <a href={whats(c.celular, msgManutencao(c, origem))} target="_blank" rel="noopener">
+              <a href={whats(c.celular, msgManutencao(salao, c, origem))} target="_blank" rel="noopener">
                 Lembrar manutenção
               </a>
             )}
@@ -242,6 +246,7 @@ function ConfirmacaoConta({ c, decidir }) {
 }
 
 export default function Painel() {
+  const salao = useSalao();
   const router = useRouter();
   const [sessao, setSessao] = useState(null);
   const [dados, setDados] = useState(null);
@@ -430,7 +435,7 @@ export default function Painel() {
     <div className="app app-admin">
       <header className="adm-topo">
         <div>
-          <p className="c-saudacao">{tema === "natal" ? "Boas festas · Painel Rica Fibras" : "Painel Rica Fibras"}</p>
+          <p className="c-saudacao">{tema === "natal" ? `Boas festas · Painel ${salao.nome}` : `Painel ${salao.nome}`}</p>
           <h1>
             Olá, {primeiroNome(eu.nome)}
             {eu.papel === "master" && <span className="selo selo-master">Master</span>}
@@ -477,14 +482,32 @@ export default function Painel() {
           </div>
         </section>
 
-        <Link href="/admin/curso" className="atalho-curso vidro">
+        <Link href="/admin/salao" className="atalho-curso vidro">
+          <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="flor" tamanho={32} /></span>
+          <span className="atalho-curso-texto">
+            <strong>Meu salão</strong>
+            <small>Fotos, cores, WhatsApp, Instagram, Pix e horários</small>
+          </span>
+        </Link>
+
+        {eu.papel === "master" && (
+          <Link href="/master" className="atalho-curso vidro">
+            <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="brilho" tamanho={32} /></span>
+            <span className="atalho-curso-texto">
+              <strong>Empresas</strong>
+              <small>Salões, módulos e acessos das donas</small>
+            </span>
+          </Link>
+        )}
+
+        {(salao.modulos.curso || salao.modulos.rede) && <Link href="/admin/curso" className="atalho-curso vidro">
           <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="curso" tamanho={34} /></span>
           <span className="atalho-curso-texto">
             <strong>Curso e Rede</strong>
             <small>{dados.curso_novas ? `${dados.curso_novas} ${dados.curso_novas === 1 ? "inscrição nova" : "inscrições novas"}` : "Turmas, inscrições e certificadas"}</small>
           </span>
           {dados.curso_novas > 0 && <i className="atalho-curso-n">{dados.curso_novas}</i>}
-        </Link>
+        </Link>}
 
         <Link href="/admin/servicos" className="atalho-curso vidro">
           <span className="atalho-curso-arte" aria-hidden="true"><IlustracaoServico tipo="brilho" tamanho={32} /></span>
@@ -657,7 +680,7 @@ export default function Painel() {
                           {c.demo ? (
                             <span className="acao acao-off">Lembrar (exemplo)</span>
                           ) : (
-                            <a className="acao acao-forte" href={whats(c.celular, msgManutencao(c, origem))} target="_blank" rel="noopener">
+                            <a className="acao acao-forte" href={whats(c.celular, msgManutencao(salao, c, origem))} target="_blank" rel="noopener">
                               <IconeConversa stroke="currentColor" width="18" height="18" /> Lembrar
                             </a>
                           )}

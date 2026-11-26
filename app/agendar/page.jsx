@@ -1,7 +1,11 @@
 import { Suspense } from "react";
 import Agendamento from "../../components/Agendamento";
+import { empresaDoPedido } from "../../lib/empresaServidor";
 
-export const metadata = { title: "Agendar — Rica Fibras" };
+export async function generateMetadata() {
+  const s = await empresaDoPedido();
+  return { title: `Agendar — ${s?.nome || ""}` };
+}
 
 export default function Agendar() {
   return (

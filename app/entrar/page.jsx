@@ -8,9 +8,11 @@ import CampoSenha from "../../components/CampoSenha";
 import { rpc } from "../../lib/supabase";
 import { mascaraCelular } from "../../lib/formato";
 import { lerSessao, salvarSessao } from "../../lib/sessao";
-import { salao } from "../../content/salao";
+import { useSalao, LogoDe } from "../../components/Empresa";
+import { aContato, AContato, linkWhats } from "../../lib/empresa";
 
 function Formulario() {
+  const salao = useSalao();
   const router = useRouter();
   const busca = useSearchParams();
   const [modo, setModo] = useState(busca.get("nova") === "1" ? "criar" : "entrar");
@@ -85,7 +87,7 @@ function Formulario() {
 
   return (
     <main className="tela tela-entrar">
-      <img className="entrar-monograma" src="/monograma.webp" alt="" width="112" height="112" />
+      <LogoDe salao={salao} tamanho={112} className="entrar-monograma" />
       <h1>{modo === "entrar" ? "Entrar" : "Criar sua conta"}</h1>
       <p className="tela-sub">
         {modo === "entrar"
@@ -104,12 +106,12 @@ function Formulario() {
 
       <form className="form" onSubmit={enviar}>
         {modo === "criar" && convite && (
-          <p className="convite-ok">A {salao.contato} já fez o seu cadastro. Só falta criar a sua senha.</p>
+          <p className="convite-ok">{AContato(salao)} já fez o seu cadastro. Só falta criar a sua senha.</p>
         )}
         {modo === "criar" && !convite && (
           <>
             <label htmlFor="nome">Seu nome</label>
-            <input id="nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Como a Luana te chama" />
+            <input id="nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Como você gosta de ser chamada" />
           </>
         )}
         <label htmlFor="celular">{modo === "entrar" ? "Celular ou e-mail" : "Celular com WhatsApp"}</label>
@@ -141,7 +143,7 @@ function Formulario() {
 
       {modo === "entrar" && (
         <p className="nota-senha">
-          Esqueceu a senha? <a href={`https://wa.me/${salao.whatsapp}?text=${encodeURIComponent("Oi, Luana! Esqueci minha senha do app da Rica Fibras.")}`} target="_blank" rel="noopener">Peça para a Luana liberar</a> e crie uma nova em “Primeira vez”.
+          Esqueceu a senha? <a href={linkWhats(salao, `Oi, ${salao.contato}! Esqueci minha senha do app da ${salao.nome}.`) || `https://instagram.com/${salao.instagram}`} target="_blank" rel="noopener">Peça para {aContato(salao)} liberar</a> e crie uma nova em “Primeira vez”.
         </p>
       )}
 

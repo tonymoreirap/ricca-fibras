@@ -2,21 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { temaDoDia } from "../lib/tema";
+import { useSalao } from "./Empresa";
 
 // ?tema=natal ou ?tema=padrao para pré-visualizar (vale só nesta aba)
-function escolherTema() {
+function escolherTema(temas) {
   try {
     const q = new URLSearchParams(window.location.search).get("tema");
     if (q) sessionStorage.setItem("rica:tema", q);
     const forcado = sessionStorage.getItem("rica:tema");
     if (forcado) return forcado === "padrao" ? null : forcado;
   } catch {}
-  return temaDoDia();
+  return temaDoDia(temas);
 }
 
 export function useTema() {
+  const { temas } = useSalao();
   const [tema, setTema] = useState(null);
-  useEffect(() => setTema(escolherTema()), []);
+  useEffect(() => setTema(escolherTema(temas)), [temas]);
   return tema;
 }
 

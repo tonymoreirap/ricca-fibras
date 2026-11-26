@@ -10,6 +10,7 @@ import { lerSessao, limparSessao, sessaoExpirada } from "../../../lib/sessao";
 import { EXPERIENCIA, STATUS_INSCRICAO, periodoTurma, instagramUrl } from "../../../lib/curso";
 import MenuApp from "../../../components/MenuApp";
 import { IconeConversa, IconeMais, IconeCalendario, IconeCoroa } from "../../../components/Icones";
+import { useSalao } from "../../../components/Empresa";
 
 const quando = (d) => new Date(d).toLocaleDateString("pt-BR", { timeZone: FUSO, day: "2-digit", month: "short" }).replace(".", "");
 const whats = (cel, t) => `https://wa.me/55${cel}?text=${encodeURIComponent(t)}`;
@@ -116,6 +117,7 @@ function FolhaPro({ inicial, turmas, token, aoFechar, aoSalvar }) {
 }
 
 export default function AdminCurso() {
+  const salao = useSalao();
   const router = useRouter();
   const [token, setToken] = useState(null);
   const [d, setD] = useState(null);
@@ -163,7 +165,7 @@ export default function AdminCurso() {
     <div className="app app-admin">
       <header className="adm-topo">
         <div>
-          <p className="c-saudacao">Método Rica em Mesa</p>
+          <p className="c-saudacao">{salao.curso.nome}</p>
           <h1>Curso e Rede</h1>
         </div>
         <Link href="/curso" className="barra-link">Ver página</Link>
@@ -174,7 +176,7 @@ export default function AdminCurso() {
             <span>Inscrições novas</span><strong>{novas}</strong><small>aguardando contato</small>
           </button>
           <button type="button" className="kpi vidro" onClick={() => setAba("rede")}>
-            <span>Certificadas</span><strong>{d.profissionais.filter((p) => p.codigo).length}</strong><small>na Rede Método Rica</small>
+            <span>Certificadas</span><strong>{d.profissionais.filter((p) => p.codigo).length}</strong><small>{salao.slug === "rica" ? "na Rede Método Rica" : "na rede de profissionais"}</small>
           </button>
         </section>
 
@@ -204,7 +206,7 @@ export default function AdminCurso() {
                       {i.mensagem && <p className="insc-msg">“{i.mensagem}”</p>}
                       <div className="insc-acoes">
                         {i.demo ? <span className="acao acao-off">WhatsApp (exemplo)</span> : (
-                          <a className="acao acao-forte" href={whats(i.celular, `Oi, ${primeiroNome(i.nome)}! Aqui é a Luana, da Rica Fibras. Recebi seu pedido do ${i.tipo === "vip" ? "curso VIP" : `curso (${i.turma})`}.`)} target="_blank" rel="noopener" onClick={() => i.status === "nova" && status(i, "contatada")}>
+                          <a className="acao acao-forte" href={whats(i.celular, `Oi, ${primeiroNome(i.nome)}! Aqui é ${salao.contato !== salao.nome ? `a ${salao.contato}, da ` : "a equipe da "}${salao.nome}. Recebi seu pedido do ${i.tipo === "vip" ? "curso VIP" : `curso (${i.turma})`}.`)} target="_blank" rel="noopener" onClick={() => i.status === "nova" && status(i, "contatada")}>
                             <IconeConversa stroke="currentColor" width="18" height="18" /> {celularFormatado(i.celular)}
                           </a>
                         )}

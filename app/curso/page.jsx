@@ -8,11 +8,14 @@ import { rpc } from "../../lib/supabase";
 import { real, mascaraCelular, dataDiaMes } from "../../lib/formato";
 import { periodoTurma } from "../../lib/curso";
 import { lerSessao } from "../../lib/sessao";
-import { curso } from "../../content/curso";
-import { salao } from "../../content/salao";
+import { cursoDo } from "../../content/curso";
+import { useSalao } from "../../components/Empresa";
+import { aContato, AContato, linkWhats } from "../../lib/empresa";
 import { IlustracaoServico, IconeCheck, IconeConversa, IconeSeta } from "../../components/Icones";
 
 export default function Curso() {
+  const salao = useSalao();
+  const curso = cursoDo(salao);
   const [turmas, setTurmas] = useState(null);
   const [escolha, setEscolha] = useState("vip");
   const [nome, setNome] = useState("");
@@ -66,9 +69,9 @@ export default function Curso() {
     form.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const whats = `https://wa.me/${salao.whatsapp}?text=${encodeURIComponent(
-    `Oi, Luana! Acabei de me inscrever no ${curso.nome}${turmaEscolhida ? ` (${turmaEscolhida.nome})` : " (curso individual)"}. Meu nome é ${nome.trim()}.`
-  )}`;
+  const whats = linkWhats(salao,
+    `Oi, ${salao.contato}! Acabei de me inscrever no ${curso.nome}${turmaEscolhida ? ` (${turmaEscolhida.nome})` : " (curso individual)"}. Meu nome é ${nome.trim()}.`
+  ) || `https://instagram.com/${salao.instagram}`;
 
   return (
     <div className="app app-curso">
@@ -78,7 +81,7 @@ export default function Curso() {
         <span className="cr-arte" aria-hidden="true">
           <IlustracaoServico tipo="curso" tamanho={72} />
         </span>
-        <p className="cr-sobre">Curso com a {salao.contato}</p>
+        <p className="cr-sobre">Curso com {aContato(salao)}</p>
         <h1>{curso.nome}</h1>
         <p className="cr-chamada">{curso.chamada}</p>
         <div className="cr-acoes">
@@ -92,7 +95,7 @@ export default function Curso() {
       </header>
 
       <main className="tela">
-        <section className="bloco">
+        {curso.topicos.length > 0 && <section className="bloco">
           <div className="bloco-cabeca">
             <h2>O que você aprende</h2>
             <span className="bloco-fio" aria-hidden="true" />
@@ -105,7 +108,7 @@ export default function Curso() {
               </li>
             ))}
           </ul>
-        </section>
+        </section>}
 
         <section className="bloco">
           <div className="bloco-cabeca">
@@ -173,10 +176,10 @@ export default function Curso() {
             <div className="cr-feito vidro entra">
               <span className="reservado-icone" aria-hidden="true">✓</span>
               <h3>Inscrição recebida</h3>
-              <p>A {salao.contato} vai te chamar no WhatsApp com os detalhes. Se preferir, adiante a conversa.</p>
+              <p>{AContato(salao)} vai te chamar no WhatsApp com os detalhes. Se preferir, adiante a conversa.</p>
               <a className="botao-ouro" href={whats} target="_blank" rel="noopener">
                 <IconeConversa stroke="currentColor" />
-                Falar com a {salao.contato}
+                Falar com {aContato(salao)}
               </a>
             </div>
           ) : (
@@ -218,7 +221,7 @@ export default function Curso() {
               <button className="botao-ouro" type="submit" disabled={!valido || enviando}>
                 {enviando ? "Enviando…" : escolha === "vip" ? "Pedir o curso individual" : "Garantir minha vaga"}
               </button>
-              <p className="cr-nota">Sem pagamento agora. A {salao.contato} confirma a vaga com você pelo WhatsApp.</p>
+              <p className="cr-nota">Sem pagamento agora. {AContato(salao)} confirma a vaga com você pelo WhatsApp.</p>
             </form>
           )}
         </section>

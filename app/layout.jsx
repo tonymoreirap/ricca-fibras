@@ -7,38 +7,70 @@ import "./globals.css";
 import RegistrarSW from "../components/RegistrarSW";
 import Gradientes from "../components/Gradientes";
 import TemaSazonal from "../components/TemaSazonal";
+import { EmpresaProvider } from "../components/Empresa";
+import { empresaDoPedido, hostDoPedido } from "../lib/empresaServidor";
+import { cssPaleta, corDeFundo } from "../lib/paletas";
 
-export const metadata = {
-  metadataBase: new URL("https://tonsdellas.com.br"),
-  title: "Rica Fibras — alongamento em fibra de vidro",
-  description:
-    "Alongamento em fibra de vidro, esmaltação em gel, manicure e design de sobrancelhas. Agende seu horário.",
-  appleWebApp: { capable: true, title: "Rica Fibras", statusBarStyle: "black-translucent" },
-  icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
-  openGraph: {
-    title: "Rica Fibras",
-    description: "Fibra de vidro com acabamento de joia.",
-    locale: "pt_BR",
-    type: "website",
-    images: [{ url: "/rica-fundo.webp", width: 720, height: 1080 }],
-  },
-};
+export async function generateMetadata() {
+  const s = await empresaDoPedido();
+  const host = await hostDoPedido();
+  const base = new URL(`https://${host && !host.startsWith("localhost") ? host : "tonsdellas.com.br"}`);
+  if (!s) return { metadataBase: base, title: "Salão não encontrado" };
+  const capa = s.fotoCapa || s.logo;
+  return {
+    metadataBase: base,
+    title: s.slug === "rica" ? "Rica Fibras — alongamento em fibra de vidro" : s.nome,
+    description: s.descricaoSite,
+    appleWebApp: { capable: true, title: s.nome, statusBarStyle: "black-translucent" },
+    icons: s.slug === "rica" || !s.logo ? { icon: "/icon-192.png", apple: "/icon-192.png" } : { icon: s.logo, apple: s.logo },
+    openGraph: {
+      title: s.nome,
+      description: s.titulo,
+      locale: "pt_BR",
+      type: "website",
+      ...(capa ? { images: [{ url: capa }] } : {}),
+    },
+  };
+}
 
-export const viewport = {
-  themeColor: "#1E1310",
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-};
+export async function generateViewport() {
+  const s = await empresaDoPedido();
+  return {
+    themeColor: s ? corDeFundo(s.paleta) : "#1E1310",
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+  };
+}
 
-export default function RootLayout({ children }) {
+function SemSalao({ titulo, texto }) {
+  return (
+    <main className="sem-salao">
+      <h1>{titulo}</h1>
+      <p>{texto}</p>
+    </main>
+  );
+}
+
+export default async function RootLayout({ children }) {
+  const s = await empresaDoPedido();
+  const paleta = s && (s.paleta !== "cafe-ouro" || s.cor) ? cssPaleta(s.paleta, s.cor) : null;
   return (
     <html lang="pt-BR">
+      <head>{paleta && <style id="paleta" dangerouslySetInnerHTML={{ __html: paleta }} />}</head>
       <body>
-        <Gradientes />
-        <TemaSazonal />
-        {children}
-        <RegistrarSW />
+        {!s ? (
+          <SemSalao titulo="Salão não encontrado" texto="Confira o endereço que você recebeu. Se o link estiver certo, fale com o salão." />
+        ) : !s.ativa ? (
+          <SemSalao titulo={s.nome} texto="Este app está temporariamente fora do ar. Fale com o salão pelo WhatsApp ou Instagram." />
+        ) : (
+          <EmpresaProvider salao={s}>
+            <Gradientes />
+            <TemaSazonal />
+            {children}
+            <RegistrarSW />
+          </EmpresaProvider>
+        )}
       </body>
     </html>
   );

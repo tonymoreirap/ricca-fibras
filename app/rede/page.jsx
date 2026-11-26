@@ -8,8 +8,12 @@ import { rpc } from "../../lib/supabase";
 import { lerSessao } from "../../lib/sessao";
 import { instagramUrl } from "../../lib/curso";
 import { IconeCamera, IconeConversa, IconeSeta } from "../../components/Icones";
+import { useSalao, LogoDe } from "../../components/Empresa";
 
 export default function Rede() {
+  const salao = useSalao();
+  const rica = salao.slug === "rica";
+  const selo = rica ? "Método Rica" : salao.curso.nome;
   const [lista, setLista] = useState(null);
   const [cidade, setCidade] = useState("");
 
@@ -27,9 +31,9 @@ export default function Rede() {
       <BarraTopo voltar="/curso" direita={<BotaoConta />} />
       <main className="tela">
         <section className="rede-capa entra">
-          <img src="/monograma.webp" alt="" width="72" height="72" />
-          <h1>Rede Método Rica</h1>
-          <p>Profissionais formadas e certificadas pela Luana. Cada certificado tem um código que você pode conferir.</p>
+          <LogoDe salao={salao} tamanho={72} />
+          <h1>{rica ? "Rede Método Rica" : `Profissionais ${salao.nome}`}</h1>
+          <p>Profissionais formadas e certificadas {salao.contato !== salao.nome ? `pela ${salao.contato}` : `pela ${salao.nome}`}. Cada certificado tem um código que você pode conferir.</p>
         </section>
 
         {cidades.length > 1 && (
@@ -59,7 +63,7 @@ export default function Rede() {
                     <small>{p.cidade} · {p.uf}</small>
                   </span>
                 </div>
-                <span className="pro-selo">Certificada Método Rica · {String(p.certificada_em).slice(0, 4)}</span>
+                <span className="pro-selo">Certificada {selo} · {String(p.certificada_em).slice(0, 4)}</span>
                 {p.bio && <p className="pro-bio">{p.bio}</p>}
                 <div className="pro-acoes">
                   {p.instagram && !p.demo && (

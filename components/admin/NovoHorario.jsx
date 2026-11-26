@@ -5,6 +5,7 @@ import { rpc } from "../../lib/supabase";
 import { real, hora, hojeISO, somaDias, mascaraCelular, celularFormatado, dataLonga, instante, FUSO } from "../../lib/formato";
 import { blocosDoDia, horarioDoDia, paraIntervalos, primeiroNome } from "../../lib/agenda";
 import { whatsCliente, msgConfirmacao } from "../../lib/mensagens";
+import { useSalao } from "../Empresa";
 import { IconeBusca, IconeConversa } from "../Icones";
 
 const DIAS = 21;
@@ -13,6 +14,7 @@ const rotuloVaga = (ms) =>
 
 // Agendar em poucos toques: cliente → (serviço sugerido) → próximo horário livre → salvar → avisar no WhatsApp
 export default function NovoHorario({ token, inicial, clientes = [], aoFechar, aoSalvar }) {
+  const salao = useSalao();
   const [servicos, setServicos] = useState([]);
   const [servico, setServico] = useState(null);
   const [ocupados, setOcupados] = useState(null);
@@ -52,7 +54,7 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
     const lista = [];
     for (let i = 0; i <= DIAS && lista.length < 8; i++) {
       const iso = somaDias(hojeISO(), i);
-      for (const b of blocosDoDia(iso, servico.duracao_min, ocupados, 0)) if (b.livre && lista.length < 8) lista.push(b);
+      for (const b of blocosDoDia(salao, iso, servico.duracao_min, ocupados, 0)) if (b.livre && lista.length < 8) lista.push(b);
     }
     return lista;
   }, [servico, ocupados]);
@@ -62,7 +64,7 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
     if (!outroDia || !dia) return;
     rpc("horarios_ocupados", { p_de: dia, p_ate: somaDias(dia, 1) }).then((l) => setOcupadosDia(paraIntervalos(l))).catch(() => setOcupadosDia([]));
   }, [outroDia, dia]);
-  const blocosDia = servico && outroDia ? blocosDoDia(dia, servico.duracao_min, ocupadosDia, -180) : [];
+  const blocosDia = servico && outroDia ? blocosDoDia(salao, dia, servico.duracao_min, ocupadosDia, -180) : [];
 
   const sugestoes = useMemo(() => {
     const t = busca.trim().toLowerCase();
@@ -109,7 +111,7 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
             {feito.demo ? (
               <p className="ag-links-off">Cliente de exemplo: WhatsApp desligado.</p>
             ) : (
-              <a className="botao-ouro" href={whatsCliente(feito.cliente_celular, msgConfirmacao(feito, feito.convite, window.location.origin))} target="_blank" rel="noopener">
+              <a className="botao-ouro" href={whatsCliente(feito.cliente_celular, msgConfirmacao(salao, feito, feito.convite, window.location.origin))} target="_blank" rel="noopener">
                 <IconeConversa stroke="currentColor" /> Enviar confirmação para {primeiroNome(feito.cliente_nome)}
               </a>
             )}
@@ -200,7 +202,7 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
               <input type="date" aria-label="Dia" value={dia} min={somaDias(hojeISO(), -1)} onChange={(e) => { setDia(e.target.value); setInicio(null); }} />
             </div>
             {dia && <p className="folha-dia">{dataLonga(instante(dia, 12))}</p>}
-            {!horarioDoDia(dia) ? (
+            {!horarioDoDia(salao, dia) ? (
               <p className="bloco-vazio">O salão não abre neste dia.</p>
             ) : blocosDia.length === 0 ? (
               <p className="bloco-vazio">Sem horários restantes neste dia.</p>

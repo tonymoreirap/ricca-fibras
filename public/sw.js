@@ -1,6 +1,6 @@
 // Service worker simples: busca na rede primeiro e guarda uma cópia
 // para o site abrir mesmo sem internet.
-const CACHE = "rica-v5";
+const CACHE = "rica-v6";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.add("/")));
@@ -40,7 +40,7 @@ self.addEventListener("push", (event) => {
     m = { corpo: event.data && event.data.text() };
   }
   event.waitUntil(
-    self.registration.showNotification(m.titulo || "Rica Fibras", {
+    self.registration.showNotification(m.titulo || m.empresa || "Avisos do salão", {
       body: m.corpo || "",
       icon: "/icon-192.png",
       badge: "/icon-192.png",

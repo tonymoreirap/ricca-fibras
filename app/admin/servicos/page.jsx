@@ -8,6 +8,7 @@ import { lerSessao, limparSessao, sessaoExpirada } from "../../../lib/sessao";
 import { precoServico, linhaServico } from "../../../lib/servicos";
 import MenuApp from "../../../components/MenuApp";
 import { IlustracaoServico, ICONES_SERVICO, IconeMais } from "../../../components/Icones";
+import Interruptor from "../../../components/admin/Interruptor";
 
 const DURACOES = [30, 60, 90, 120, 150, 180, 240];
 const duracaoTexto = (m) => (m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)}h${m % 60}` : `${m / 60}h`);
@@ -16,19 +17,6 @@ const vazio = {
   codigo: "", nome: "", descricao: "", resumo: "", icone: "brilho", valor: "", ciclo_dias: "",
   visivel: true, destaque: false, selo: "", agenda_online: false, duracao_min: 60, sinal_pct: 30,
 };
-
-function Interruptor({ ligado, aoMudar, rotulo, texto }) {
-  return (
-    <label className="interruptor">
-      <span>
-        <strong>{rotulo}</strong>
-        {texto && <small>{texto}</small>}
-      </span>
-      <input type="checkbox" role="switch" checked={ligado} onChange={(e) => aoMudar(e.target.checked)} />
-      <i aria-hidden="true" />
-    </label>
-  );
-}
 
 // Como o serviço aparece no site, enquanto a dona edita
 function Previa({ s }) {

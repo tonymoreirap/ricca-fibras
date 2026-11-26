@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { rpc } from "../lib/supabase";
-import { salao } from "../content/salao";
+import { useSalao } from "./Empresa";
+import { aContato, AContato, linkWhats } from "../lib/empresa";
 import {
   real, mascaraCelular, celularFormatado, hojeISO, somaDias, diaSemana, instante,
   hora, dataLonga,
@@ -19,10 +20,10 @@ const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julh
 const SEMANA = ["D", "S", "T", "Q", "Q", "S", "S"];
 const JANELA_DIAS = 60;
 
-export function mensagemRecibo(a, origem) {
+export function mensagemRecibo(salao, a, origem) {
   const restante = Number(a.valor) - Number(a.sinal);
   return [
-    "Olá, Luana! Acabei de agendar pelo app da Rica Fibras.",
+    `Olá, ${salao.contato}! Acabei de agendar pelo app da ${salao.nome}.`,
     "",
     `*Recibo de agendamento ${a.codigo}*`,
     `Cliente: ${a.cliente_nome}`,
@@ -50,6 +51,7 @@ export function guardarCodigo(codigo) {
 }
 
 export default function Agendamento() {
+  const salao = useSalao();
   const router = useRouter();
   const params = useSearchParams();
 
@@ -112,7 +114,7 @@ export default function Agendamento() {
 
   function vagasDoDia(iso) {
     if (!servico || iso < hoje || iso > limite) return [];
-    return blocosDoDia(iso, servico.duracao_min, ocupados, 60);
+    return blocosDoDia(salao, iso, servico.duracao_min, ocupados, 60);
   }
 
   // grade do mês
@@ -242,8 +244,8 @@ export default function Agendamento() {
             </div>
             <p className="nota-outros">
               Outros serviços?{" "}
-              <a href={`https://wa.me/${salao.whatsapp}`} target="_blank" rel="noopener">
-                Fale com a {salao.contato}
+              <a href={linkWhats(salao) || `https://instagram.com/${salao.instagram}`} target="_blank" rel="noopener">
+                Fale com {aContato(salao)}
               </a>
             </p>
             {sessao?.token ? (
@@ -364,7 +366,7 @@ export default function Agendamento() {
             ) : (
               <>
                 <h1 className="etapa-titulo">Seus dados</h1>
-                <p className="tela-sub">A Luana usa esses dados para confirmar o seu horário.</p>
+                <p className="tela-sub">{AContato(salao)} usa esses dados para confirmar o seu horário.</p>
                 <div className="form">
                   <label htmlFor="nome">Nome</label>
                   <input id="nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome" />

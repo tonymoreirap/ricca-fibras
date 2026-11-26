@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { salao } from "../content/salao";
+import { useSalao } from "./Empresa";
+import { formatarHora, canalAgendar } from "../lib/empresa";
 
 // Calcula "Aberto agora" / "Fechado" pelo horário de Fortaleza.
-function status(agora) {
+function status(salao, agora) {
   const partes = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Fortaleza",
     weekday: "short",
@@ -19,18 +20,19 @@ function status(agora) {
     Number(partes.find((p) => p.type === "minute").value) / 60;
   const hoje = salao.horarios.find((h) => h.diasSemana.includes(dia));
   if (hoje?.abre != null && hora >= hoje.abre && hora < hoje.fecha) {
-    return { aberto: true, texto: `Aberto agora · até ${hoje.fecha}h` };
+    return { aberto: true, texto: `Aberto agora · até ${formatarHora(hoje.fecha)}` };
   }
-  return { aberto: false, texto: "Fechado agora · agende pelo WhatsApp" };
+  return { aberto: false, texto: `Fechado agora · agende pelo ${canalAgendar(salao)}` };
 }
 
 export default function StatusAberto() {
+  const salao = useSalao();
   const [s, setS] = useState(null);
   useEffect(() => {
-    setS(status(new Date()));
-    const t = setInterval(() => setS(status(new Date())), 60000);
+    setS(status(salao, new Date()));
+    const t = setInterval(() => setS(status(salao, new Date())), 60000);
     return () => clearInterval(t);
-  }, []);
+  }, [salao]);
   if (!s) return <span className="status status-vazio" aria-hidden="true" />;
   return (
     <span className={`status ${s.aberto ? "status-aberto" : ""}`}>

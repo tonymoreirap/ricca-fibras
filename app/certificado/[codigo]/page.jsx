@@ -5,9 +5,10 @@ import { useParams } from "next/navigation";
 import BarraTopo from "../../../components/BarraTopo";
 import { rpc } from "../../../lib/supabase";
 import { dataCompleta } from "../../../lib/formato";
-import { salao } from "../../../content/salao";
+import { useSalao, LogoDe } from "../../../components/Empresa";
 
 export default function Certificado() {
+  const salao = useSalao();
   const { codigo } = useParams();
   const [c, setC] = useState(undefined);
 
@@ -31,7 +32,7 @@ export default function Certificado() {
             {c.demo && <p className="aviso-demo cert-exemplo">Certificado de <strong>exemplo</strong>, usado na simulação. Não tem validade.</p>}
             <article className="cert entra">
               <span className="cert-fio" aria-hidden="true" />
-              <img src="/monograma.webp" alt="" width="80" height="80" />
+              <LogoDe salao={salao} tamanho={80} />
               <p className="cert-rotulo">Certificado de conclusão</p>
               <h1>{c.nome}</h1>
               <p className="cert-texto">concluiu o curso <strong>{salao.curso.nome}</strong>{c.turma ? ` (${c.turma})` : ""}, ministrado por {salao.contato}, da {salao.nome}.</p>

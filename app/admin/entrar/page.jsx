@@ -6,8 +6,10 @@ import BarraTopo from "../../../components/BarraTopo";
 import CampoSenha from "../../../components/CampoSenha";
 import { rpc } from "../../../lib/supabase";
 import { lerSessao, salvarSessao } from "../../../lib/sessao";
+import { useSalao, LogoDe } from "../../../components/Empresa";
 
 export default function EntrarEquipe() {
+  const salao = useSalao();
   const router = useRouter();
   const [modo, setModo] = useState("entrar");
   const [email, setEmail] = useState("");
@@ -64,7 +66,7 @@ export default function EntrarEquipe() {
     <div className="app">
       <BarraTopo voltar="/entrar" />
       <main className="tela tela-entrar">
-        <img className="entrar-monograma" src="/monograma.webp" alt="" width="112" height="112" />
+        <LogoDe salao={salao} tamanho={112} className="entrar-monograma" />
         <h1>{modo === "entrar" ? "Painel da equipe" : "Primeiro acesso"}</h1>
         <p className="tela-sub">
           {modo === "entrar"

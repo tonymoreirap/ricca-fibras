@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { salao, linkAgendar, mensagemServico } from "../content/salao";
+import { linkAgendar, mensagemServico, aContato } from "../lib/empresa";
+import { useSalao } from "./Empresa";
 import { precoServico, linhaServico } from "../lib/servicos";
 import Link from "next/link";
 import { IconeSeta, IconeConversa, IconeCalendario, IlustracaoServico } from "./Icones";
 
 export default function ListaServicos({ servicos = [] }) {
+  const salao = useSalao();
   const [aberto, setAberto] = useState(null);
   const assinatura = servicos.find((s) => s.destaque);
   const outros = servicos.filter((s) => s !== assinatura);
@@ -100,12 +102,12 @@ export default function ListaServicos({ servicos = [] }) {
             ) : (
               <a
                 className="botao-ouro"
-                href={linkAgendar(mensagemServico(aberto.nome))}
+                href={linkAgendar(salao, mensagemServico(salao, aberto.nome))}
                 target="_blank"
                 rel="noopener"
               >
                 <IconeConversa stroke="currentColor" />
-                Agendar com a {salao.contato}
+                Agendar com {aContato(salao)}
               </a>
             )}
             <button type="button" className="folha-fechar" onClick={() => setAberto(null)}>

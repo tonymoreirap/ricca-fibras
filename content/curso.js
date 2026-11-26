@@ -28,3 +28,19 @@ export const curso = {
     { codigo: "ja_atendo", nome: "Já atendo clientes" },
   ],
 };
+
+// Curso do salão do endereço. Tópicos fixos só da Rica (os dos outros salões
+// passam a ser editáveis no painel na fase 2).
+export function cursoDo(salao) {
+  const rica = salao?.slug === "rica";
+  const quem = salao?.contato || "a equipe";
+  const troca = (t) => (rica ? t : t.replaceAll("Luana", quem).replaceAll("Rede Rica", "Rede de profissionais"));
+  return {
+    ...curso,
+    nome: salao?.curso?.nome || curso.nome,
+    chamada: rica ? curso.chamada : salao?.curso?.descricao || "Aprenda com quem faz todos os dias e saia com certificado verificável.",
+    formatos: curso.formatos.map((f) => ({ ...f, texto: troca(f.texto) })),
+    topicos: rica ? curso.topicos : [],
+    caminho: curso.caminho.map((p) => ({ titulo: troca(p.titulo), texto: troca(p.texto) })),
+  };
+}

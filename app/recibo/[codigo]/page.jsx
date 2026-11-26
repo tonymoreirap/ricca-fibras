@@ -6,7 +6,8 @@ import Link from "next/link";
 import QRCode from "qrcode";
 import { rpc } from "../../../lib/supabase";
 import { pixCopiaECola } from "../../../lib/pix";
-import { salao } from "../../../content/salao";
+import { useSalao, LogoDe } from "../../../components/Empresa";
+import { aContato, linkWhats } from "../../../lib/empresa";
 import { real, hora, dataLonga, dataCurta } from "../../../lib/formato";
 import { mensagemRecibo, guardarCodigo } from "../../../components/Agendamento";
 import { IconeConversa, IconeVoltar, IlustracaoServico } from "../../../components/Icones";
@@ -14,12 +15,13 @@ import { lerSessao } from "../../../lib/sessao";
 
 const STATUS = {
   aguardando_sinal: { texto: "Aguardando o sinal", classe: "chip-alerta" },
-  confirmado: { texto: "Confirmado pela Luana", classe: "chip-ok" },
+  confirmado: { texto: "Confirmado", classe: "chip-ok" },
   cancelado: { texto: "Cancelado", classe: "" },
   concluido: { texto: "Atendimento concluído", classe: "chip-ok" },
 };
 
 export default function Recibo() {
+  const salao = useSalao();
   const { codigo } = useParams();
   const busca = useSearchParams();
   const novo = busca.get("novo") === "1";
@@ -53,18 +55,18 @@ export default function Recibo() {
         setA(reg);
         setInformado(Boolean(reg.pix_informado_em));
         guardarCodigo(reg.codigo);
-        const p = pixCopiaECola({ ...salao.pix, valor: reg.sinal, identificador: reg.codigo });
+        const p = salao.pix.chave ? pixCopiaECola({ ...salao.pix, valor: reg.sinal, identificador: reg.codigo }) : "";
         setPix(p);
         // prepara o PDF para o compartilhamento nativo (celular)
         fetch(`/recibo/${reg.codigo}/pdf`)
           .then((r) => (r.ok ? r.blob() : null))
           .then((b) => {
             if (!b) return;
-            const f = new File([b], `Recibo-${reg.codigo}-Rica-Fibras.pdf`, { type: "application/pdf" });
+            const f = new File([b], `Recibo-${reg.codigo}-${salao.nome.replace(/[^A-Za-z0-9]+/g, "-")}.pdf`, { type: "application/pdf" });
             if (navigator.canShare?.({ files: [f] })) setArquivo(f);
           })
           .catch(() => {});
-        setQr(
+        if (p) setQr(
           await QRCode.toString(p, {
             type: "svg",
             margin: 1,
@@ -86,25 +88,25 @@ export default function Recibo() {
 
   async function enviarPdf() {
     if (!arquivo) {
-      window.open(whatsLuana, "_blank", "noopener");
+      window.open(whatsSalao, "_blank", "noopener");
       return;
     }
     setEnviando(true);
     try {
       await navigator.share({
         files: [arquivo],
-        title: `Recibo ${a.codigo} — Rica Fibras`,
-        text: `Recibo de agendamento ${a.codigo} — Rica Fibras`,
+        title: `Recibo ${a.codigo} — ${salao.nome}`,
+        text: `Recibo de agendamento ${a.codigo} — ${salao.nome}`,
       });
     } catch (e) {
-      if (e?.name !== "AbortError") window.open(whatsLuana, "_blank", "noopener");
+      if (e?.name !== "AbortError") window.open(whatsSalao, "_blank", "noopener");
     } finally {
       setEnviando(false);
     }
   }
 
-  const whatsLuana = a
-    ? `https://wa.me/${salao.whatsapp}?text=${encodeURIComponent(mensagemRecibo(a, origem))}`
+  const whatsSalao = a
+    ? linkWhats(salao, mensagemRecibo(salao, a, origem)) || `https://instagram.com/${salao.instagram}`
     : "#";
   const pendente = a?.status === "aguardando_sinal";
   const st = a ? STATUS[a.status] : null;
@@ -130,7 +132,7 @@ export default function Recibo() {
                 <span className="reservado-icone" aria-hidden="true">✓</span>
                 <div>
                   <strong>Horário reservado!</strong>
-                  <p>Pague o sinal pelo Pix e envie o comprovante para a Luana confirmar.</p>
+                  <p>Pague o sinal pelo Pix e envie o comprovante para {aContato(salao)} confirmar.</p>
                 </div>
               </div>
             )}
@@ -142,15 +144,21 @@ export default function Recibo() {
                   <h2 id="pix-titulo">Pague o sinal pelo Pix</h2>
                 </div>
                 <p className="pix-valor">{real(a.sinal)}</p>
-                <div className="pix-qr" dangerouslySetInnerHTML={{ __html: qr }} aria-label="QR Code do Pix" role="img" />
-                <button type="button" className="botao-linha" onClick={copiar}>
-                  {copiado ? "Código copiado!" : "Copiar Pix copia e cola"}
-                </button>
-                <p className="pix-chave">
-                  Chave Pix (celular): <strong>{salao.pix.exibicao}</strong>
-                  <br />
-                  Favorecida: Luana · Rica Fibras
-                </p>
+                {pix ? (
+                  <>
+                    <div className="pix-qr" dangerouslySetInnerHTML={{ __html: qr }} aria-label="QR Code do Pix" role="img" />
+                    <button type="button" className="botao-linha" onClick={copiar}>
+                      {copiado ? "Código copiado!" : "Copiar Pix copia e cola"}
+                    </button>
+                    <p className="pix-chave">
+                      Chave Pix: <strong>{salao.pix.exibicao || salao.pix.chave}</strong>
+                      <br />
+                      Favorecida: {salao.contato !== salao.nome ? `${salao.contato} · ` : ""}{salao.pix.nome || salao.nome}
+                    </p>
+                  </>
+                ) : (
+                  <p className="pix-chave">Combine o pagamento do sinal com {aContato(salao)} pelo WhatsApp.</p>
+                )}
 
                 <div className="pix-cabeca pix-cabeca-2">
                   <span className="passo-num">2</span>
@@ -163,17 +171,17 @@ export default function Recibo() {
                       {enviando ? "Abrindo…" : "Enviar recibo em PDF"}
                     </button>
                     <p className="pix-nota">
-                      Escolha o WhatsApp e a conversa com a Luana. Depois envie também o comprovante do Pix.
+                      Escolha o WhatsApp e a conversa com {aContato(salao)}. Depois envie também o comprovante do Pix.
                     </p>
-                    <a className="botao-linha" href={whatsLuana} target="_blank" rel="noopener">
+                    <a className="botao-linha" href={whatsSalao} target="_blank" rel="noopener">
                       Enviar como mensagem
                     </a>
                   </>
                 ) : (
                   <>
-                    <a className="botao-ouro" href={whatsLuana} target="_blank" rel="noopener">
+                    <a className="botao-ouro" href={whatsSalao} target="_blank" rel="noopener">
                       <IconeConversa stroke="currentColor" />
-                      Enviar recibo para a Luana
+                      Enviar recibo para {aContato(salao)}
                     </a>
                     <p className="pix-nota">
                       O WhatsApp abre com o recibo e o link do PDF. É só anexar o comprovante do Pix e enviar.
@@ -186,7 +194,7 @@ export default function Recibo() {
                   <h2>Avise que pagou</h2>
                 </div>
                 {informado ? (
-                  <p className="pix-informado">A Luana foi avisada do seu Pix. Assim que ela conferir, o horário aparece como confirmado.</p>
+                  <p className="pix-informado">Avisamos {aContato(salao)} do seu Pix. Assim que conferir, o horário aparece como confirmado.</p>
                 ) : (
                   <button
                     type="button"
@@ -209,9 +217,9 @@ export default function Recibo() {
 
             <article className="recibo entra" aria-label="Recibo de agendamento">
               <div className="recibo-topo">
-                <img src="/monograma.webp" alt="" width="56" height="56" />
+                <LogoDe salao={salao} tamanho={56} />
                 <div>
-                  <p className="recibo-marca">Rica Fibras</p>
+                  <p className="recibo-marca">{salao.nome}</p>
                   <p className="recibo-tipo">Recibo de agendamento</p>
                 </div>
               </div>
@@ -239,7 +247,7 @@ export default function Recibo() {
               </dl>
 
               <p className="recibo-rodape">
-                Emitido em {dataCurta(a.criado_em)} às {hora(a.criado_em)} · Chave Pix {salao.pix.exibicao}
+                Emitido em {dataCurta(a.criado_em)} às {hora(a.criado_em)} {salao.pix.chave ? ` · Chave Pix ${salao.pix.exibicao || salao.pix.chave}` : ""}
                 <br />
                 Comprovante de agendamento, sem valor fiscal.
               </p>
@@ -248,9 +256,9 @@ export default function Recibo() {
 
             <div className="recibo-acoes nao-imprimir">
               {!pendente && (
-                <a className="botao-ouro" href={whatsLuana} target="_blank" rel="noopener">
+                <a className="botao-ouro" href={whatsSalao} target="_blank" rel="noopener">
                   <IconeConversa stroke="currentColor" />
-                  Falar com a Luana
+                  Falar com {aContato(salao)}
                 </a>
               )}
               <a className="botao-linha" href={`/recibo/${a.codigo}/pdf`} target="_blank" rel="noopener">

@@ -5,10 +5,12 @@ import { rpc } from "../../lib/supabase";
 import { mascaraCelular, celularFormatado } from "../../lib/formato";
 import { primeiroNome } from "../../lib/agenda";
 import { whatsCliente, msgBoasVindas } from "../../lib/mensagens";
+import { useSalao } from "../Empresa";
 import { IconeConversa, IconeCalendario } from "../Icones";
 
 // Cadastrar ou editar cliente. Ao salvar, oferece enviar as boas-vindas e agendar.
 export default function FolhaCliente({ token, inicial, aoFechar, aoSalvo, aoAgendar }) {
+  const salao = useSalao();
   const editando = Boolean(inicial?.celular);
   const [c, setC] = useState({
     nome: inicial?.nome || "",
@@ -46,7 +48,7 @@ export default function FolhaCliente({ token, inicial, aoFechar, aoSalvo, aoAgen
             <h2 id="fc-titulo" className="folha-titulo">{editando ? "Cadastro atualizado" : "Cliente cadastrada"}</h2>
             <p className="pronto-sub">{pronto.nome} · {celularFormatado(pronto.celular)}</p>
             {!inicial?.demo && (
-              <a className="botao-ouro" href={whatsCliente(pronto.celular, msgBoasVindas(pronto, pronto.convite, window.location.origin))} target="_blank" rel="noopener">
+              <a className="botao-ouro" href={whatsCliente(pronto.celular, msgBoasVindas(salao, pronto, pronto.convite, window.location.origin))} target="_blank" rel="noopener">
                 <IconeConversa stroke="currentColor" /> Enviar boas-vindas no WhatsApp
               </a>
             )}

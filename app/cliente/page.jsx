@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
-import { linkAgendar, salao } from "../../content/salao";
+import { linkAgendar, aContato } from "../../lib/empresa";
+import { useSalao, LogoDe } from "../../components/Empresa";
 import { real, hora, dataLonga, FUSO } from "../../lib/formato";
-import { STATUS, NIVEL, primeiroNome } from "../../lib/agenda";
+import { STATUS, nivelDe, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import MenuApp from "../../components/MenuApp";
 import { SoNoTema } from "../../components/TemaSazonal";
@@ -78,6 +79,7 @@ function Manutencao({ m }) {
 }
 
 function Proximo({ a }) {
+  const salao = useSalao();
   const st = STATUS[a.status];
   const pendente = a.status === "aguardando_sinal";
   return (
@@ -100,7 +102,7 @@ function Proximo({ a }) {
       </div>
       {pendente ? (
         <>
-          <p className="proximo-nota">Pague o sinal de {real(a.sinal)} via Pix para a Luana confirmar.</p>
+          <p className="proximo-nota">Pague o sinal de {real(a.sinal)} via Pix para {aContato(salao)} confirmar.</p>
           <Link className="botao-ouro" href={`/recibo/${a.codigo}`}>
             Pagar sinal de {real(a.sinal)}
           </Link>
@@ -116,6 +118,7 @@ function Proximo({ a }) {
 }
 
 function ConfirmarNumero({ conta, token }) {
+  const salao = useSalao();
   const [pedido, setPedido] = useState(Boolean(conta.confirmacao_pedida_em));
   const texto = `Oi, ${salao.contato}! Sou ${conta.nome}. Meu código de confirmação do app é ${conta.codigo}.`;
   const href = `https://wa.me/${salao.whatsapp}?text=${encodeURIComponent(texto)}`;
@@ -127,13 +130,13 @@ function ConfirmarNumero({ conta, token }) {
     <section className="confirmar-numero vidro entra" aria-labelledby="cn-titulo">
       <h2 id="cn-titulo">Confirme que este número é seu</h2>
       <p>
-        Este celular já tem histórico no salão. Para proteger os dados, envie o código abaixo para a {salao.contato} pelo
+        Este celular já tem histórico no salão. Para proteger os dados, envie o código abaixo para {aContato(salao)} pelo
         WhatsApp. Assim que ela conferir, seus atendimentos e recibos aparecem aqui.
       </p>
       <p className="cn-codigo" aria-label={`Código ${conta.codigo}`}>{conta.codigo}</p>
       {pedido ? (
         <>
-          <p className="cn-enviado">Código enviado. Agora é só aguardar a {salao.contato} confirmar.</p>
+          <p className="cn-enviado">Código enviado. Agora é só aguardar {aContato(salao)} confirmar.</p>
           <a className="link-botao cn-de-novo" href={href} target="_blank" rel="noopener" onClick={avisar}>Enviar de novo</a>
         </>
       ) : (
@@ -147,6 +150,7 @@ function ConfirmarNumero({ conta, token }) {
 }
 
 export default function Cliente() {
+  const salao = useSalao();
   const router = useRouter();
   const [dados, setDados] = useState(null);
   const [erro, setErro] = useState("");
@@ -200,16 +204,16 @@ export default function Cliente() {
       </header>
 
       <main className="tela">
-        <section className="cartao-rica entra" aria-label="Cartão Rica">
+        <section className="cartao-rica entra" aria-label={`Cartão ${salao.nome}`}>
           <span className="cartao-brilho" aria-hidden="true" />
           <SoNoTema>
             <span className="cartao-natal">Boas festas</span>
           </SoNoTema>
           <div className="cartao-rica-topo">
-            <img src="/monograma.webp" alt="" width="46" height="46" />
+            <LogoDe salao={salao} tamanho={46} />
             <span className="cartao-nivel">
               <IconeCoroa stroke="currentColor" width="16" height="16" />
-              {(NIVEL[conta.nivel] || NIVEL.nova).texto}
+              {nivelDe(conta.nivel, salao).texto}
             </span>
           </div>
           <p className="cartao-rica-nome">{conta.nome}</p>
@@ -229,7 +233,7 @@ export default function Cliente() {
 
         {!conta.verificado && !conta.precisa_confirmar && (
           <p className="aviso-verificar">
-            Seu histórico completo aparece aqui assim que a Luana confirmar o seu primeiro sinal.
+            Seu histórico completo aparece aqui assim que {aContato(salao)} confirmar o seu primeiro sinal.
           </p>
         )}
 
@@ -296,9 +300,9 @@ export default function Cliente() {
               ))}
             </ol>
           )}
-          <a className="botao-linha" href={linkAgendar(`Oi, Luana! Sou a ${primeiroNome(conta.nome)}.`)} {...ext}>
+          <a className="botao-linha" href={linkAgendar(salao, `Oi, ${salao.contato}! Sou a ${primeiroNome(conta.nome)}.`)} {...ext}>
             <IconeConversa stroke="currentColor" width="20" height="20" />
-            Falar com a Luana
+            Falar com {aContato(salao)}
           </a>
         </section>
       </main>
