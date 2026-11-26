@@ -1640,3 +1640,24 @@ body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--our
 .eq-cheia { opacity: 0.85; }
 .eq-nota { display: block; margin-top: 0.75rem; }
 
+/* Mensalidades (Master) */
+.emp-recebidas { list-style: none; padding: 0; margin: 0.3rem 0 0; }
+.emp-recebidas li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.55rem 0; border-bottom: 1px solid var(--fio); }
+.emp-recebidas span { display: flex; flex-direction: column; }
+.emp-recebidas small { color: var(--apagado); font-size: 0.8rem; }
+.emp-recebidas strong { font-family: var(--display); font-weight: 400; }
+
+/* Mensalidade (Meu plano) */
+.plano-conferir { display: block; margin: 0.75rem auto 0; font-size: 0.88rem; }
+.plano-volta { margin-top: 1rem; padding: 1rem 1.1rem; border-left: 3px solid var(--ouro); }
+.plano-volta strong { font-family: var(--display); font-weight: 400; font-size: 1.15rem; }
+.plano-volta p { margin-top: 0.3rem; font-size: 0.9rem; color: var(--claro-suave); }
+.plano-volta-ok { border-left-color: #6fbf8e; }
+.plano-historico { margin-top: 1.75rem; }
+.plano-historico h2 { font-family: var(--display); font-weight: 400; font-size: 1.2rem; margin-bottom: 0.4rem; }
+.plano-historico ul { list-style: none; padding: 0; margin: 0; }
+.plano-historico li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid var(--fio); }
+.plano-historico li span { display: flex; flex-direction: column; }
+.plano-historico small { color: var(--apagado); font-size: 0.8rem; }
+.plano-historico strong { font-family: var(--display); font-weight: 400; }
+

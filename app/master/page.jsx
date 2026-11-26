@@ -325,6 +325,82 @@ function PlanosPrecos({ token, dados, aoSalvo }) {
   );
 }
 
+// Cobrança automática: liga o app à conta do Mercado Pago do Tony
+function Cobranca({ token, aoAviso }) {
+  const [info, setInfo] = useState(null);
+  const [aberto, setAberto] = useState(false);
+  const [chave, setChave] = useState("");
+  const [erro, setErro] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  useEffect(() => {
+    if (token) rpc("master_cobranca_info", { p_token: token }).then(setInfo).catch(() => {});
+  }, [token]);
+  async function salvar(p) {
+    setEnviando(true);
+    setErro("");
+    try {
+      const r = await rpc("master_cobranca_salvar", { p_token: token, p });
+      if (!r.ok) throw new Error(r.erro);
+      setInfo(r);
+      setChave("");
+      aoAviso(p.desligar ? "Cobrança pelo app desligada." : "Mercado Pago conectado.");
+      if (!p.desligar) setAberto(false);
+    } catch (e) {
+      setErro(e.message);
+    }
+    setEnviando(false);
+  }
+  if (!info) return null;
+  return (
+    <section className="emp-precos vidro">
+      <button type="button" className="emp-precos-topo" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
+        <span>
+          <strong>Mensalidades pelo Mercado Pago</strong>
+          <small>
+            {info.ativa
+              ? `Ligado${info.conta ? ` · ${info.conta}` : ""} · recebido este mês ${precoPlano(info.mes || 0)}`
+              : "Desligado: as donas pagam pelo seu WhatsApp"}
+          </small>
+        </span>
+        <span aria-hidden="true">{aberto ? "−" : "+"}</span>
+      </button>
+      {aberto && (
+        <div className="form form-compacto">
+          {info.teste && <p className="erro">Você conectou uma chave de TESTE: os pagamentos não são de verdade.</p>}
+          <label htmlFor="mp-chave">{info.ativa ? "Trocar a chave (Access Token)" : "Access Token do Mercado Pago"}</label>
+          <input id="mp-chave" type="password" autoComplete="off" value={chave} onChange={(e) => setChave(e.target.value.trim())} placeholder="APP_USR-..." />
+          <small className="ms-dica">
+            No Mercado Pago: Suas integrações → sua aplicação → Credenciais de produção → Access Token. A chave fica guardada
+            só no banco de dados e nunca aparece no app.
+          </small>
+          {erro && <p className="erro">{erro}</p>}
+          <button type="button" className="botao-ouro" disabled={enviando || chave.length < 20} onClick={() => salvar({ chave })}>
+            {enviando ? "Conferindo…" : "Conectar Mercado Pago"}
+          </button>
+          {info.ativa && (
+            <button type="button" className="botao-linha" disabled={enviando} onClick={() => salvar({ desligar: true })}>
+              Desligar cobrança pelo app
+            </button>
+          )}
+          {info.recebidas?.length > 0 && (
+            <>
+              <span className="cr-rotulo">Últimos pagamentos</span>
+              <ul className="emp-recebidas">
+                {info.recebidas.map((r, i) => (
+                  <li key={i}>
+                    <span>{r.empresa}<small>{NOME_PLANO[r.plano] || r.plano} · {new Date(r.pago_em).toLocaleDateString("pt-BR")}</small></span>
+                    <strong>{precoPlano(r.valor)}</strong>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function Master() {
   const router = useRouter();
   const [planos, setPlanos] = useState(null);
@@ -385,6 +461,7 @@ export default function Master() {
           Cada empresa tem o próprio endereço, clientes, agenda e cores. O plano define o que ela usa; cortesias liberam extras.
         </p>
         <PlanosPrecos token={token} dados={planos} aoSalvo={(r) => { setPlanos(r); setAviso("Preços salvos."); }} />
+        <Cobranca token={token} aoAviso={setAviso} />
         <button type="button" className="botao-linha nova-cliente" onClick={() => setEditar({})}>
           <IconeMais width="20" height="20" /> Nova empresa
         </button>
