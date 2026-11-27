@@ -98,7 +98,7 @@ export default function Site({ planos }) {
               </p>
               <div className="st-capa-acoes">
                 <a className="st-botao st-botao-g" href="/criar">Testar 7 dias grátis</a>
-                <a className="st-botao st-botao-l" href="#video">Ver em 30 segundos</a>
+                <a className="st-botao st-botao-l" href="#video">Ver o vídeo (1 min)</a>
               </div>
               <p className="st-capa-nota">7 dias grátis · sem cartão · sem fidelidade</p>
             </div>
@@ -179,12 +179,12 @@ export default function Site({ planos }) {
         <section className="st-sec st-video" id="video">
           <div className="st-in st-video-in">
             <div>
-              <h2 className="st-h2">Veja em 30 segundos</h2>
-              <p className="st-texto">Do primeiro toque da cliente ao aviso no seu celular: é assim que fica o dia a dia com o app.</p>
+              <h2 className="st-h2">Veja em 1 minuto</h2>
+              <p className="st-texto">Da cliente que agenda sozinha, a qualquer hora, ao lucro do mês na palma da mão: é assim que fica o dia a dia com o app.</p>
               <a className="st-botao st-botao-g" href="#planos">Quero para o meu salão</a>
             </div>
             <Celular className="st-cel-video">
-              <video src="/site/site-demo.mp4" poster="/site/site-demo-poster.jpg" controls playsInline preload="none" muted aria-label="Vídeo de 30 segundos mostrando o app" />
+              <video src="/site/tons-dellas-video.mp4" poster="/site/tons-dellas-video-poster.jpg" controls playsInline preload="none" aria-label="Vídeo de 1 minuto mostrando o app" />
             </Celular>
           </div>
         </section>

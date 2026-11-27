@@ -134,6 +134,8 @@ body.site {
 .st-video .st-botao { margin-top: 1.8rem; }
 .st-cel-video { width: min(18rem, 70vw); justify-self: center; }
 @media (min-width: 860px) { .st-video-in { grid-template-columns: 1fr auto; gap: 5rem; } .st-cel-video { width: 19rem; } }
+.st-cel-video { aspect-ratio: auto; }
+.st-cel-video > video { height: auto; aspect-ratio: 9 / 16; object-fit: cover; background: #150d08; }
 
 /* recursos */
 .st-rec { display: grid; gap: 2.5rem; align-items: center; margin-top: clamp(3rem, 7vw, 5.5rem); }
