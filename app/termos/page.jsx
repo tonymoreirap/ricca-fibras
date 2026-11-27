@@ -19,14 +19,23 @@ export default function Termos() {
 
           <h2>1. O que é a Tons Dellas</h2>
           <p>
-            A Tons Dellas oferece, por assinatura mensal, um app para salões de beleza, estúdios e profissionais autônomas: página do
+            A Tons Dellas oferece, por assinatura mensal ou anual, um app para salões de beleza, estúdios e profissionais autônomas: página do
             salão, agendamento online com sinal por Pix, painel de gestão e os demais recursos do plano contratado. Cada salão tem o
             seu próprio endereço e a sua marca.
           </p>
 
           <h2>2. Planos e preços</h2>
           <ul>
-            <li>Os planos, preços e recursos estão na <Link href="/#planos">página de planos</Link>. O valor é mensal e cobrado antes do período de uso.</li>
+            <li>Os planos, preços e recursos estão na <Link href="/#planos">página de planos</Link>. O valor é cobrado antes do período de uso, por mês ou por ano.</li>
+            <li>
+              Teste grátis: ao criar o app pelo site, você usa tudo por 7 dias, sem cartão e sem compromisso. Se não assinar até o fim do
+              teste, o app sai do ar e nada é cobrado. O teste vale uma vez por número de WhatsApp.
+            </li>
+            <li>
+              Plano anual: no primeiro ano, você paga o equivalente a 10 mensalidades por 12 meses de uso (2 meses grátis), à vista ou em até
+              12x no cartão pelo Mercado Pago (o parcelamento pode ter juros do Mercado Pago). A partir do segundo ano, a renovação anual tem o
+              valor mostrado na página de planos, equivalente a 11 mensalidades. A renovação não é automática: você escolhe renovar no painel.
+            </li>
             <li>Clientes e agendamentos são ilimitados em todos os planos. O número de profissionais com agenda própria depende do plano.</li>
             <li>No plano Salão, cada profissional além das 10 incluídas soma R$ 20 por mês.</li>
             <li>Se os preços mudarem, avisamos com pelo menos 30 dias de antecedência. O novo valor vale a partir da renovação seguinte.</li>
@@ -36,7 +45,7 @@ export default function Termos() {
           <ul>
             <li>A mensalidade é paga pelo Mercado Pago, com Pix, cartão de crédito ou boleto. Não guardamos dados de cartão.</li>
             <li>Na assinatura pelo site, o app do salão vai ao ar assim que o Mercado Pago aprova o primeiro pagamento.</li>
-            <li>A renovação é feita pela dona, no painel, em “Meu plano”. Cada pagamento aprovado soma 1 mês ao vencimento.</li>
+            <li>A renovação é feita pela dona, no painel, em “Meu plano”. Cada pagamento aprovado soma 1 mês (mensal) ou 12 meses (anual) ao vencimento.</li>
             <li>O sinal pago pelas clientes vai direto para a chave Pix do salão. A Tons Dellas não recebe, não retém e não cobra taxa sobre esses valores.</li>
           </ul>
 

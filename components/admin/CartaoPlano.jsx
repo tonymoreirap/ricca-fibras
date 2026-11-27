@@ -22,8 +22,10 @@ export function situacaoTexto(p) {
   }
   if (p.situacao === "atrasada") return "Pagamento pendente. Regularize para não sair do ar.";
   if (p.situacao === "suspensa" && !p.vence_em) return "Falta só o pagamento para o app ir ao ar.";
+  if (p.situacao === "suspensa" && p.origem === "cadastro" && p.teste_ate && p.vence_em === p.teste_ate)
+    return "Seu teste grátis terminou. Assine para o app voltar ao ar, com tudo como estava.";
   if (p.situacao === "suspensa") return "App fora do ar para as clientes. Regularize o pagamento.";
-  return p.vence_em ? `Ativo · renova em ${dataCurta(p.vence_em)}` : "Ativo";
+  return p.vence_em ? `Ativo${p.ciclo === "anual" ? " · plano anual" : ""} · renova em ${dataCurta(p.vence_em)}` : "Ativo";
 }
 
 // Cartão "Meu plano" no painel da dona

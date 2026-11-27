@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Cabecalho, Rodape } from "./Moldura";
 import Visitante from "./Visitante";
+import GradePlanos from "./GradePlanos";
 import { RECURSOS, precoPlano } from "../../lib/planos";
 import { CONTATO, ENDERECO_RICA, whatsVendas } from "../../lib/plataforma";
 
@@ -67,10 +68,11 @@ const PERGUNTAS = [
   ["Preciso instalar alguma coisa?", "Não. O app abre pelo navegador, em qualquer celular, e a cliente pode colocá-lo na tela inicial com o ícone do seu salão. Nada de loja de aplicativos."],
   ["Minhas clientes pagam alguma coisa?", "Não. Para as clientes é grátis, e clientes e agendamentos são ilimitados em todos os planos."],
   ["Como recebo o sinal dos agendamentos?", "Direto na sua chave Pix. O app gera o QR Code com o valor certo do sinal; o dinheiro vai da cliente para você, sem passar pela gente e sem taxa nossa."],
-  ["Como pago a mensalidade?", "Pelo Mercado Pago, com Pix, cartão de crédito ou boleto. Você assina pelo site e o app do seu salão vai ao ar assim que o pagamento é aprovado. Depois, renova pelo próprio painel."],
+  ["Como funciona o teste grátis?", "Você cria o app do seu salão e ele já vai ao ar, com tudo liberado por 7 dias. Não pedimos cartão. Se quiser continuar, assina pelo painel; se não, o app sai do ar sozinho e nada é cobrado."],
+  ["Como pago a assinatura?", "Pelo Mercado Pago, com Pix, cartão de crédito ou boleto. Pode ser mensal ou anual: no anual, o 1º ano sai com 2 meses grátis e dá para parcelar em até 12x no cartão. A renovação é feita pelo próprio painel."],
   ["Tem fidelidade ou multa?", "Não. O plano é mensal: se não renovar, o app sai do ar para as clientes, mas seus dados ficam guardados e voltam quando você reativar."],
   ["Posso trocar de plano depois?", "Pode, a qualquer momento, pelo painel. Nada é apagado: o que sair do plano fica guardado e volta se você subir de novo."],
-  ["Quanto tempo leva para começar?", "Uns 2 minutos para assinar e criar o app. Depois você coloca logo, serviços, preços, horários e Pix pelo painel, no seu ritmo, e manda o link para as clientes."],
+  ["Quanto tempo leva para começar?", "Uns 2 minutos para criar o app. Depois você coloca logo, serviços, preços, horários e Pix pelo painel, no seu ritmo, e manda o link para as clientes."],
   ["Posso usar o meu próprio domínio?", "Sim, no plano Salão: seusalao.com.br. Nos outros planos o endereço é seusalao.tonsdellas.com.br, já com cadeado de segurança."],
   ["E se eu tiver dúvida ou problema?", `Fale com a gente pelo WhatsApp ${CONTATO.whatsappTexto} ou pelo e-mail ${CONTATO.email}. É gente de verdade do outro lado.`],
 ];
@@ -95,10 +97,10 @@ export default function Site({ planos }) {
                 celular. Chega de responder “tem horário?” às onze da noite.
               </p>
               <div className="st-capa-acoes">
-                <a className="st-botao st-botao-g" href="#planos">Assinar agora</a>
+                <a className="st-botao st-botao-g" href="/criar">Testar 7 dias grátis</a>
                 <a className="st-botao st-botao-l" href="#video">Ver em 30 segundos</a>
               </div>
-              <p className="st-capa-nota">Pix, cartão ou boleto · sem fidelidade · cancele quando quiser</p>
+              <p className="st-capa-nota">7 dias grátis · sem cartão · sem fidelidade</p>
             </div>
             <div className="st-capa-cena" aria-label="Telas do app: página do salão, agendamento e painel">
               <Celular className="st-cel-capa" prioridade>
@@ -308,28 +310,11 @@ export default function Site({ planos }) {
         <section className="st-sec st-planos" id="planos">
           <div className="st-in">
             <h2 className="st-h2">Planos e preços</h2>
-            <p className="st-texto st-centro">Mensal, sem fidelidade. Clientes e agendamentos ilimitados em todos.</p>
-            <div className="st-planos-grade">
-              {ordenados.map((pl) => {
-                const dd = DESTAQUE_PLANO[pl.codigo] || { para: pl.descricao, itens: [] };
-                const meio = pl.codigo === "profissional";
-                return (
-                  <article key={pl.codigo} className={`st-plano ${meio ? "st-plano-destaque" : ""}`}>
-                    {meio && <span className="st-plano-selo">Mais escolhido</span>}
-                    <h3>{pl.nome}</h3>
-                    <p className="st-plano-para">{dd.para}</p>
-                    <p className="st-plano-preco"><strong>{precoPlano(pl.preco)}</strong><span>/mês</span></p>
-                    <ul className="st-lista">
-                      {dd.itens.map((t) => <li key={t}>{ICONES.check}{t}</li>)}
-                    </ul>
-                    <a className={`st-botao ${meio ? "st-botao-g" : "st-botao-l"}`} href={`/criar?plano=${pl.codigo}`}>Assinar o {pl.nome}</a>
-                  </article>
-                );
-              })}
-            </div>
+            <p className="st-texto st-centro">Teste 7 dias grátis, sem cartão. Depois, mensal ou anual com 2 meses grátis. Clientes e agendamentos ilimitados em todos.</p>
+            <GradePlanos planos={ordenados} destaques={DESTAQUE_PLANO} check={ICONES.check} />
             <p className="st-pagamento">
               {ICONES.escudo}
-              <span>Pagamento seguro pelo <strong>Mercado Pago</strong>: Pix, cartão de crédito ou boleto. O app vai ao ar assim que o pagamento é aprovado.</span>
+              <span>Comece grátis: o app vai ao ar na hora e você só paga se quiser continuar depois dos 7 dias. Pagamento seguro pelo <strong>Mercado Pago</strong>: Pix, cartão de crédito ou boleto.</span>
             </p>
 
             <details className="st-comparar">
@@ -407,7 +392,7 @@ export default function Site({ planos }) {
             <h2>Seu salão merece um app à altura do seu trabalho.</h2>
             <p>Assine hoje e mande o link para as clientes ainda esta semana.</p>
             <div className="st-capa-acoes st-centro-flex">
-              <a className="st-botao st-botao-g" href="#planos">Ver planos e assinar</a>
+              <a className="st-botao st-botao-g" href="/criar">Testar 7 dias grátis</a>
               <a className="st-botao st-botao-l" href={whatsVendas("Oi! Vi o site da Tons Dellas e quero tirar umas dúvidas sobre o app para o meu salão.")} target="_blank" rel="noopener">Tirar dúvidas no WhatsApp</a>
             </div>
           </div>
@@ -415,7 +400,7 @@ export default function Site({ planos }) {
       </main>
 
       <Rodape />
-      <a className="st-barra-celular" href="#planos">Assinar o app do meu salão</a>
+      <a className="st-barra-celular" href="/criar">Testar 7 dias grátis</a>
     </div>
   );
 }

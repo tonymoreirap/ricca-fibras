@@ -4,7 +4,7 @@ import CriarSalao from "./CriarSalao";
 import { Cabecalho } from "../../components/site/Moldura";
 
 export const metadata = {
-  title: "Assinar e criar o app do seu salão",
+  title: "Crie o app do seu salão · 7 dias grátis",
   description: "Assine e crie em 2 minutos o app de agendamento do seu salão, com a sua marca.",
 };
 

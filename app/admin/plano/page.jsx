@@ -23,6 +23,7 @@ export default function MeuPlano() {
   const [volta, setVolta] = useState(null); // null | conferindo | pago | aguardando
   const [abrindo, setAbrindo] = useState(null);
   const [erro, setErro] = useState("");
+  const [ciclo, setCiclo] = useState("mensal");
 
   const carregar = useCallback(
     (t) =>
@@ -83,7 +84,7 @@ export default function MeuPlano() {
     setAbrindo(codigo);
     setErro("");
     try {
-      const r = await rpc("admin_mensalidade", { p_token: token, p_plano: codigo });
+      const r = await rpc("admin_mensalidade_ciclo", { p_token: token, p_plano: codigo, p_ciclo: ciclo });
       if (!r.ok) throw new Error(r.erro);
       window.location.href = r.link;
     } catch (e) {
@@ -98,12 +99,25 @@ export default function MeuPlano() {
   const msg = (nome) => `Oi! Sou de ${salao.nome} (${salao.slug}.tonsdellas.com.br), hoje no plano ${NOME_PLANO[atual]}, e quero falar sobre o plano ${nome}.`;
   const msgPagar = `Oi! Sou de ${salao.nome} (${salao.slug}.tonsdellas.com.br) e quero pagar o plano ${NOME_PLANO[atual]}.`;
   const online = Boolean(m?.online);
-  const valor = (c) => m?.valores?.[c] ?? p.planos.find((x) => x.codigo === c)?.preco;
+  const anual = ciclo === "anual";
+  const promo = !m?.anual_promo_usado;
+  const valor = (c) => (anual
+    ? m?.valores_anual?.[c] ?? p.planos.find((x) => x.codigo === c)?.[promo ? "preco_anual" : "preco_anual_renova"]
+    : m?.valores?.[c] ?? p.planos.find((x) => x.codigo === c)?.preco);
+  const sufixo = anual ? "/ano" : "/mês";
   const faltam = p.vence_em ? Math.round((new Date(`${p.vence_em}T12:00:00-03:00`) - Date.now()) / 864e5) : null;
   const deve = p.situacao === "atrasada" || p.situacao === "suspensa";
   const podePagar = deve || p.situacao === "teste" || (p.situacao === "ativa" && faltam != null && faltam <= 10);
   const estreia = p.situacao === "suspensa" && !p.vence_em;
-  const rotuloPagar = estreia ? "Pagar e colocar no ar" : p.situacao === "teste" ? `Assinar o ${NOME_PLANO[atual]}` : deve ? "Pagar mensalidade" : "Pagar o próximo mês";
+  const rotuloPagar = estreia ? "Pagar e colocar no ar" : p.situacao === "teste" ? `Assinar o ${NOME_PLANO[atual]}` : deve ? (anual ? "Pagar o ano" : "Pagar mensalidade") : anual ? "Pagar o próximo ano" : "Pagar o próximo mês";
+  const seletor = online && (
+    <div className="plano-ciclo" role="radiogroup" aria-label="Forma de pagamento">
+      <button type="button" role="radio" aria-checked={!anual} onClick={() => setCiclo("mensal")}>Mensal</button>
+      <button type="button" role="radio" aria-checked={anual} onClick={() => setCiclo("anual")}>
+        Anual {promo ? <span>2 meses grátis</span> : <span>1 mês grátis</span>}
+      </button>
+    </div>
+  );
 
   return (
     <div className="app app-admin">
@@ -121,10 +135,11 @@ export default function MeuPlano() {
           <strong>{NOME_PLANO[atual]}</strong>
           <p>{situacaoTexto(p)}</p>
           {p.situacao === "teste" && <p className="plano-nota">No teste você usa os recursos do Profissional. Depois, fica o plano que escolher.</p>}
+          {podePagar && seletor}
           {podePagar &&
             (online ? (
               <button type="button" className="botao-ouro" disabled={Boolean(abrindo)} onClick={() => pagar(atual)}>
-                {abrindo === atual ? "Abrindo o pagamento…" : `${rotuloPagar} · ${precoPlano(valor(atual))}`}
+                {abrindo === atual ? "Abrindo o pagamento…" : `${rotuloPagar} · ${precoPlano(valor(atual))}${anual ? "/ano" : ""}`}
               </button>
             ) : (
               (deve || p.situacao === "teste") && (
@@ -133,7 +148,13 @@ export default function MeuPlano() {
                 </a>
               )
             ))}
-          {online && podePagar && <p className="plano-nota">Pix, cartão ou boleto pelo Mercado Pago. O app renova sozinho assim que o pagamento é aprovado.</p>}
+          {online && podePagar && (
+            <p className="plano-nota">
+              {anual
+                ? `Pague 12 meses de uma vez${promo ? " com 2 meses grátis" : ""}, no Pix, boleto ou em até 12x no cartão. Vale por 1 ano a partir do vencimento atual.`
+                : "Pix, cartão ou boleto pelo Mercado Pago. O app renova sozinho assim que o pagamento é aprovado."}
+            </p>
+          )}
           {online && m?.pendente && volta !== "pago" && (
             <button type="button" className="link-botao plano-conferir" onClick={() => conferir(token)} disabled={volta === "conferindo"}>
               {volta === "conferindo" ? "Conferindo…" : "Já paguei: conferir pagamento"}
@@ -167,7 +188,8 @@ export default function MeuPlano() {
                 {meu && <span className="plano-selo">Seu plano</span>}
                 <h2>{pl.nome}</h2>
                 <p className="plano-desc">{pl.descricao}</p>
-                <p className="plano-preco">{precoPlano(pl.preco)}<small>/mês</small></p>
+                <p className="plano-preco">{precoPlano(online ? valor(pl.codigo) : pl.preco)}<small>{online ? sufixo : "/mês"}</small></p>
+                {anual && <p className="plano-equipe">equivale a {precoPlano(Math.round((Number(valor(pl.codigo)) / 12) * 100) / 100)}/mês</p>}
                 <p className="plano-equipe">
                   {pl.profissionais === 1 ? "1 profissional" : `Até ${pl.profissionais} profissionais`}
                   {pl.extra_profissional ? ` · extra ${precoPlano(pl.extra_profissional)} cada` : ""}
@@ -186,7 +208,7 @@ export default function MeuPlano() {
                 {!meu &&
                   (online ? (
                     <button type="button" className={pl.preco > p.plano.preco ? "botao-ouro" : "botao-linha"} disabled={Boolean(abrindo)} onClick={() => pagar(pl.codigo)}>
-                      {abrindo === pl.codigo ? "Abrindo o pagamento…" : `${p.situacao === "teste" ? "Assinar" : "Mudar para"} o ${pl.nome} · ${precoPlano(valor(pl.codigo))}`}
+                      {abrindo === pl.codigo ? "Abrindo o pagamento…" : `${p.situacao === "teste" ? "Assinar" : "Mudar para"} o ${pl.nome} · ${precoPlano(valor(pl.codigo))}${anual ? "/ano" : ""}`}
                     </button>
                   ) : (
                     <a className={pl.preco > p.plano.preco ? "botao-ouro" : "botao-linha"} href={linkVendas(p.whatsapp, msg(pl.nome))} target="_blank" rel="noopener">
@@ -204,7 +226,7 @@ export default function MeuPlano() {
               {m.historico.map((h, i) => (
                 <li key={i}>
                   <span>
-                    {NOME_PLANO[h.plano] || h.plano}
+                    {NOME_PLANO[h.plano] || h.plano}{h.meses === 12 ? " · anual" : ""}
                     <small>Pago em {new Date(h.pago_em).toLocaleDateString("pt-BR")}{h.valido_ate ? ` · vale até ${dataCurta(h.valido_ate)}` : ""}</small>
                   </span>
                   <strong>{precoPlano(h.valor)}</strong>
@@ -213,7 +235,7 @@ export default function MeuPlano() {
             </ul>
           </section>
         )}
-        {online && <p className="plano-rodape">Ao trocar de plano pelo app, o novo começa assim que o pagamento é aprovado e soma 1 mês ao seu vencimento.</p>}
+        {online && <p className="plano-rodape">Ao trocar de plano pelo app, o novo começa assim que o pagamento é aprovado e soma 1 mês (ou 12, no anual) ao seu vencimento.{promo ? "" : " Os 2 meses grátis valem só no primeiro ano; nas renovações anuais, é 1 mês grátis."}</p>}
         <p className="plano-rodape">Clientes e agendamentos são ilimitados em todos os planos. Mudou de plano? Nada é apagado: o que sair do plano fica guardado.</p>
       </main>
 

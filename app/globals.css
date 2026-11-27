@@ -1992,3 +1992,44 @@ body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--our
 .res-tipos button[aria-checked="true"] { border-color: var(--ouro); color: var(--tinta, #1a100c); background: var(--folha-ouro); }
 .folha .form + .interruptor { margin-top: 0.9rem; }
 .folha .interruptor + .botao-ouro, .folha .interruptor + .erro { margin-top: 1rem; }
+.plano-ciclo { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; margin: 0.9rem 0 0.6rem; padding: 0.3rem; border-radius: 999px; border: 1px solid var(--fio); }
+.plano-ciclo button { padding: 0.6rem 0.5rem; border: 0; border-radius: 999px; background: none; color: var(--claro-suave); font: inherit; font-size: 0.9rem; cursor: pointer; }
+.plano-ciclo button span { display: block; font-size: 0.7rem; color: var(--ouro-claro); }
+.plano-ciclo button[aria-checked="true"] { background: var(--folha-ouro); color: #2a180c; font-weight: 500; }
+.plano-ciclo button[aria-checked="true"] span { color: #4a3217; }
+
+/* ---------- Master: visão geral ---------- */
+.mg { margin-bottom: 0.6rem; }
+.mg-titulo { margin: 1.4rem 0 0.7rem; font-family: var(--display); font-weight: 400; font-size: 1.35rem; }
+.mg-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+.mg-kpis > div { padding: 0.9rem 1rem; border-radius: 1.1rem; display: grid; gap: 0.15rem; }
+.mg-kpis > div.destaque { grid-column: 1 / -1; background: linear-gradient(120deg, rgb(var(--champanhe-rgb) / 0.12), rgb(var(--champanhe-rgb) / 0.03)); }
+.mg-kpis span { font-size: 0.78rem; color: var(--apagado); }
+.mg-kpis strong { font-family: var(--display); font-weight: 300; font-size: 1.6rem; color: var(--champanhe); font-variant-numeric: tabular-nums; }
+.mg-kpis .destaque strong { font-size: 2.2rem; color: var(--ouro-claro); }
+.mg-kpis .alerta strong { color: var(--rose-claro); }
+.mg-kpis small { font-size: 0.75rem; color: var(--apagado); }
+.mg-grafico { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.4rem; align-items: end; height: 150px; margin-top: 0.6rem; padding: 0.9rem 0.9rem 0.7rem; border-radius: 1.1rem; }
+.mg-grafico span { display: grid; grid-template-rows: auto 1fr auto; height: 100%; text-align: center; gap: 0.2rem; }
+.mg-grafico em { font-style: normal; font-size: 0.62rem; color: var(--ouro-claro); white-space: nowrap; overflow: hidden; }
+.mg-grafico i { align-self: end; width: 60%; max-width: 26px; margin: 0 auto; border-radius: 4px 4px 1px 1px; background: linear-gradient(180deg, var(--ouro-claro), var(--ouro)); }
+.mg-grafico small { font-size: 0.68rem; color: var(--apagado); }
+.mg-lista { margin-top: 0.6rem; padding: 0.9rem 1rem; border-radius: 1.1rem; }
+.mg-lista h3 { font-size: 0.92rem; font-weight: 500; margin-bottom: 0.4rem; }
+.mg-lista ul { list-style: none; margin: 0; padding: 0; }
+.mg-lista li { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0.6rem 0; border-bottom: 1px solid var(--fio); }
+.mg-lista li:last-child { border-bottom: 0; }
+.mg-lista li > span:first-child { display: grid; gap: 0.1rem; min-width: 0; }
+.mg-lista small { font-size: 0.76rem; color: var(--apagado); }
+.mg-acoes { display: flex; gap: 0.4rem; flex: none; }
+.mg-filtros { flex-wrap: wrap; }
+.mg-filtros small { opacity: 0.7; margin-left: 0.2rem; }
+.emp-rapidas { margin-top: 0.6rem; }
+.emp-rapidas-caixa { margin-top: 0.6rem; display: grid; gap: 0.6rem; }
+.emp-rapidas-botoes { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.emp-nota { display: grid; gap: 0.3rem; font-size: 0.82rem; color: var(--claro-suave); }
+.emp-nota textarea { width: 100%; box-sizing: border-box; padding: 0.6rem 0.8rem; border-radius: 0.8rem; border: 1px solid var(--fio); background: rgb(255 255 255 / 0.04); color: inherit; font: inherit; }
+.emp-nota-texto { margin: 0.3rem 0 0; font-size: 0.82rem; font-style: italic; color: var(--claro-suave); }
+.pp-plano { border: 1px solid var(--fio); border-radius: 1rem; padding: 0.6rem 0.9rem 0.8rem; margin: 0 0 0.6rem; }
+.pp-plano legend { padding: 0 0.4rem; font-weight: 500; }
+.mg-kpis > div:last-child:nth-child(even) { grid-column: 1 / -1; }

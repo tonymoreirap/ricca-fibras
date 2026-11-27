@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ResumoVisitas } from "../../components/admin/Visitas";
+import MasterGeral, { AcoesSalao } from "../../components/admin/MasterGeral";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
@@ -234,7 +235,13 @@ function Folha({ inicial, token, planos, aoFechar, aoSalvo }) {
   );
 }
 
-function Empresa({ e, aoEditar, aoNovoAcesso }) {
+const quando = (iso) => {
+  if (!iso) return "nunca entrou";
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 864e5);
+  return d <= 0 ? "entrou hoje" : d === 1 ? "entrou ontem" : `entrou há ${d} dias`;
+};
+
+function Empresa({ e, aoEditar, aoNovoAcesso, aoAcao }) {
   const dona = e.donas[0];
   return (
     <li className="emp-item vidro">
@@ -257,8 +264,14 @@ function Empresa({ e, aoEditar, aoNovoAcesso }) {
         <span className={`chip ${SIT_CHIP[e.situacao] || ""}`}>
           {e.situacao === "teste" ? `Teste até ${dataBr(e.teste_ate)}` : e.situacao === "ativa" ? (e.vence_em ? `Ativa até ${dataBr(e.vence_em)}` : "Ativa") : e.situacao === "atrasada" ? `Atrasada desde ${dataBr(e.vence_em)}` : "Suspensa"}
         </span>
+        {e.ciclo === "anual" && <span className="chip">Anual</span>}
         {e.cortesias?.length > 0 && <span className="chip">+{e.cortesias.length} cortesia{e.cortesias.length > 1 ? "s" : ""}</span>}
       </p>
+      <p className="emp-dona">
+        {quando(e.ultimo_acesso)} · {e.visitas_30d} visitas em 30 dias · pagou {precoPlano(e.pago_total || 0)} no total
+        {e.whatsapp && <> · <a href={`https://wa.me/${e.whatsapp}`} target="_blank" rel="noopener">WhatsApp</a></>}
+      </p>
+      {e.nota && <p className="emp-nota-texto">“{e.nota}”</p>}
       {dona && (
         <p className="emp-dona">
           {dona.nome} · {dona.email} · {dona.tem_senha ? "senha criada" : "aguardando primeiro acesso"}
@@ -268,6 +281,7 @@ function Empresa({ e, aoEditar, aoNovoAcesso }) {
         <button type="button" className="acao" onClick={aoEditar}>Editar</button>
         {dona && <button type="button" className="acao acao-sutil" onClick={() => aoNovoAcesso(e, dona)}>Novo código da dona</button>}
       </div>
+      <AcoesSalao key={`${e.id}-${e.situacao}-${e.vence_em}-${e.teste_ate}`} e={e} aoAcao={aoAcao} />
     </li>
   );
 }
@@ -280,7 +294,8 @@ function PlanosPrecos({ token, dados, aoSalvo }) {
   const [erro, setErro] = useState("");
   useEffect(() => {
     if (!dados) return;
-    setPrecos(Object.fromEntries(dados.planos.map((p) => [p.codigo, String(p.preco).replace(".", ",")])));
+    const br = (v) => (v == null ? "" : String(v).replace(".", ","));
+    setPrecos(Object.fromEntries(dados.planos.map((p) => [p.codigo, { m: br(p.preco), a: br(p.preco_anual), r: br(p.preco_anual_renova) }])));
     setWhats(dados.whatsapp || "");
   }, [dados]);
   async function salvar() {
@@ -288,7 +303,7 @@ function PlanosPrecos({ token, dados, aoSalvo }) {
     try {
       const r = await rpc("master_planos_salvar", {
         p_token: token,
-        p: { planos: Object.entries(precos).map(([codigo, preco]) => ({ codigo, preco: preco || "0" })), whatsapp: whats },
+        p: { planos: Object.entries(precos).map(([codigo, v]) => ({ codigo, preco: v.m || "0", preco_anual: v.a, preco_anual_renova: v.r })), whatsapp: whats },
       });
       if (!r.ok) throw new Error(r.erro);
       aoSalvo(r);
@@ -303,18 +318,40 @@ function PlanosPrecos({ token, dados, aoSalvo }) {
       <button type="button" className="emp-precos-topo" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
         <span>
           <strong>Planos e preços</strong>
-          <small>{dados.planos.map((p) => `${p.nome} ${precoPlano(p.preco)}`).join(" · ")}</small>
+          <small>{dados.planos.map((p) => `${p.nome} ${precoPlano(p.preco)}/mês · ${precoPlano(p.preco_anual || p.preco * 10)}/ano`).join(" · ")}</small>
         </span>
         <span aria-hidden="true">{aberto ? "−" : "+"}</span>
       </button>
       {aberto && (
         <div className="form form-compacto">
-          {dados.planos.map((p) => (
-            <div key={p.codigo}>
-              <label htmlFor={`pp-${p.codigo}`}>{p.nome} (R$ por mês)</label>
-              <input id={`pp-${p.codigo}`} inputMode="decimal" value={precos[p.codigo] || ""} onChange={(e) => setPrecos((x) => ({ ...x, [p.codigo]: e.target.value.replace(/[^\d,.]/g, "") }))} />
-            </div>
-          ))}
+          {dados.planos.map((p) => {
+            const v = precos[p.codigo] || {};
+            const muda = (k) => (e) => setPrecos((x) => ({ ...x, [p.codigo]: { ...x[p.codigo], [k]: e.target.value.replace(/[^\d,.]/g, "") } }));
+            const num = (t) => Number(String(t || "0").replace(",", "."));
+            return (
+              <fieldset key={p.codigo} className="pp-plano">
+                <legend>{p.nome}</legend>
+                <label htmlFor={`pp-${p.codigo}`}>Mensal (R$)</label>
+                <input id={`pp-${p.codigo}`} inputMode="decimal" value={v.m || ""} onChange={muda("m")} />
+                <div className="duas">
+                  <div>
+                    <label htmlFor={`pa-${p.codigo}`}>Anual, 1º ano</label>
+                    <input id={`pa-${p.codigo}`} inputMode="decimal" value={v.a || ""} onChange={muda("a")} />
+                  </div>
+                  <div>
+                    <label htmlFor={`pr-${p.codigo}`}>Anual, renovação</label>
+                    <input id={`pr-${p.codigo}`} inputMode="decimal" value={v.r || ""} onChange={muda("r")} />
+                  </div>
+                </div>
+                {num(v.m) > 0 && (
+                  <small className="ms-dica">
+                    1º ano = {(num(v.a) / num(v.m)).toFixed(1).replace(".", ",")} mensalidades ({precoPlano(num(v.a) / 12)}/mês) ·
+                    renovação = {(num(v.r) / num(v.m)).toFixed(1).replace(".", ",")} mensalidades
+                  </small>
+                )}
+              </fieldset>
+            );
+          })}
           <label htmlFor="pp-whats">WhatsApp de vendas</label>
           <input id="pp-whats" inputMode="tel" value={whats} onChange={(e) => setWhats(e.target.value)} placeholder="(85) 99999-9999" />
           <small className="ms-dica">Para onde vão os botões “Quero este plano” de todos os salões e da página de planos.</small>
@@ -514,6 +551,29 @@ export default function Master() {
     return () => clearTimeout(t);
   }, [aviso]);
 
+  const [versao, setVersao] = useState(0);
+  const [filtro, setFiltro] = useState("todas");
+  async function acao(id, p, msg) {
+    try {
+      const r = await rpc("master_empresa_acao", { p_token: token, p_id: id, p });
+      if (!r.ok) throw new Error(r.erro);
+      setAviso(msg);
+      carregar(token);
+      setVersao((v) => v + 1);
+    } catch (err) {
+      sessaoExpirada(err) ? sair() : setAviso(err.message);
+    }
+  }
+  const FILTROS = [
+    ["todas", "Todas", () => true],
+    ["teste", "Em teste", (e) => e.situacao === "teste"],
+    ["pagantes", "Pagantes", (e) => ["ativa", "atrasada"].includes(e.situacao) && Number(e.pago_total) > 0],
+    ["anual", "Anuais", (e) => e.ciclo === "anual"],
+    ["atrasada", "Atrasadas", (e) => e.situacao === "atrasada"],
+    ["suspensa", "Fora do ar", (e) => e.situacao === "suspensa"],
+  ];
+  const filtrada = (lista || []).filter((FILTROS.find((f) => f[0] === filtro) || FILTROS[0])[2]);
+
   async function novoAcesso(e, dona) {
     try {
       const r = await rpc("master_novo_acesso", { p_token: token, p_email: dona.email });
@@ -530,19 +590,26 @@ export default function Master() {
       <header className="adm-topo">
         <div>
           <p className="c-saudacao">Master</p>
-          <h1>Empresas</h1>
+          <h1>Tons Dellas</h1>
         </div>
         <Link href="/admin" className="barra-link">Painel</Link>
       </header>
 
       <main className="tela">
-        <p className="sv-intro">
-          Cada empresa tem o próprio endereço, clientes, agenda e cores. O plano define o que ela usa; cortesias liberam extras.
-        </p>
+        <MasterGeral token={token} versao={versao} aoAcao={acao} />
+        <h2 className="mg-titulo">Configurações</h2>
         <PlanosPrecos token={token} dados={planos} aoSalvo={(r) => { setPlanos(r); setAviso("Preços salvos."); }} />
         <Cobranca token={token} aoAviso={setAviso} />
         <Visitas token={token} />
         <Mensagens token={token} />
+        <h2 className="mg-titulo">Salões</h2>
+        <div className="ordenar mg-filtros" role="group" aria-label="Filtrar salões">
+          {FILTROS.map(([k, t, f]) => (
+            <button key={k} type="button" aria-pressed={filtro === k} onClick={() => setFiltro(k)}>
+              {t} <small>{(lista || []).filter(f).length}</small>
+            </button>
+          ))}
+        </div>
         <button type="button" className="botao-linha nova-cliente" onClick={() => setEditar({})}>
           <IconeMais width="20" height="20" /> Nova empresa
         </button>
@@ -551,9 +618,10 @@ export default function Master() {
           <p className="bloco-vazio">Carregando empresas…</p>
         ) : (
           <ul className="emp-lista">
-            {lista.map((e) => (
-              <Empresa key={e.id} e={e} aoEditar={() => setEditar(e)} aoNovoAcesso={novoAcesso} />
+            {filtrada.map((e) => (
+              <Empresa key={e.id} e={e} aoEditar={() => setEditar(e)} aoNovoAcesso={novoAcesso} aoAcao={acao} />
             ))}
+            {filtrada.length === 0 && <p className="bloco-vazio">Nenhum salão neste filtro.</p>}
           </ul>
         )}
       </main>

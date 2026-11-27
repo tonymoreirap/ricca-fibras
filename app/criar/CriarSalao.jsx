@@ -130,7 +130,9 @@ export default function CriarSalao({ planos, whatsapp }) {
         <h1>{pronto.pagar ? `Falta só o pagamento para o ${nome.trim()} ir ao ar.` : `Pronto! O app do ${nome.trim()} está no ar.`}</h1>
         <p>
           Seu endereço é <strong>{pronto.endereco.replace("https://", "")}</strong>.
-          {pronto.pagar ? " Agora você paga a primeira mensalidade pelo Mercado Pago e o app vai ao ar assim que o pagamento for aprovado." : ""}
+          {pronto.pagar
+            ? " Esse WhatsApp já usou o teste grátis, então o app vai ao ar assim que a primeira mensalidade for aprovada no Mercado Pago."
+            : " Você tem 7 dias grátis para usar tudo. Sem cartão: quando quiser continuar, é só assinar pelo painel."}
         </p>
         <a className="botao-ouro" href={`${pronto.endereco}/admin/entrar#passe=${pronto.passe}${pronto.pagar ? "&pagar=1" : ""}`}>
           {pronto.pagar ? "Ir para o pagamento" : "Abrir meu painel"}
@@ -154,7 +156,7 @@ export default function CriarSalao({ planos, whatsapp }) {
       {etapa === 1 && (
         <section className="cs-etapa">
           <h1>Crie o app do seu salão</h1>
-          <p className="cs-sub">Leva 2 minutos. No final você paga a primeira mensalidade e o app vai ao ar na hora.</p>
+          <p className="cs-sub">Leva 2 minutos e o app já vai ao ar. Teste 7 dias grátis, sem cartão.</p>
           {previa}
           <div className="form form-compacto">
             <label htmlFor="cs-nome">Nome do salão</label>
@@ -225,7 +227,7 @@ export default function CriarSalao({ planos, whatsapp }) {
       {etapa === 2 && (
         <section className="cs-etapa">
           <h1>Escolha o plano</h1>
-          <p className="cs-sub">Mensal, sem fidelidade. Pague com Pix, cartão ou boleto pelo Mercado Pago.</p>
+          <p className="cs-sub">Os 7 primeiros dias são grátis em qualquer plano. Depois, mensal ou anual com 2 meses grátis, sem fidelidade.</p>
           <div className="cs-planos" role="radiogroup" aria-label="Plano">
             {planos.map((pl) => (
               <button key={pl.codigo} type="button" role="radio" aria-checked={plano === pl.codigo} className="cs-plano vidro" onClick={() => setPlano(pl.codigo)}>
@@ -273,7 +275,7 @@ export default function CriarSalao({ planos, whatsapp }) {
             {erro && <p className="erro" role="alert">{erro}</p>}
             <div className="acao-rodape cs-rodape-duplo">
               <button type="button" className="botao-linha" onClick={() => irPara(2)}>Voltar</button>
-              <button type="submit" className="botao-ouro" disabled={!etapa3 || enviando}>{enviando ? "Criando…" : "Criar e pagar"}</button>
+              <button type="submit" className="botao-ouro" disabled={!etapa3 || enviando}>{enviando ? "Criando…" : "Criar e testar grátis"}</button>
             </div>
           </form>
         </section>

@@ -300,3 +300,22 @@ body.site [id] { scroll-margin-top: 5rem; }
 .st-logo-rodape { height: 76px; margin-bottom: 0.8rem; }
 .st-logo-capa { display: block; width: min(440px, 100%); height: auto; margin: 0 0 1.4rem -0.4rem; }
 @media (max-width: 560px) { .st-logo { height: 42px; } }
+
+/* seletor mensal / anual */
+.st-ciclo { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: min(100%, 26rem); margin: 1.6rem auto 0.4rem; padding: 0.35rem; border-radius: 999px; background: var(--st-sup); border: 1px solid var(--st-linha-forte); }
+.st-ciclo button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 0.8rem; border: 0; border-radius: 999px; background: none; color: var(--st-suave); font: inherit; font-size: 0.98rem; cursor: pointer; transition: color 0.3s; }
+.st-ciclo button[aria-checked="true"] { color: #2a180c; font-weight: 500; }
+.st-ciclo i { position: absolute; top: 0.35rem; bottom: 0.35rem; left: 0.35rem; width: calc(50% - 0.35rem); border-radius: 999px; background: var(--st-folha); box-shadow: 0 10px 30px -12px rgb(214 174 98 / 0.8); transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.st-ciclo i.dir { transform: translateX(100%); }
+.st-ciclo-selo { padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.02em; background: rgb(20 12 9 / 0.18); }
+.st-ciclo button[aria-checked="false"] .st-ciclo-selo { background: rgb(236 210 154 / 0.14); color: var(--st-ouro-claro); }
+.st-plano-valor { position: relative; overflow: hidden; border-radius: 0.8rem; }
+.st-plano-valor .st-plano-preco { margin-top: 1.4rem; }
+.st-plano-equivale { margin: 0.35rem 0 0; font-size: 0.86rem; color: var(--st-suave); }
+.st-plano-equivale s { color: var(--st-apagado); }
+.st-plano-renova { margin: 0.25rem 0 0.4rem; font-size: 0.78rem; color: var(--st-apagado); }
+.st-brilha::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, rgb(255 236 190 / 0.35) 48%, transparent 62%); transform: translateX(-120%); animation: st-brilho 0.9s ease-out forwards; }
+.st-brilha .st-plano-preco strong { animation: st-surge 0.5s ease-out; }
+@keyframes st-brilho { to { transform: translateX(120%); } }
+@keyframes st-surge { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .st-brilha::after, .st-brilha .st-plano-preco strong { animation: none; } .st-ciclo i { transition: none; } }

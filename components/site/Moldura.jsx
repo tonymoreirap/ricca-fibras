@@ -13,7 +13,7 @@ export function Cabecalho({ cta = true }) {
           <a href="/#duvidas">Dúvidas</a>
           <Link href="/contato">Contato</Link>
         </nav>
-        {cta && <a className="st-botao st-botao-p" href="/#planos">Assinar</a>}
+        {cta && <a className="st-botao st-botao-p" href="/criar">Testar grátis</a>}
         <details className="st-menu">
           <summary aria-label="Abrir menu"><span /><span /><span /></summary>
           <div className="st-menu-caixa">
