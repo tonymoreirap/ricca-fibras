@@ -399,7 +399,7 @@ function Cobranca({ token, aoAviso }) {
           <strong>Mensalidades pelo Mercado Pago</strong>
           <small>
             {info.ativa
-              ? `Ligado${info.conta ? ` · ${info.conta}` : ""} · recebido este mês ${precoPlano(info.mes || 0)}`
+              ? `Ligado${info.conta ? ` · ${info.conta}` : ""} · recebido este mês ${precoPlano(info.mes || 0)}${info.estornadas ? ` · ${info.estornadas} ${info.estornadas === 1 ? "estorno" : "estornos"} em 90 dias` : ""}`
               : "Desligado: as donas pagam pelo seu WhatsApp"}
           </small>
         </span>
