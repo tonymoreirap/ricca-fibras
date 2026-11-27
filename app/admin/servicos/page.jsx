@@ -9,13 +9,14 @@ import { precoServico, linhaServico } from "../../../lib/servicos";
 import MenuApp from "../../../components/MenuApp";
 import { IlustracaoServico, ICONES_SERVICO, IconeMais } from "../../../components/Icones";
 import Interruptor from "../../../components/admin/Interruptor";
+import { useSalao } from "../../../components/Empresa";
 
 const DURACOES = [30, 60, 90, 120, 150, 180, 240];
 const duracaoTexto = (m) => (m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)}h${m % 60}` : `${m / 60}h`);
 
 const vazio = {
   codigo: "", nome: "", descricao: "", resumo: "", icone: "brilho", valor: "", ciclo_dias: "",
-  visivel: true, destaque: false, selo: "", agenda_online: false, duracao_min: 60, sinal_pct: 30,
+  visivel: true, destaque: false, selo: "", agenda_online: false, duracao_min: 60, sinal_pct: 30, categoria: "",
 };
 
 // Como o serviço aparece no site, enquanto a dona edita
@@ -37,8 +38,9 @@ function Previa({ s }) {
   );
 }
 
-function Editor({ token, inicial, aoFechar, aoSalvo }) {
-  const [s, setS] = useState({ ...vazio, ...inicial, valor: inicial?.valor ?? "", ciclo_dias: inicial?.ciclo_dias ?? "", resumo: inicial?.resumo ?? "", descricao: inicial?.descricao ?? "", selo: inicial?.selo ?? "" });
+function Editor({ token, inicial, categorias = [], aoFechar, aoSalvo }) {
+  const salao = useSalao();
+  const [s, setS] = useState({ ...vazio, ...inicial, valor: inicial?.valor ?? "", ciclo_dias: inicial?.ciclo_dias ?? "", resumo: inicial?.resumo ?? "", descricao: inicial?.descricao ?? "", selo: inicial?.selo ?? "", categoria: inicial?.categoria ?? "" });
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [apagar, setApagar] = useState(false);
@@ -122,7 +124,7 @@ function Editor({ token, inicial, aoFechar, aoSalvo }) {
             ligado={s.agenda_online}
             aoMudar={muda("agenda_online")}
             rotulo="Agendar pelo app"
-            texto={s.agenda_online ? "A cliente escolhe o horário e paga o sinal por Pix." : "A cliente agenda pelo WhatsApp."}
+            texto={s.agenda_online ? (salao.cobraSinal ? "A cliente escolhe o horário e paga o sinal por Pix." : "A cliente escolhe o horário e paga no dia.") : "A cliente agenda pelo WhatsApp."}
           />
           {s.agenda_online && (
             <div className="sv-agenda">
@@ -134,21 +136,40 @@ function Editor({ token, inicial, aoFechar, aoSalvo }) {
                   </button>
                 ))}
               </div>
-              <span className="cr-rotulo">Sinal para reservar</span>
-              <div className="ordenar" role="radiogroup" aria-label="Sinal">
-                {[0, 20, 30, 50, 100].map((p) => (
-                  <button key={p} type="button" role="radio" aria-checked={Number(s.sinal_pct) === p} aria-pressed={Number(s.sinal_pct) === p} onClick={() => muda("sinal_pct")(p)}>
-                    {p === 0 ? "Sem sinal" : `${p}%`}
-                  </button>
-                ))}
-              </div>
+              {salao.cobraSinal && (
+                <>
+                  <span className="cr-rotulo">Sinal para reservar</span>
+                  <div className="ordenar" role="radiogroup" aria-label="Sinal">
+                    {[0, 20, 30, 50, 100].map((p) => (
+                      <button key={p} type="button" role="radio" aria-checked={Number(s.sinal_pct) === p} aria-pressed={Number(s.sinal_pct) === p} onClick={() => muda("sinal_pct")(p)}>
+                        {p === 0 ? "Sem sinal" : `${p}%`}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+              <label className="cr-rotulo" htmlFor="sv-cat">Tipo de serviço</label>
+              <input
+                id="sv-cat"
+                list="sv-categorias"
+                maxLength={30}
+                value={s.categoria}
+                onChange={muda("categoria")}
+                placeholder="Ex.: Unhas, Cílios, Sobrancelha"
+              />
+              <datalist id="sv-categorias">
+                {categorias.map((c) => <option key={c} value={c} />)}
+              </datalist>
               <p className="sv-nota">
                 {!temValor
                   ? "Informe o valor acima para liberar o agendamento pelo app."
-                  : Number(s.sinal_pct) === 0
-                    ? "A reserva entra sem cobrança antecipada."
-                    : `Sinal de ${precoServico(sinal.toFixed(2))} por Pix na reserva.`}
+                  : !salao.cobraSinal
+                    ? "Seu salão está sem sinal (em Meu salão): a cliente paga no dia."
+                    : Number(s.sinal_pct) === 0
+                      ? "A reserva entra sem cobrança antecipada."
+                      : `Sinal de ${precoServico(sinal.toFixed(2))} por Pix na reserva.`}
                 {" "}Os horários seguem blocos de {duracaoTexto(Number(s.duracao_min))} a partir da abertura.
+                {" "}Cada cliente marca um horário por dia de cada tipo: Unhas e Cílios no mesmo dia pode; duas vezes Unhas, não.
               </p>
             </div>
           )}
@@ -276,6 +297,7 @@ export default function Servicos() {
         <Editor
           token={token}
           inicial={editar}
+          categorias={[...new Set((lista || []).map((x) => x.categoria).filter(Boolean))]}
           aoFechar={() => setEditar(null)}
           aoSalvo={(msg) => {
             setEditar(null);

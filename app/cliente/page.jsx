@@ -82,6 +82,7 @@ function Proximo({ a }) {
   const salao = useSalao();
   const st = STATUS[a.status];
   const pendente = a.status === "aguardando_sinal";
+  const aConfirmar = a.status === "aguardando_confirmacao";
   return (
     <article className="proximo vidro entra">
       <div className="proximo-topo">
@@ -100,7 +101,14 @@ function Proximo({ a }) {
         </p>
         <span className={`chip ${st.classe}`}>{st.texto}</span>
       </div>
-      {pendente ? (
+      {aConfirmar ? (
+        <>
+          <p className="proximo-nota">Envie o código {a.codigo_confirmacao} para {aContato(salao)} pelo WhatsApp para confirmar.</p>
+          <Link className="botao-ouro" href={`/recibo/${a.codigo}`}>
+            Confirmar meu horário
+          </Link>
+        </>
+      ) : pendente ? (
         <>
           <p className="proximo-nota">Pague o sinal de {real(a.sinal)} via Pix para {aContato(salao)} confirmar.</p>
           <Link className="botao-ouro" href={`/recibo/${a.codigo}`}>
@@ -186,7 +194,7 @@ export default function Cliente() {
   const { conta, agendamentos, concluidos, manutencao } = dados;
   const agora = Date.now();
   const ativos = agendamentos
-    .filter((a) => ["aguardando_sinal", "confirmado"].includes(a.status) && new Date(a.fim).getTime() > agora)
+    .filter((a) => ["aguardando_sinal", "aguardando_confirmacao", "confirmado"].includes(a.status) && new Date(a.fim).getTime() > agora)
     .sort((x, y) => new Date(x.inicio) - new Date(y.inicio));
   const historico = agendamentos.filter((a) => !ativos.includes(a));
   const [proximo, ...outros] = ativos;

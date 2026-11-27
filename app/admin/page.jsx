@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { VisitasDoSalao } from "../../components/admin/Visitas";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
@@ -47,9 +48,19 @@ const ACOES = {
     { para: "aguardando_sinal", texto: "Voltar para aguardando" },
     { para: "cancelado", texto: "Cancelar", perigo: true },
   ],
+  aguardando_confirmacao: [
+    { para: "confirmado", texto: "Código conferido", forte: true },
+    { para: "cancelado", texto: "Cancelar", perigo: true },
+  ],
   concluido: [{ para: "confirmado", texto: "Reabrir" }],
   cancelado: [{ para: "aguardando_sinal", texto: "Reativar horário" }],
 };
+
+// sem sinal, não existe "aguardando sinal": reativar volta direto para confirmado
+const acoesDe = (a) =>
+  (ACOES[a.status] || [])
+    .filter((x) => !(x.para === "aguardando_sinal" && a.status === "confirmado" && !(Number(a.sinal) > 0)))
+    .map((x) => (x.para === "aguardando_sinal" && a.status === "cancelado" && !(Number(a.sinal) > 0) ? { ...x, para: "confirmado" } : x));
 
 const ola = (salao, nome) => `Oi, ${primeiroNome(nome)}! Aqui é ${salao.contato !== salao.nome ? `a ${salao.contato}, da ` : "a equipe da "}${salao.nome}.`;
 
@@ -59,6 +70,14 @@ function msgSinal(salao, a, origem) {
     `Seu horário de ${a.servico_nome} está reservado para ${dataLonga(a.inicio)}, às ${hora(a.inicio)}.`,
     `Para confirmar, falta o sinal de ${real(a.sinal)} via Pix. Chave: ${salao.pix.exibicao || salao.pix.chave}.`,
     `Seu recibo: ${origem}/recibo/${a.codigo}`,
+  ].join("\n");
+}
+
+function msgCodigo(salao, a, origem) {
+  return [
+    ola(salao, a.cliente_nome),
+    `Recebemos seu agendamento de ${a.servico_nome} para ${dataLonga(a.inicio)}, às ${hora(a.inicio)}.`,
+    `Para confirmar, me responda aqui com o código que apareceu no app (começa com TD-). Ele também está no seu recibo: ${origem}/recibo/${a.codigo}`,
   ].join("\n");
 }
 
@@ -99,12 +118,18 @@ function Item({ a, aberto, alternar, mudar, ocupado, origem, comEquipe }) {
           <dl className="ag-dados">
             <div><dt>Celular</dt><dd>{celularFormatado(a.cliente_celular)}</dd></div>
             <div><dt>Valor</dt><dd>{real(a.valor)}</dd></div>
-            <div><dt>Sinal</dt><dd>{real(a.sinal)}</dd></div>
+            {Number(a.sinal) > 0 && <div><dt>Sinal</dt><dd>{real(a.sinal)}</dd></div>}
             <div><dt>Recibo</dt><dd>{a.codigo}</dd></div>
+            {a.status === "aguardando_confirmacao" && a.codigo_confirmacao && (
+              <div className="ag-pag ag-codigo">
+                <dt>Código da cliente</dt>
+                <dd><strong>{a.codigo_confirmacao}</strong> · confirme quando ela mandar este código do celular {celularFormatado(a.cliente_celular)}</dd>
+              </div>
+            )}
             <div className="ag-pag"><dt>Pagamento</dt><dd className={pag.ok ? "pag-ok" : pag.ok === false ? "pag-pendente" : ""}>{pag.texto}</dd></div>
           </dl>
           <div className="ag-acoes">
-            {ACOES[a.status].map((x) =>
+            {acoesDe(a).map((x) =>
               x.perigo ? (
                 <button
                   key={x.para}
@@ -352,7 +377,7 @@ export default function Painel() {
       const r = await rpc("admin_status", { p_token: sessao.token, p_codigo: codigo, p_status: status });
       if (!r.ok) setAviso(r.erro);
       else {
-        setAviso({ confirmado: "Sinal confirmado", concluido: "Atendimento concluído", cancelado: "Horário cancelado", aguardando_sinal: "Horário aguardando sinal" }[status]);
+        setAviso({ confirmado: "Horário confirmado", concluido: "Atendimento concluído", cancelado: "Horário cancelado", aguardando_sinal: "Horário aguardando sinal" }[status]);
         await carregar(sessao.token);
       }
     } catch (e) {
@@ -418,7 +443,7 @@ export default function Painel() {
       l.forEach((a) => { const k = diaDe(a.inicio); if (!g.has(k)) g.set(k, []); g.get(k).push(a); });
       return [...g.entries()];
     };
-    const sinais = lista.filter((a) => a.status === "aguardando_sinal" && new Date(a.fim).getTime() > agora);
+    const sinais = lista.filter((a) => ["aguardando_sinal", "aguardando_confirmacao"].includes(a.status) && new Date(a.fim).getTime() > agora);
     const manut = dados.clientes
       .filter((c) => c.manutencao)
       .sort((x, y) => x.manutencao.dias_restantes - y.manutencao.dias_restantes);
@@ -511,6 +536,7 @@ export default function Painel() {
 
         <Primeiros nome={primeiroNome(eu.nome)} bemvinda={bemvinda} />
         <CartaoPlano token={sessao.token} soAlerta />
+        <VisitasDoSalao token={sessao.token} />
 
         <section className="gerenciar" aria-labelledby="ger-titulo">
           <h2 id="ger-titulo" className="gerenciar-titulo">Gerenciar</h2>
@@ -614,22 +640,46 @@ export default function Painel() {
                         <strong>{a.cliente_nome}</strong>
                         <small>{a.servico_nome}</small>
                       </span>
-                      <span className="sinal-valor">{real(a.sinal)}</span>
+                      <span className="sinal-valor">{a.status === "aguardando_confirmacao" ? "Nova" : real(a.sinal)}</span>
                     </div>
                     <p className="sinal-quando">{dataLonga(a.inicio)} · {hora(a.inicio)} às {hora(a.fim)}</p>
-                    {a.pix_informado_em && <p className="sinal-informado">A cliente avisou que enviou o Pix. Confira no banco e confirme.</p>}
-                    <div className="sinal-acoes">
-                      <button type="button" className="botao-ouro" disabled={ocupado} onClick={() => mudar(a.codigo, "confirmado")}>
-                        <IconeCheck stroke="currentColor" width="20" height="20" /> Sinal recebido
-                      </button>
-                      {a.demo ? (
-                        <p className="ag-links-off">Exemplo: WhatsApp desligado</p>
-                      ) : (
-                        <a className="botao-linha" href={whats(a.cliente_celular, msgSinal(a, origem))} target="_blank" rel="noopener">
-                          <IconeConversa width="20" height="20" /> Cobrar pelo WhatsApp
-                        </a>
-                      )}
-                    </div>
+                    {a.status === "aguardando_confirmacao" ? (
+                      <>
+                        <p className="sinal-codigo">
+                          Código <strong>{a.codigo_confirmacao}</strong>
+                          <small>Confirme quando ela mandar esse código do celular {celularFormatado(a.cliente_celular)}.</small>
+                        </p>
+                        {a.confirmacao_pedida_em && <p className="sinal-informado">A cliente avisou que enviou o código. Confira no WhatsApp.</p>}
+                        <div className="sinal-acoes">
+                          <button type="button" className="botao-ouro" disabled={ocupado} onClick={() => mudar(a.codigo, "confirmado")}>
+                            <IconeCheck stroke="currentColor" width="20" height="20" /> Código conferido
+                          </button>
+                          {a.demo ? (
+                            <p className="ag-links-off">Exemplo: WhatsApp desligado</p>
+                          ) : (
+                            <a className="botao-linha" href={whats(a.cliente_celular, msgCodigo(salao, a, origem))} target="_blank" rel="noopener">
+                              <IconeConversa width="20" height="20" /> Pedir o código
+                            </a>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {a.pix_informado_em && <p className="sinal-informado">A cliente avisou que enviou o Pix. Confira no banco e confirme.</p>}
+                        <div className="sinal-acoes">
+                          <button type="button" className="botao-ouro" disabled={ocupado} onClick={() => mudar(a.codigo, "confirmado")}>
+                            <IconeCheck stroke="currentColor" width="20" height="20" /> Sinal recebido
+                          </button>
+                          {a.demo ? (
+                            <p className="ag-links-off">Exemplo: WhatsApp desligado</p>
+                          ) : (
+                            <a className="botao-linha" href={whats(a.cliente_celular, msgSinal(salao, a, origem))} target="_blank" rel="noopener">
+                              <IconeConversa width="20" height="20" /> Cobrar pelo WhatsApp
+                            </a>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>

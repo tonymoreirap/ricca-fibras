@@ -125,7 +125,7 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
             <p className="pronto-sub">{feito.cliente_nome}</p>
             <p className="pronto-quando">{dataLonga(feito.inicio)} · {hora(feito.inicio)} às {hora(feito.fim)}</p>
             {equipe.length > 1 && feito.profissional_nome && <p className="pronto-nota">Com {feito.profissional_nome}</p>}
-            <p className="pronto-nota">{feito.servico_nome} · {feito.status === "confirmado" ? "sinal recebido" : `sinal de ${real(feito.sinal)} pendente`}</p>
+            <p className="pronto-nota">{feito.servico_nome} · {feito.status === "confirmado" ? (Number(feito.sinal) > 0 ? "sinal recebido" : "confirmado, paga no dia") : `sinal de ${real(feito.sinal)} pendente`}</p>
             {feito.demo ? (
               <p className="ag-links-off">Cliente de exemplo: WhatsApp desligado.</p>
             ) : (
@@ -134,7 +134,7 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
               </a>
             )}
             <p className="pronto-nota">
-              A mensagem leva data, hora, valor{feito.status === "confirmado" ? "" : ", a chave Pix do sinal"} e o recibo{feito.convite ? ", e o link para ela criar a senha no app" : ""}.
+              A mensagem leva data, hora, valor{feito.status === "aguardando_sinal" ? ", a chave Pix do sinal" : ""} e o recibo{feito.convite ? ", e o link para ela criar a senha no app" : ""}.
             </p>
             <button type="button" className="folha-fechar" onClick={aoFechar}>Fechar</button>
           </div>
@@ -253,13 +253,15 @@ export default function NovoHorario({ token, inicial, clientes = [], aoFechar, a
           {outroDia ? "Ver os próximos horários livres" : "Escolher outro dia"}
         </button>
 
-        <label className="marcar">
-          <input type="checkbox" checked={pago} onChange={(e) => setPago(e.target.checked)} />
-          <span>
-            Sinal já recebido
-            <small>{pago ? "O horário entra confirmado." : "O horário fica aguardando o sinal."}</small>
-          </span>
-        </label>
+        {salao.cobraSinal && (
+          <label className="marcar">
+            <input type="checkbox" checked={pago} onChange={(e) => setPago(e.target.checked)} />
+            <span>
+              Sinal já recebido
+              <small>{pago ? "O horário entra confirmado." : "O horário fica aguardando o sinal."}</small>
+            </span>
+          </label>
+        )}
 
         {erro && <p className="erro">{erro}</p>}
         <button type="button" className="botao-ouro" disabled={!valido || enviando} onClick={salvar}>

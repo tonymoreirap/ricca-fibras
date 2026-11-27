@@ -35,6 +35,12 @@ function PrivacidadeSite() {
           </p>
           <h2>Cookies e armazenamento</h2>
           <p>Usamos apenas o armazenamento do navegador necessário para manter você conectada ao app. Não usamos cookies de propaganda.</p>
+          <h2>Contagem de visitas</h2>
+          <p>
+            Para saber quantas pessoas visitam o site e os apps dos salões, contamos cada visita de forma anônima: guardamos só o dia,
+            a página de entrada, de onde a pessoa veio (por exemplo, Instagram) e se foi pelo celular. Não guardamos o seu IP nem usamos
+            cookies para isso, e a contagem não permite identificar ninguém.
+          </p>
           <h2>Seus direitos</h2>
           <p>
             Você pode pedir para ver, corrigir, levar ou apagar seus dados a qualquer momento: WhatsApp {CONTATO.whatsappTexto} ou{" "}

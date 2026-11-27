@@ -11,6 +11,7 @@ import MenuApp from "../../../components/MenuApp";
 import { LogoDe, useSalao } from "../../../components/Empresa";
 import { FolhaPlano, IconeCadeado } from "../../../components/admin/Cadeado";
 import { temRecurso } from "../../../lib/planos";
+import Interruptor from "../../../components/admin/Interruptor";
 
 const DIAS = [
   [1, "Segunda"], [2, "Terça"], [3, "Quarta"], [4, "Quinta"], [5, "Sexta"], [6, "Sábado"], [0, "Domingo"],
@@ -225,6 +226,7 @@ export default function MeuSalao() {
             pix: { chave: "", exibicao: "", nome: "", cidade: "", ...(c.pix || {}) },
             curso: { nome: "", descricao: "", chamada: "", carga_horaria: "", ...(c.curso || {}), topicos: (c.curso?.topicos || []).join("\n") },
             certificado: { assinatura: "", cargo: "", texto: "", ...(c.certificado || {}) },
+            agenda: { sinal: c.agenda?.sinal !== false, cancelar_horas: c.agenda?.cancelar_horas ?? 2 },
           },
         };
         original.current = { paleta: x.paleta, cor: x.cor_principal };
@@ -338,6 +340,30 @@ export default function MeuSalao() {
           </div>
         </Bloco>
 
+        <Bloco titulo="Agendamento pelo app" texto="Como as clientes reservam e cancelam.">
+          <Interruptor
+            rotulo="Cobrar sinal para reservar"
+            texto={c.agenda.sinal
+              ? "A cliente paga uma parte via Pix para garantir o horário. A porcentagem fica em cada serviço."
+              : "Sem sinal: a cliente marca e paga no dia. Quem é nova envia um código pelo WhatsApp e você confirma com um toque."}
+            ligado={c.agenda.sinal}
+            aoMudar={(v) => { setMudou(true); setE((x) => ({ ...x, config: { ...x.config, agenda: { ...x.config.agenda, sinal: v } } })); }}
+          />
+          <div className="form form-compacto">
+            <label htmlFor="ms-cancelar">A cliente pode cancelar pelo app até</label>
+            <select
+              id="ms-cancelar"
+              value={String(c.agenda.cancelar_horas)}
+              onChange={(ev) => { setMudou(true); const v = Number(ev.target.value); setE((x) => ({ ...x, config: { ...x.config, agenda: { ...x.config.agenda, cancelar_horas: v } } })); }}
+            >
+              {[1, 2, 4, 6, 12, 24, 48].map((h) => <option key={h} value={h}>{h} {h === 1 ? "hora" : "horas"} antes do horário</option>)}
+              <option value="0">Só pelo WhatsApp</option>
+            </select>
+            <small className="ms-dica">Ela escolhe o motivo e você recebe o aviso. Horários ainda não confirmados podem ser cancelados a qualquer momento.</small>
+          </div>
+        </Bloco>
+
+        {c.agenda.sinal && (
         <Bloco titulo="Pix do sinal" texto="Gera o QR Code e o Pix copia e cola dos agendamentos.">
           <div className="form form-compacto">
             <Campo id="ms-chave" rotulo="Chave Pix" maxLength={77} value={c.pix.chave} onChange={mudaSub("pix", "chave")} placeholder="Celular com +55, e-mail, CPF/CNPJ ou chave aleatória" autoCapitalize="none" />
@@ -348,6 +374,7 @@ export default function MeuSalao() {
             </div>
           </div>
         </Bloco>
+        )}
 
         <Bloco titulo="Endereço" texto="Vai nas mensagens de confirmação. Deixe vazio para não mostrar.">
           <div className="form form-compacto">

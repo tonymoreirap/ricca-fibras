@@ -13,6 +13,7 @@ import Bloqueio from "../components/Bloqueio";
 import { empresaDoPedido, hostDoPedido, plataformaDoPedido } from "../lib/empresaServidor";
 import { SALAO_PLATAFORMA } from "../lib/empresa";
 import MigrarSessao from "../components/MigrarSessao";
+import ContarVisita from "../components/ContarVisita";
 import { cssPaleta, corDeFundo } from "../lib/paletas";
 
 export async function generateMetadata() {
@@ -76,6 +77,7 @@ export default async function RootLayout({ children }) {
         <body className="site">
           <EmpresaProvider salao={SALAO_PLATAFORMA}>
             <Gradientes />
+            <ContarVisita />
             {children}
           </EmpresaProvider>
         </body>
@@ -95,6 +97,7 @@ export default async function RootLayout({ children }) {
             <Gradientes />
             <TemaSazonal />
             <MigrarSessao />
+            <ContarVisita />
             <Bloqueio>{children}</Bloqueio>
             <RegistrarSW />
           </EmpresaProvider>

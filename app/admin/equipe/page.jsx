@@ -12,6 +12,7 @@ import MenuApp from "../../../components/MenuApp";
 import Interruptor from "../../../components/admin/Interruptor";
 import { FolhaPlano, IconeCadeado } from "../../../components/admin/Cadeado";
 import { IconeMais } from "../../../components/Icones";
+import AcessoEquipe from "../../../components/admin/AcessoEquipe";
 
 // Qual oferta mostrar quando a equipe chega ao limite
 const ofertaDoLimite = (limite) => (limite <= 1 ? { recurso: "equipe3" } : limite <= 3 ? { recurso: "equipe10" } : { recurso: "equipe10", extra: true });
@@ -22,7 +23,7 @@ const textoServicos = (q, servicos) => {
   return nomes.length ? `Faz ${nomes.join(", ")}` : "Faz todos os serviços";
 };
 
-function Editor({ token, inicial, servicos, aoFechar, aoSalvo, aoLimite }) {
+function Editor({ token, inicial, servicos, aoFechar, aoSalvo, aoLimite, aoAcesso }) {
   const novo = !inicial.id;
   const [nome, setNome] = useState(inicial.nome || "");
   const [ativo, setAtivo] = useState(inicial.ativo ?? true);
@@ -104,6 +105,7 @@ function Editor({ token, inicial, servicos, aoFechar, aoSalvo, aoLimite }) {
         <button type="button" className="botao-ouro" disabled={!valido || enviando} onClick={salvar}>
           {enviando ? "Salvando…" : novo ? "Adicionar à equipe" : "Salvar alterações"}
         </button>
+        {!novo && <AcessoEquipe token={token} q={inicial} aoMudar={aoAcesso} />}
         <button type="button" className="folha-fechar" onClick={aoFechar}>Fechar</button>
       </div>
     </div>
@@ -211,6 +213,9 @@ export default function Equipe() {
                       ) : (
                         <span className="chip chip-ok">Na agenda</span>
                       )}
+                      {q.acesso && (
+                        <span className="chip">{q.acesso.ativo ? "Usa o app" : "Link enviado"}</span>
+                      )}
                       {q.futuros > 0 && (
                         <span className="chip">{q.futuros} {q.futuros === 1 ? "horário marcado" : "horários marcados"}</span>
                       )}
@@ -244,6 +249,13 @@ export default function Equipe() {
             setEditar(null);
             setDados(r);
             setAviso(msg);
+          }}
+          aoAcesso={(msg) => {
+            setAviso(msg);
+            rpc("admin_equipe", { p_token: token }).then((d) => {
+              setDados(d);
+              setEditar((e) => (e ? d.equipe.find((x) => x.id === e.id) || e : e));
+            }).catch(() => {});
           }}
         />
       )}

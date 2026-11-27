@@ -21,6 +21,8 @@ export async function GET(request, { params }) {
       nome: salao.nome,
       contato: salao.contato,
       pix: salao.pix,
+      endereco: salao.endereco,
+      bairroCidade: salao.bairroCidade,
       urlRecibo: `${origem}/recibo/${a.codigo}`,
     });
     return new Response(bytes, {

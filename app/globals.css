@@ -1841,3 +1841,67 @@ body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--our
 .emp-mensagem-acoes { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin-top: 0.5rem; font-size: 0.88rem; }
 .emp-mensagem-acoes a { color: var(--ouro-claro); }
 
+
+/* ---------- visitas ---------- */
+.vis-cartao { margin-top: 1rem; padding: 0.9rem 1rem; border-radius: 1.2rem; }
+.vis { margin-top: 0.9rem; display: grid; gap: 0.9rem; }
+.vis-numeros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin: 0; }
+.vis-numeros div { padding: 0.55rem 0.4rem; border-radius: 0.9rem; background: rgb(255 255 255 / 0.04); text-align: center; }
+.vis-numeros dt { font-size: 0.72rem; color: var(--apagado); }
+.vis-numeros dd { margin: 0.1rem 0 0; font-family: var(--display); font-size: 1.35rem; color: var(--ouro-claro); font-variant-numeric: tabular-nums; }
+.vis-grafico { display: grid; grid-template-columns: repeat(14, 1fr); gap: 0.25rem; align-items: end; height: 92px; }
+.vis-grafico span { display: grid; grid-template-rows: 1fr auto; gap: 0.2rem; height: 100%; text-align: center; }
+.vis-grafico i { align-self: end; display: block; width: 100%; border-radius: 4px 4px 2px 2px; background: linear-gradient(180deg, var(--ouro-claro), var(--ouro)); opacity: 0.85; }
+.vis-grafico small { font-size: 0.6rem; color: var(--apagado); }
+.vis-sub { margin: 0.6rem 0 0; font-size: 0.85rem; font-weight: 500; color: var(--claro-suave); }
+.vis-origens, .vis-saloes { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+.vis-origens li { display: grid; grid-template-columns: 9.5rem 1fr 2.2rem; align-items: center; gap: 0.6rem; font-size: 0.85rem; }
+.vis-origens strong, .vis-saloes strong { text-align: right; font-variant-numeric: tabular-nums; color: var(--ouro-claro); }
+.vis-barra { height: 6px; border-radius: 99px; background: rgb(255 255 255 / 0.06); overflow: hidden; }
+.vis-barra i { display: block; height: 100%; border-radius: inherit; background: var(--ouro); }
+.vis-saloes li { display: grid; grid-template-columns: 1fr auto 2.6rem; gap: 0.6rem; align-items: baseline; font-size: 0.88rem; }
+.vis-saloes small { color: var(--apagado); font-size: 0.75rem; }
+.vis-nota { margin: 0; font-size: 0.75rem; color: var(--apagado); }
+@media (max-width: 420px) { .vis-origens li { grid-template-columns: 7.5rem 1fr 2rem; } }
+
+/* ---------- confirmação por código e cancelamento ---------- */
+.sinal-codigo { display: grid; gap: 0.2rem; margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--claro-suave); }
+.sinal-codigo strong { font-family: var(--display); font-size: 1.5rem; letter-spacing: 0.1em; color: var(--ouro-claro); }
+.sinal-codigo small { color: var(--apagado); font-size: 0.78rem; }
+.ag-codigo dd strong { font-family: var(--display); letter-spacing: 0.08em; color: var(--ouro-claro); }
+.cn-nota { margin-top: 0.7rem !important; font-size: 0.8rem !important; color: var(--apagado) !important; }
+.cancelar-botao { display: block; margin: 0.4rem auto 0; color: var(--apagado); font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; }
+.cancelar-aviso { margin: 0.6rem 0 0; font-size: 0.85rem; color: var(--apagado); text-align: center; }
+.cancelar-aviso a { color: var(--ouro-claro); }
+.cancelado-aviso { margin-top: 1rem; padding: 1rem; border-radius: 1rem; background: rgb(var(--champanhe-rgb) / 0.05); border: 1px solid rgb(var(--champanhe-rgb) / 0.16); }
+.cancelado-aviso p { margin-top: 0.3rem; font-size: 0.9rem; color: var(--claro-suave); }
+.cancelado-aviso a { color: var(--ouro-claro); }
+.canc-quando { text-align: center; color: var(--claro-suave); font-size: 0.92rem; margin: 0.3rem 0 1rem; }
+.canc-texto { margin: 0.6rem 0 1rem; font-size: 0.9rem; color: var(--claro-suave); }
+.canc-motivos { border: 0; margin: 0 0 0.8rem; padding: 0; display: grid; gap: 0.45rem; }
+.canc-motivos legend { margin-bottom: 0.55rem; font-size: 0.9rem; color: var(--claro-suave); }
+.canc-motivos label { display: flex; align-items: center; gap: 0.7rem; padding: 0.75rem 0.9rem; border-radius: 0.9rem; border: 1px solid var(--fio); cursor: pointer; }
+.canc-motivos label.marcado { border-color: var(--ouro); background: rgb(var(--champanhe-rgb) / 0.06); }
+.canc-motivos input { accent-color: var(--ouro); width: 1.1rem; height: 1.1rem; }
+.canc-outro { width: 100%; box-sizing: border-box; margin-bottom: 0.8rem; padding: 0.75rem 0.9rem; border-radius: 0.9rem; border: 1px solid var(--fio); background: rgb(255 255 255 / 0.04); color: inherit; font: inherit; resize: vertical; }
+.sv-agenda input[list] { width: 100%; box-sizing: border-box; padding: 0.75rem 0.9rem; border-radius: 0.9rem; border: 1px solid var(--fio); background: rgb(255 255 255 / 0.04); color: inherit; font: inherit; }
+
+/* ---------- acesso da equipe ---------- */
+.eq-acesso { margin-top: 1.4rem; padding-top: 1.1rem; border-top: 1px solid var(--fio); display: grid; gap: 0.7rem; }
+.eq-acesso h3 { font-family: var(--display); font-weight: 400; font-size: 1.2rem; }
+.eq-acesso-status { display: flex; align-items: center; gap: 0.6rem; margin: 0; }
+.eq-acesso-status small { color: var(--apagado); }
+.eq-convite { display: grid; gap: 0.4rem; text-align: center; }
+.eq-convite small { color: var(--apagado); font-size: 0.78rem; }
+.eq-acesso-acoes { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: space-between; }
+.eqp-marca { display: flex; align-items: center; gap: 0.75rem; }
+.eqp-motivo { margin: 0 0 0.6rem 4.2rem; font-size: 0.82rem; color: var(--apagado); }
+.eqp-acoes { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0 0.9rem 0.8rem 4.2rem; }
+.eqp-acoes .acao { padding: 0.45rem 0.9rem; }
+.eqp-clientes { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.eqp-clientes li { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.85rem 1rem; border-radius: 1rem; }
+.eqp-clientes span { display: grid; gap: 0.15rem; }
+.eqp-clientes small { color: var(--apagado); font-size: 0.8rem; }
+.eqp-clientes a { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1px solid var(--fio); color: var(--ouro-claro); flex: none; }
+.app-equipe .kpis { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+.ms-bloco select#ms-cancelar { width: 100%; max-width: 100%; box-sizing: border-box; text-overflow: ellipsis; }

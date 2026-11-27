@@ -12,9 +12,11 @@ import { real, hora, dataLonga, dataCurta } from "../../../lib/formato";
 import { mensagemRecibo, guardarCodigo } from "../../../components/Agendamento";
 import { IconeConversa, IconeVoltar, IlustracaoServico } from "../../../components/Icones";
 import { lerSessao } from "../../../lib/sessao";
+import { ConfirmarComCodigo, CancelarHorario, AvisoCancelado } from "../../../components/HorarioCliente";
 
 const STATUS = {
   aguardando_sinal: { texto: "Aguardando o sinal", classe: "chip-alerta" },
+  aguardando_confirmacao: { texto: "Aguardando confirmação", classe: "chip-alerta" },
   confirmado: { texto: "Confirmado", classe: "chip-ok" },
   cancelado: { texto: "Cancelado", classe: "" },
   concluido: { texto: "Atendimento concluído", classe: "chip-ok" },
@@ -52,7 +54,15 @@ export default function Recibo() {
         try {
           cel = JSON.parse(localStorage.getItem("rica:cliente") || "null")?.celular || "";
         } catch {}
-        const reg = { ...l[0], cliente_celular: cel };
+        const x = await rpc("reserva_extra", { p_codigo: String(codigo) }).catch(() => null);
+        const reg = {
+          ...l[0],
+          cliente_celular: cel,
+          codigo_confirmacao: x?.codigo_confirmacao || null,
+          confirmacao_pedida_em: x?.confirmacao_pedida_em || null,
+          cancelado_por: x?.cancelado_por || null,
+          motivo_cancelamento: x?.motivo || null,
+        };
         setA(reg);
         setInformado(Boolean(reg.pix_informado_em));
         guardarCodigo(reg.codigo);
@@ -110,7 +120,9 @@ export default function Recibo() {
     ? linkWhats(salao, mensagemRecibo(salao, a, origem)) || `https://instagram.com/${salao.instagram}`
     : "#";
   const pendente = a?.status === "aguardando_sinal";
-  const st = a ? STATUS[a.status] : null;
+  const aConfirmar = a?.status === "aguardando_confirmacao";
+  const temSinal = Number(a?.sinal) > 0;
+  const st = a ? STATUS[a.status] || STATUS.confirmado : null;
 
   return (
     <div className="app app-recibo">
@@ -137,6 +149,32 @@ export default function Recibo() {
                 </div>
               </div>
             )}
+
+            {novo && aConfirmar && (
+              <div className="reservado entra nao-imprimir">
+                <span className="reservado-icone" aria-hidden="true">✓</span>
+                <div>
+                  <strong>Horário guardado!</strong>
+                  <p>Falta só um passo: envie o código abaixo para {aContato(salao)} confirmar.</p>
+                </div>
+              </div>
+            )}
+
+            {novo && a.status === "confirmado" && (
+              <div className="reservado entra nao-imprimir">
+                <span className="reservado-icone" aria-hidden="true">✓</span>
+                <div>
+                  <strong>Horário confirmado!</strong>
+                  <p>{temSinal ? "Tudo certo." : "O pagamento é feito no dia, no salão."} Te esperamos.</p>
+                </div>
+              </div>
+            )}
+
+            {aConfirmar && a.codigo_confirmacao && (
+              <ConfirmarComCodigo salao={salao} a={a} codigo={a.codigo_confirmacao} pedidaEm={a.confirmacao_pedida_em} />
+            )}
+
+            <AvisoCancelado salao={salao} a={a} />
 
             {pendente && (
               <section className="pix vidro entra nao-imprimir" aria-labelledby="pix-titulo">
@@ -244,12 +282,18 @@ export default function Recibo() {
                 <div><dt>Cliente</dt><dd>{a.cliente_nome}</dd></div>
                 {a.profissional_nome && <div><dt>Profissional</dt><dd>{a.profissional_nome}</dd></div>}
                 <div><dt>Valor do serviço</dt><dd>{real(a.valor)}</dd></div>
-                <div><dt>Sinal (30%) via Pix</dt><dd>{real(a.sinal)}</dd></div>
-                <div className="recibo-total"><dt>Restante no dia</dt><dd>{real(Number(a.valor) - Number(a.sinal))}</dd></div>
+                {temSinal ? (
+                  <>
+                    <div><dt>Sinal ({Math.round((Number(a.sinal) / Number(a.valor)) * 100)}%) via Pix</dt><dd>{real(a.sinal)}</dd></div>
+                    <div className="recibo-total"><dt>Restante no dia</dt><dd>{real(Number(a.valor) - Number(a.sinal))}</dd></div>
+                  </>
+                ) : (
+                  <div className="recibo-total"><dt>A pagar no dia</dt><dd>{real(a.valor)}</dd></div>
+                )}
               </dl>
 
               <p className="recibo-rodape">
-                Emitido em {dataCurta(a.criado_em)} às {hora(a.criado_em)} {salao.pix.chave ? ` · Chave Pix ${salao.pix.exibicao || salao.pix.chave}` : ""}
+                Emitido em {dataCurta(a.criado_em)} às {hora(a.criado_em)} {temSinal && salao.pix.chave ? ` · Chave Pix ${salao.pix.exibicao || salao.pix.chave}` : ""}
                 <br />
                 Comprovante de agendamento, sem valor fiscal.
               </p>
@@ -266,6 +310,11 @@ export default function Recibo() {
               <a className="botao-linha" href={`/recibo/${a.codigo}/pdf`} target="_blank" rel="noopener">
                 Abrir recibo em PDF
               </a>
+              <CancelarHorario
+                salao={salao}
+                a={a}
+                aoCancelar={(n) => setA((x) => ({ ...x, status: "cancelado", cancelado_por: "cliente", motivo_cancelamento: n?.motivo_cancelamento }))}
+              />
               <Link href={logada ? "/cliente" : "/visitante"} className="link-claro">
                 {logada ? "Ir para minha área" : "Voltar ao início"}
               </Link>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ResumoVisitas } from "../../components/admin/Visitas";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { rpc } from "../../lib/supabase";
@@ -325,6 +326,43 @@ function PlanosPrecos({ token, dados, aoSalvo }) {
   );
 }
 
+// Quantas pessoas visitaram o site de vendas e os apps dos salões
+function Visitas({ token }) {
+  const [d, setD] = useState(null);
+  const [aberto, setAberto] = useState(false);
+  useEffect(() => {
+    if (token) rpc("master_visitas", { p_token: token }).then(setD).catch(() => {});
+  }, [token]);
+  if (!d) return null;
+  return (
+    <section className="emp-precos vidro">
+      <button type="button" className="emp-precos-topo" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
+        <span>
+          <strong>Visitas</strong>
+          <small>Site de vendas: {d.site.hoje} hoje · {d.site.semana} em 7 dias · {d.site.mes} em 30 dias</small>
+        </span>
+        <span aria-hidden="true">{aberto ? "−" : "+"}</span>
+      </button>
+      {aberto && (
+        <>
+          <h3 className="vis-sub">tonsdellas.com.br</h3>
+          <ResumoVisitas r={d.site} />
+          <h3 className="vis-sub">Apps dos salões (pessoas)</h3>
+          {d.saloes.length ? (
+            <ul className="vis-saloes">
+              {d.saloes.map((x) => (
+                <li key={x.slug}><span>{x.nome}</span><small>{x.semana} em 7 dias</small><strong>{x.mes}</strong></li>
+              ))}
+            </ul>
+          ) : (
+            <p className="vis-nota">Nenhuma visita nos apps dos salões ainda.</p>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
 // Mensagens do formulário de contato do site
 function Mensagens({ token }) {
   const [d, setD] = useState(null);
@@ -503,6 +541,7 @@ export default function Master() {
         </p>
         <PlanosPrecos token={token} dados={planos} aoSalvo={(r) => { setPlanos(r); setAviso("Preços salvos."); }} />
         <Cobranca token={token} aoAviso={setAviso} />
+        <Visitas token={token} />
         <Mensagens token={token} />
         <button type="button" className="botao-linha nova-cliente" onClick={() => setEditar({})}>
           <IconeMais width="20" height="20" /> Nova empresa

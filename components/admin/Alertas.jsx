@@ -17,11 +17,16 @@ export function montarAlertas(dados) {
   const hoje = hojeISO();
   const amanha = somaDias(hoje, 1);
   const lista = [];
-  const ativos = dados.agendamentos.filter((a) => ["aguardando_sinal", "confirmado"].includes(a.status) && new Date(a.fim).getTime() > agora);
+  const ativos = dados.agendamentos.filter((a) => ["aguardando_sinal", "aguardando_confirmacao", "confirmado"].includes(a.status) && new Date(a.fim).getTime() > agora);
 
   for (const a of ativos) {
     const nome = primeiroNome(a.cliente_nome);
     const pendente = a.status === "aguardando_sinal";
+    if (a.status === "aguardando_confirmacao") {
+      lista.push({ id: `codigo-${a.codigo}`, grupo: "pagamentos", nivel: a.confirmacao_pedida_em ? "urgente" : "atencao", demo: a.demo, ir: { aba: "sinais", chave: a.codigo },
+        titulo: a.confirmacao_pedida_em ? `${nome} enviou o código ${a.codigo_confirmacao}` : `Cliente nova para confirmar: ${nome}`,
+        texto: `${a.servico_nome} · ${curta(a.inicio)} às ${hora(a.inicio)}. Confira o código no WhatsApp e confirme.` });
+    }
     if (pendente && a.pix_informado_em) {
       lista.push({ id: `pix-${a.codigo}`, grupo: "pagamentos", nivel: "urgente", demo: a.demo, ir: { aba: "sinais", chave: a.codigo },
         titulo: `${nome} disse que enviou o Pix`, texto: `Sinal de ${real(a.sinal)} · ${curta(a.inicio)} às ${hora(a.inicio)}. Confira e confirme.` });
@@ -33,7 +38,7 @@ export function montarAlertas(dados) {
     const dia = diaDe(a.inicio);
     if (dia === hoje || dia === amanha) {
       lista.push({ id: `agenda-${a.codigo}`, grupo: dia === hoje ? "hoje" : "amanha", nivel: "atencao", demo: a.demo, ir: { aba: "agenda", chave: a.codigo },
-        titulo: `${hora(a.inicio)} · ${a.cliente_nome}`, texto: `${a.servico_nome} · ${pendente ? "sinal pendente" : "sinal pago"}` });
+        titulo: `${hora(a.inicio)} · ${a.cliente_nome}`, texto: `${a.servico_nome} · ${pendente ? "sinal pendente" : a.status === "aguardando_confirmacao" ? "a confirmar" : Number(a.sinal) > 0 ? "sinal pago" : "confirmado"}` });
     }
   }
 
@@ -43,9 +48,13 @@ export function montarAlertas(dados) {
       lista.push({ id: `nova-${a.codigo}`, grupo: "novidades", nivel: "info", demo: a.demo, ir: { aba: "agenda", chave: a.codigo },
         titulo: `Reserva nova: ${nome}`, texto: `${a.servico_nome} · ${curta(a.inicio)} às ${hora(a.inicio)}` });
     }
-    if (a.status === "confirmado" && a.atualizado_em && agora - new Date(a.atualizado_em).getTime() < 48 * H) {
+    if (a.status === "confirmado" && Number(a.sinal) > 0 && a.atualizado_em && agora - new Date(a.atualizado_em).getTime() < 48 * H) {
       lista.push({ id: `pago-${a.codigo}`, grupo: "novidades", nivel: "ok", demo: a.demo, ir: { aba: "agenda", chave: a.codigo },
         titulo: `Sinal recebido: ${nome}`, texto: `${real(a.sinal)} confirmado · falta ${real(a.valor - a.sinal)} no dia` });
+    }
+    if (a.status === "cancelado" && a.cancelado_por === "cliente" && a.cancelado_em && agora - new Date(a.cancelado_em).getTime() < 72 * H) {
+      lista.push({ id: `cancelou-${a.codigo}`, grupo: "novidades", nivel: "atencao", demo: a.demo, ir: { aba: "agenda", chave: a.codigo },
+        titulo: `${nome} cancelou`, texto: `${a.servico_nome} · ${curta(a.inicio)} às ${hora(a.inicio)}${a.motivo_cancelamento ? ` · “${a.motivo_cancelamento}”` : ""}` });
     }
   }
 

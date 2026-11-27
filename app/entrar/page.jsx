@@ -24,10 +24,12 @@ function Formulario() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const pedidoVolta = busca.get("volta") || "";
+  const volta = /^\/(?!\/)[\w\-/]*$/.test(pedidoVolta) ? pedidoVolta : "/cliente";
 
   useEffect(() => {
     if (lerSessao("admin")?.token) return router.replace("/admin");
-    if (lerSessao("cliente")?.token) return router.replace("/cliente");
+    if (lerSessao("cliente")?.token) return router.replace(volta);
     try {
       const salvo = JSON.parse(localStorage.getItem("rica:cliente") || "null");
       if (salvo) {
@@ -37,7 +39,7 @@ function Formulario() {
     } catch {}
     const c = (busca.get("c") || "").replace(/\D/g, "");
     if (c) setCelular(mascaraCelular(c));
-  }, [router, busca]);
+  }, [router, busca, volta]);
 
   // no "Já tenho conta" o mesmo campo aceita celular (cliente) ou e-mail (dona e equipe)
   const ehEmail = modo === "entrar" && /[a-z@]/i.test(celular);
@@ -75,7 +77,7 @@ function Formulario() {
         return;
       }
       salvarSessao("cliente", { token: r.token, nome: r.nome, celular: digitos });
-      router.replace("/cliente");
+      router.replace(volta);
     } catch (e) {
       setErro("Não foi possível conectar. Verifique a internet e tente de novo.");
       setEnviando(false);
@@ -155,7 +157,7 @@ function Formulario() {
         Só quer conhecer? <Link href="/visitante">Continuar como visitante</Link>
       </p>
       <p className="tela-equipe">
-        <Link href="/admin/entrar?primeiro=1">Equipe: recebeu um código de primeiro acesso?</Link>
+        <Link href="/equipe/entrar">Profissional do salão? Entre por aqui</Link>
       </p>
       <Assinatura />
     </main>

@@ -33,15 +33,26 @@ export function mensagemRecibo(salao, a, origem) {
     `Data: ${dataLonga(a.inicio)}`,
     `Horário: ${hora(a.inicio)} às ${hora(a.fim)}`,
     `Valor do serviço: ${real(a.valor)}`,
-    `Sinal (${Math.round((Number(a.sinal) / Number(a.valor)) * 100)}%) pago via Pix: ${real(a.sinal)}`,
-    `Restante no dia: ${real(restante)}`,
-    "",
-    "Segue o comprovante do Pix para confirmar meu horário.",
+    ...(Number(a.sinal) > 0
+      ? [
+          `Sinal (${Math.round((Number(a.sinal) / Number(a.valor)) * 100)}%) pago via Pix: ${real(a.sinal)}`,
+          `Restante no dia: ${real(restante)}`,
+          "",
+          "Segue o comprovante do Pix para confirmar meu horário.",
+        ]
+      : [`Pagamento: no dia, no salão`, ""]),
     `Recibo em PDF: ${origem}/recibo/${a.codigo}/pdf`,
   ]
     .filter((l) => l !== null)
     .join("\n");
 }
+
+const duracaoTexto = (min) => {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (!h) return `${m} min`;
+  return m ? `${h}h${String(m).padStart(2, "0")}` : `${h} ${h === 1 ? "hora" : "horas"}`;
+};
 
 export function guardarCodigo(codigo) {
   try {
@@ -236,7 +247,11 @@ export default function Agendamento() {
         {etapa === "servico" && (
           <section className="etapa entra">
             <h1 className="etapa-titulo">Qual serviço você quer agendar?</h1>
-            <p className="tela-sub">Sinal de 30% via Pix para reservar o horário. O restante você paga no dia.</p>
+            <p className="tela-sub">
+              {salao.cobraSinal
+                ? "Um sinal via Pix reserva o horário. O restante você paga no dia."
+                : "Escolha o serviço e o horário. O pagamento é feito no dia, no salão."}
+            </p>
             {erroServicos && <p className="erro">{erroServicos}</p>}
             {!servicos && !erroServicos && <div className="carregando">Carregando serviços…</div>}
             <div className="escolhas">
@@ -259,7 +274,7 @@ export default function Agendamento() {
                     <span className="escolha-nome">{s.nome}</span>
                     <span className="escolha-linha">
                       <span className="escolha-info">
-                        <IconeRelogio width="15" height="15" /> {Math.round(s.duracao_min / 60)} horas
+                        <IconeRelogio width="15" height="15" /> {duracaoTexto(s.duracao_min)}
                       </span>
                       <span className="escolha-preco">
                         {s.valor_cheio && <s className="preco-cheio">{real(s.valor_cheio)}</s>}
@@ -267,7 +282,7 @@ export default function Agendamento() {
                       </span>
                     </span>
                     {s.promocao && <span className="chip chip-promo escolha-promo">{s.promocao}</span>}
-                    <span className="escolha-sinal">Sinal de {real(s.sinal)} para reservar</span>
+                    {Number(s.sinal) > 0 && <span className="escolha-sinal">Sinal de {real(s.sinal)} para reservar</span>}
                   </span>
                   <IconeSeta />
                 </button>
@@ -482,14 +497,23 @@ export default function Agendamento() {
                   {real(servico.valor)}
                 </strong>
               </div>
-              <div className="resumo-linha resumo-destaque">
-                <span>Sinal agora ({Math.round(Number(servico.sinal_pct))}%)</span>
-                <strong>{real(servico.sinal)}</strong>
-              </div>
-              <div className="resumo-linha">
-                <span>Restante no dia</span>
-                <strong>{real(servico.valor - servico.sinal)}</strong>
-              </div>
+              {Number(servico.sinal) > 0 ? (
+                <>
+                  <div className="resumo-linha resumo-destaque">
+                    <span>Sinal agora ({Math.round(Number(servico.sinal_pct))}%)</span>
+                    <strong>{real(servico.sinal)}</strong>
+                  </div>
+                  <div className="resumo-linha">
+                    <span>Restante no dia</span>
+                    <strong>{real(servico.valor - servico.sinal)}</strong>
+                  </div>
+                </>
+              ) : (
+                <div className="resumo-linha resumo-destaque">
+                  <span>Pagamento</span>
+                  <strong>No dia, no salão</strong>
+                </div>
+              )}
             </div>
             {erro && <p className="erro">{erro}</p>}
           </section>
@@ -506,7 +530,7 @@ export default function Agendamento() {
       {etapa === "dados" && (
         <div className="acao-rodape">
           <button type="button" className="botao-ouro" disabled={!valido || enviando} onClick={reservar}>
-            {enviando ? "Reservando…" : `Reservar e pagar sinal de ${real(servico.sinal)}`}
+            {enviando ? "Reservando…" : Number(servico.sinal) > 0 ? `Reservar e pagar sinal de ${real(servico.sinal)}` : "Reservar horário"}
           </button>
         </div>
       )}
