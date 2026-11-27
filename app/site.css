@@ -293,3 +293,8 @@ body.site {
   .st-porte, .st-botao { transition: none; }
 }
 body.site [id] { scroll-margin-top: 5rem; }
+
+/* teste da logo */
+.st-logo { display: block; height: 54px; width: auto; }
+.st-logo-rodape { height: 84px; margin-bottom: 0.6rem; }
+.st-logo-capa { display: block; width: min(440px, 100%); height: auto; margin: 0 0 1.4rem -0.6rem; }

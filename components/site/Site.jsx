@@ -87,6 +87,7 @@ export default function Site({ planos }) {
         <section className="st-capa">
           <div className="st-in st-capa-in">
             <div className="st-capa-texto">
+              <img src="/site/logo-tons-dellas.webp" alt="Tons Dellas" width="900" height="462" className="st-logo-capa" />
               <p className="st-capa-pre">Para manicures, estúdios e salões de beleza</p>
               <h1>O app de agendamento do seu salão, com a sua marca.</h1>
               <p className="st-capa-sub">
