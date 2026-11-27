@@ -45,10 +45,14 @@ export function FolhaPlano({ recurso, aoFechar, extra }) {
           <strong>{extra ? (plano?.extra_profissional ? `+ ${precoPlano(plano.extra_profissional)}` : "Sob consulta") : NOME_PLANO[r.plano]}</strong>
           {extra ? <small>por mês, cada uma</small> : plano && <small>{precoPlano(plano.preco)} por mês</small>}
         </div>
-        <a className="botao-ouro" href={linkVendas(dados?.whatsapp, msg)} target="_blank" rel="noopener">
-          {extra ? "Quero adicionar profissionais" : `Quero o plano ${NOME_PLANO[r.plano]}`}
-        </a>
-        <Link className="botao-linha" href="/admin/plano">Comparar os planos</Link>
+        {extra ? (
+          <a className="botao-ouro" href={linkVendas(dados?.whatsapp, msg)} target="_blank" rel="noopener">Quero adicionar profissionais</a>
+        ) : (
+          <Link className="botao-ouro" href="/admin/plano">Mudar para o {NOME_PLANO[r.plano]}</Link>
+        )}
+        {!extra && (
+          <a className="botao-linha" href={linkVendas(dados?.whatsapp, msg)} target="_blank" rel="noopener">Tirar dúvidas no WhatsApp</a>
+        )}
         <button type="button" className="folha-fechar" onClick={aoFechar}>Agora não</button>
       </div>
     </div>

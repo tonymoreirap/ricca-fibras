@@ -7,6 +7,7 @@ import { rpc } from "../../lib/supabase";
 import { useSalao } from "../../components/Empresa";
 import { FolhaPlano, IconeCadeado } from "../../components/admin/Cadeado";
 import CartaoPlano from "../../components/admin/CartaoPlano";
+import Primeiros from "../../components/admin/Primeiros";
 import { temRecurso, NOME_PLANO, RECURSOS } from "../../lib/planos";
 import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from "../../lib/formato";
 import { STATUS, nivelDe, pagamento, primeiroNome } from "../../lib/agenda";
@@ -268,6 +269,13 @@ export default function Painel() {
   const [verAlertas, setVerAlertas] = useState(false);
   const [travado, setTravado] = useState(null);
   const [filtroProf, setFiltroProf] = useState(null);
+  const [bemvinda, setBemvinda] = useState(false);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("bemvinda")) {
+      setBemvinda(true);
+      window.history.replaceState(null, "", "/admin");
+    }
+  }, []);
   const tema = useTema();
   const alertas = useAlertas(dados);
   const resumoDia = useResumoDoDia(alertas.lista, Boolean(dados));
@@ -501,6 +509,7 @@ export default function Painel() {
           </div>
         </section>
 
+        <Primeiros nome={primeiroNome(eu.nome)} bemvinda={bemvinda} />
         <CartaoPlano token={sessao.token} soAlerta />
 
         <section className="gerenciar" aria-labelledby="ger-titulo">

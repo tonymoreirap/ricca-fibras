@@ -21,7 +21,27 @@ export default function EntrarEquipe() {
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
 
+  // vindo do cadastro (tonsdellas.com.br/criar): entra direto com o passe de uso único
+  const [abrindo, setAbrindo] = useState(false);
   useEffect(() => {
+    const passe = new URLSearchParams(window.location.hash.slice(1)).get("passe");
+    if (!passe) return;
+    window.history.replaceState(null, "", "/admin/entrar");
+    setAbrindo(true);
+    rpc("admin_entrar_passe", { p_passe: passe })
+      .then((r) => {
+        if (!r.ok) throw new Error(r.erro);
+        salvarSessao("admin", { token: r.token, nome: r.nome, papel: r.papel });
+        router.replace("/admin?bemvinda=1");
+      })
+      .catch((e) => {
+        setErro(e.message || "Entre com seu e-mail e senha.");
+        setAbrindo(false);
+      });
+  }, [router]);
+
+  useEffect(() => {
+    if (window.location.hash.includes("passe=")) return;
     if (lerSessao("admin")?.token) return router.replace("/admin");
     const q = new URLSearchParams(window.location.search);
     if (q.get("primeiro") === "1") setModo("primeiro");
@@ -61,6 +81,17 @@ export default function EntrarEquipe() {
       setErro("Não foi possível conectar. Verifique a internet e tente de novo.");
       setEnviando(false);
     }
+  }
+
+  if (abrindo) {
+    return (
+      <div className="app">
+        <main className="tela tela-entrar">
+          <LogoDe salao={salao} tamanho={112} className="entrar-monograma" />
+          <h1>Abrindo o seu painel…</h1>
+        </main>
+      </div>
+    );
   }
 
   return (

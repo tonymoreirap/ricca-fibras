@@ -1750,3 +1750,83 @@ body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--our
 .adm-topo > div:first-child { min-width: 0; }
 .adm-topo .c-saudacao { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* =====================================================================
+   CRIAR SALÃO (cadastro sozinha)
+   ===================================================================== */
+.cs-tela { padding-bottom: 8rem; }
+.cs-passos { display: flex; gap: 0.4rem; margin: 0.5rem 0 1.6rem; padding: 0; list-style: none; }
+.cs-passos li { flex: 1; display: flex; align-items: center; gap: 0.4rem; padding-top: 0.6rem; border-top: 2px solid var(--fio); font-size: 0.78rem; color: var(--apagado); }
+.cs-passos li span { display: grid; place-items: center; flex: none; width: 1.35rem; height: 1.35rem; border-radius: 50%; font-size: 0.72rem; font-weight: 600; box-shadow: inset 0 0 0 1px var(--fio-forte); }
+.cs-passos li.atual { border-top-color: var(--ouro); color: var(--champanhe); }
+.cs-passos li.atual span { background: var(--folha-ouro); color: var(--tinta); box-shadow: none; }
+.cs-passos li.feito { border-top-color: rgb(var(--ouro-rgb) / 0.5); color: var(--claro-suave); }
+.cs-passos li.feito span { color: var(--ouro-claro); box-shadow: inset 0 0 0 1px rgb(var(--ouro-rgb) / 0.5); }
+.cs-etapa h1 { font-family: var(--display); font-weight: 400; font-size: clamp(1.9rem, 8vw, 2.4rem); line-height: 1.1; text-wrap: balance; }
+.cs-sub { margin-top: 0.5rem; color: var(--claro-suave); }
+.cs-rotulo { margin-top: 1.6rem; font-size: 0.9rem; font-weight: 400; color: var(--claro-suave); }
+.cs-nota { display: block; margin-top: 0.9rem; font-size: 0.84rem; color: var(--apagado); }
+.cs-link { color: var(--ouro-claro); text-decoration: underline; text-underline-offset: 3px; }
+.cs-slug { display: flex; align-items: center; border: 1px solid var(--fio-forte); border-radius: 0.9rem; background: rgb(var(--claro-rgb) / 0.04); overflow: hidden; }
+.cs-slug:focus-within { border-color: var(--ouro); box-shadow: 0 0 0 4px rgb(var(--ouro-rgb) / 0.18); }
+.form .cs-slug input { flex: 1; min-width: 0; border: 0; background: none; box-shadow: none; padding-right: 0.2rem; }
+.cs-slug span { flex: none; padding-right: 0.9rem; font-size: 0.9rem; color: var(--apagado); }
+.cs-status { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.6rem; min-height: 1.4rem; font-size: 0.84rem; color: var(--apagado); }
+.cs-status.ok { color: var(--ok); font-weight: 500; }
+.cs-status.ruim { color: var(--rose-claro); }
+.cs-status .link-botao { font-size: 0.84rem; }
+
+/* prévia do app nas cores escolhidas */
+.cs-previa { display: grid; justify-items: center; gap: 0.55rem; margin: 1.4rem 0 0.4rem; }
+.cs-previa-tela {
+  display: grid; justify-items: center; gap: 0.3rem; width: min(15rem, 70vw); padding: 1.5rem 1rem 1.2rem;
+  border-radius: 1.6rem; background: radial-gradient(120% 80% at 50% 0%, var(--superficie-2), var(--cafe));
+  color: var(--champanhe); box-shadow: inset 0 0 0 1px rgb(var(--ouro-rgb) / 0.25), 0 22px 40px -24px rgb(0 0 0 / 0.7);
+  transition: background 0.35s ease;
+}
+.cs-previa-logo { display: grid; place-items: center; width: 3.6rem; height: 3.6rem; margin-bottom: 0.3rem; border-radius: 50%; font-family: var(--display); font-size: 1.3rem; color: var(--ouro-claro); box-shadow: inset 0 0 0 1px rgb(var(--ouro-rgb) / 0.5); }
+.cs-previa-tela strong { max-width: 100%; font-family: var(--display); font-weight: 400; font-size: 1.3rem; line-height: 1.15; text-align: center; overflow-wrap: anywhere; }
+.cs-previa-tela small { font-size: 0.78rem; color: var(--ouro-claro); }
+.cs-previa-botao { margin-top: 0.7rem; padding: 0.55rem 1.2rem; border-radius: 999px; background: var(--folha-ouro); color: var(--tinta); font-size: 0.8rem; font-weight: 600; }
+.cs-previa-url { font-size: 0.8rem; color: var(--apagado); overflow-wrap: anywhere; text-align: center; }
+
+.cs-planos { display: grid; gap: 0.7rem; margin-top: 1.3rem; }
+.cs-plano { display: grid; gap: 0.45rem; padding: 1rem 1.1rem; border: 0; border-radius: 1.2rem; text-align: left; color: var(--champanhe); cursor: pointer; }
+.cs-plano[aria-checked="true"] { box-shadow: inset 0 0 0 2px var(--ouro), 0 14px 30px -20px rgb(var(--ouro-rgb) / 0.8); }
+.cs-plano-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+.cs-plano-topo strong { font-family: var(--display); font-weight: 400; font-size: 1.35rem; }
+.cs-plano-preco { font-size: 1.15rem; font-weight: 500; font-variant-numeric: lining-nums tabular-nums; }
+.cs-plano-preco small { font-size: 0.75rem; font-weight: 400; color: var(--apagado); }
+.cs-plano-equipe { font-size: 0.84rem; color: var(--ouro-claro); }
+.cs-plano-lista { display: grid; gap: 0.25rem; font-size: 0.86rem; color: var(--claro-suave); }
+.cs-plano-lista span { display: flex; align-items: center; gap: 0.45rem; }
+.cs-plano-lista svg { flex: none; color: var(--ouro); }
+.cs-rodape-duplo { display: grid; grid-template-columns: 1fr 2fr; gap: 0.6rem; }
+.cs-rodape-duplo .botao-linha, .cs-rodape-duplo .botao-ouro { margin: 0; }
+.cs-ajuda { margin-top: 1.5rem; text-align: center; font-size: 0.86rem; color: var(--apagado); }
+.cs-ajuda a { color: var(--ouro-claro); }
+.cs-pronto { display: grid; gap: 1rem; padding-top: 1rem; text-align: center; }
+.cs-pronto h1 { font-family: var(--display); font-weight: 400; font-size: clamp(1.8rem, 7.5vw, 2.3rem); line-height: 1.12; text-wrap: balance; }
+.cs-pronto p { color: var(--claro-suave); }
+.cs-pronto strong { color: var(--champanhe); overflow-wrap: anywhere; }
+.cs-pronto small { color: var(--apagado); }
+
+/* Primeiros passos (salão novo) */
+.primeiros { position: relative; margin-top: 1rem; padding: 1.1rem 1.1rem 0.9rem; border-radius: 1.3rem; }
+.primeiros-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+.primeiros-topo h2 { font-family: var(--display); font-weight: 400; font-size: 1.3rem; line-height: 1.2; text-wrap: balance; }
+.primeiros-conta { flex: none; font-size: 0.8rem; color: var(--apagado); }
+.primeiros-barra { height: 4px; margin: 0.8rem 0 0.4rem; border-radius: 4px; background: rgb(var(--claro-rgb) / 0.08); overflow: hidden; }
+.primeiros-barra i { display: block; height: 100%; border-radius: 4px; background: var(--folha-ouro); transition: width 0.4s ease; }
+.primeiros-lista { list-style: none; margin: 0; padding: 0; }
+.pp-item { display: flex; align-items: center; gap: 0.7rem; width: 100%; min-height: 2.9rem; padding: 0.35rem 0; border: 0; border-bottom: 1px solid var(--fio); background: none; color: var(--champanhe); font-size: 0.92rem; text-align: left; text-decoration: none; cursor: pointer; }
+.primeiros-lista li:last-child .pp-item { border-bottom: 0; }
+.pp-marca { display: grid; place-items: center; flex: none; width: 1.4rem; height: 1.4rem; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--fio-forte); color: var(--tinta); }
+.feito .pp-marca { background: var(--folha-ouro); box-shadow: none; }
+.feito .pp-texto { color: var(--apagado); text-decoration: line-through; text-decoration-color: rgb(var(--claro-rgb) / 0.3); }
+.pp-texto { flex: 1; }
+.pp-acao { flex: none; font-size: 0.8rem; font-weight: 500; color: var(--ouro-claro); }
+.primeiros-endereco { min-width: 0; font-size: 0.82rem; color: var(--apagado); overflow-wrap: anywhere; }
+.primeiros-endereco a { color: var(--ouro-claro); }
+.primeiros-pe { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.6rem; }
+.primeiros-pe .link-botao { flex: none; font-size: 0.8rem; }
+.pl-falar { display: block; margin-top: 0.4rem; text-align: center; font-size: 0.9rem; }

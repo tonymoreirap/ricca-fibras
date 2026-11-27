@@ -40,7 +40,7 @@ export default function TemaSazonal() {
   const tema = useTema();
   const rota = usePathname() || "";
   // telas de trabalho (painel, master) ficam sem os brilhos caindo
-  const trabalho = /^\/(admin|master)(\/|$)/.test(rota);
+  const trabalho = /^\/(admin|master|planos|criar)(\/|$)/.test(rota);
   useEffect(() => {
     if (tema) document.documentElement.dataset.tema = tema;
     else delete document.documentElement.dataset.tema;

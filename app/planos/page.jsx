@@ -22,7 +22,8 @@ const PERGUNTAS = [
   ["As minhas clientes pagam algo?", "Não. Clientes e agendamentos são ilimitados em todos os planos."],
   ["Como recebo o sinal?", "Direto na sua chave Pix. O app gera o QR Code com o valor certo; o dinheiro não passa pela gente."],
   ["Posso trocar de plano depois?", "Pode, quando quiser. Nada é apagado: o que sair do plano fica guardado e volta se você subir de novo."],
-  ["Tem período de teste?", "Sim: 30 dias grátis com os recursos do Profissional, para você sentir a diferença na agenda."],
+  ["Tem período de teste?", "Sim: 30 dias grátis com os recursos do Profissional, sem cartão. Você cria o app sozinha em 2 minutos e só paga se quiser continuar."],
+  ["Como pago a mensalidade?", "Pelo próprio app, com Pix, cartão ou boleto. Assim que o pagamento é aprovado, o plano renova sozinho."],
 ];
 
 export default async function Planos() {
@@ -40,8 +41,8 @@ export default async function Planos() {
         <section className="pl-capa">
           <h1>O app do seu salão, com a sua marca.</h1>
           <p>Suas clientes agendam e pagam o sinal por Pix num app com o seu nome, suas cores e o seu endereço. Sem dividir a tela com outros salões.</p>
-          <a className="botao-ouro" href={conversar} target="_blank" rel="noopener">Quero o meu app</a>
-          <small>30 dias grátis · sem fidelidade</small>
+          <a className="botao-ouro" href="/criar">Criar o app do meu salão</a>
+          <small>30 dias grátis · sem cartão · sem fidelidade</small>
         </section>
 
         <section className="bloco">
@@ -75,8 +76,8 @@ export default async function Planos() {
                     );
                   })}
                 </ul>
-                <a className={i === 1 ? "botao-ouro" : "botao-linha"} href={linkVendas(d.whatsapp, `Oi! Quero o plano ${pl.nome} da Tons Dellas para o meu salão.`)} target="_blank" rel="noopener">
-                  Quero o {pl.nome}
+                <a className={i === 1 ? "botao-ouro" : "botao-linha"} href={`/criar?plano=${pl.codigo}`}>
+                  Testar o {pl.nome} grátis
                 </a>
               </article>
             ))}
@@ -99,7 +100,8 @@ export default async function Planos() {
           <h2>Veja um app funcionando</h2>
           <p>A Rica Fibras usa a Tons Dellas todos os dias.</p>
           <a className="botao-linha" href="https://tonsdellas.com.br/visitante" target="_blank" rel="noopener">Abrir o app da Rica Fibras</a>
-          <a className="botao-ouro" href={conversar} target="_blank" rel="noopener">Falar com a gente</a>
+          <a className="botao-ouro" href="/criar">Criar o app do meu salão</a>
+          <a className="cs-link pl-falar" href={conversar} target="_blank" rel="noopener">Prefere conversar? Fale com a gente</a>
         </section>
       </main>
     </div>
