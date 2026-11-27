@@ -24,7 +24,9 @@ export default function EntrarEquipe() {
   // vindo do cadastro (tonsdellas.com.br/criar): entra direto com o passe de uso único
   const [abrindo, setAbrindo] = useState(false);
   useEffect(() => {
-    const passe = new URLSearchParams(window.location.hash.slice(1)).get("passe");
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const passe = hash.get("passe");
+    const pagar = hash.get("pagar") === "1";
     if (!passe) return;
     window.history.replaceState(null, "", "/admin/entrar");
     setAbrindo(true);
@@ -32,7 +34,7 @@ export default function EntrarEquipe() {
       .then((r) => {
         if (!r.ok) throw new Error(r.erro);
         salvarSessao("admin", { token: r.token, nome: r.nome, papel: r.papel });
-        router.replace("/admin?bemvinda=1");
+        router.replace(pagar ? "/admin/plano?pagar=1" : "/admin?bemvinda=1");
       })
       .catch((e) => {
         setErro(e.message || "Entre com seu e-mail e senha.");

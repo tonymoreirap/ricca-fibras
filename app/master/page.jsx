@@ -325,6 +325,47 @@ function PlanosPrecos({ token, dados, aoSalvo }) {
   );
 }
 
+// Mensagens do formulário de contato do site
+function Mensagens({ token }) {
+  const [d, setD] = useState(null);
+  const [aberto, setAberto] = useState(false);
+  useEffect(() => {
+    if (token) rpc("master_contatos", { p_token: token }).then(setD).catch(() => {});
+  }, [token]);
+  if (!d) return null;
+  function abrir() {
+    const novo = !aberto;
+    setAberto(novo);
+    if (novo && d.novas > 0) rpc("master_contatos", { p_token: token, p_marcar_lidas: true }).then((r) => setD({ ...r, mensagens: d.mensagens })).catch(() => {});
+  }
+  return (
+    <section className="emp-precos vidro">
+      <button type="button" className="emp-precos-topo" onClick={abrir} aria-expanded={aberto}>
+        <span>
+          <strong>Mensagens do site</strong>
+          <small>{d.mensagens.length ? (d.novas ? `${d.novas} ${d.novas === 1 ? "nova" : "novas"} · ${d.mensagens.length} no total` : `${d.mensagens.length} mensagens`) : "Nenhuma mensagem ainda"}</small>
+        </span>
+        <span aria-hidden="true">{aberto ? "−" : "+"}</span>
+      </button>
+      {aberto && (
+        <ul className="emp-mensagens">
+          {d.mensagens.map((m) => (
+            <li key={m.id} className={m.lida ? "" : "nova"}>
+              <strong>{m.nome}{m.salao ? ` · ${m.salao}` : ""}</strong>
+              <small>{new Date(m.criado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}{m.porte ? ` · ${m.porte}` : ""}</small>
+              <p>{m.mensagem}</p>
+              <span className="emp-mensagem-acoes">
+                {m.whatsapp && <a href={`https://wa.me/${m.whatsapp.length <= 11 ? "55" + m.whatsapp : m.whatsapp}`} target="_blank" rel="noopener">WhatsApp</a>}
+                {m.email && <a href={`mailto:${m.email}`}>{m.email}</a>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 // Cobrança automática: liga o app à conta do Mercado Pago do Tony
 function Cobranca({ token, aoAviso }) {
   const [info, setInfo] = useState(null);
@@ -462,6 +503,7 @@ export default function Master() {
         </p>
         <PlanosPrecos token={token} dados={planos} aoSalvo={(r) => { setPlanos(r); setAviso("Preços salvos."); }} />
         <Cobranca token={token} aoAviso={setAviso} />
+        <Mensagens token={token} />
         <button type="button" className="botao-linha nova-cliente" onClick={() => setEditar({})}>
           <IconeMais width="20" height="20" /> Nova empresa
         </button>

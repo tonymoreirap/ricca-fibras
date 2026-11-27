@@ -21,6 +21,7 @@ export function situacaoTexto(p) {
     return d == null ? "Período de teste" : d <= 0 ? "Teste termina hoje" : `Teste grátis: faltam ${d} ${d === 1 ? "dia" : "dias"}`;
   }
   if (p.situacao === "atrasada") return "Pagamento pendente. Regularize para não sair do ar.";
+  if (p.situacao === "suspensa" && !p.vence_em) return "Falta só o pagamento para o app ir ao ar.";
   if (p.situacao === "suspensa") return "App fora do ar para as clientes. Regularize o pagamento.";
   return p.vence_em ? `Ativo · renova em ${dataCurta(p.vence_em)}` : "Ativo";
 }

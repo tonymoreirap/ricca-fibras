@@ -17,6 +17,7 @@ export default function MeuPlano() {
   const salao = useSalao();
   const router = useRouter();
   const [p, setP] = useState(null);
+  const [pagarAgora, setPagarAgora] = useState(false);
   const [m, setM] = useState(null); // mensalidade: valores, pagamento online, histórico
   const [token, setToken] = useState(null);
   const [volta, setVolta] = useState(null); // null | conferindo | pago | aguardando
@@ -58,11 +59,24 @@ export default function MeuPlano() {
     if (!s?.token) return router.replace("/admin/entrar");
     setToken(s.token);
     carregar(s.token);
-    if (new URLSearchParams(window.location.search).get("pagamento")) {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("pagamento")) {
       window.history.replaceState(null, "", "/admin/plano");
       conferir(s.token);
     }
+    if (q.get("pagar")) {
+      window.history.replaceState(null, "", "/admin/plano");
+      setPagarAgora(true);
+    }
   }, [router, carregar, conferir]);
+
+  // vindo da assinatura pelo site: abre o pagamento sozinho
+  useEffect(() => {
+    if (!pagarAgora || !p || !m) return;
+    setPagarAgora(false);
+    if (m.online && p.situacao !== "ativa") pagar(p.plano?.codigo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagarAgora, p, m]);
 
   // abre o checkout do Mercado Pago (Pix, cartão ou boleto)
   async function pagar(codigo) {
@@ -88,7 +102,8 @@ export default function MeuPlano() {
   const faltam = p.vence_em ? Math.round((new Date(`${p.vence_em}T12:00:00-03:00`) - Date.now()) / 864e5) : null;
   const deve = p.situacao === "atrasada" || p.situacao === "suspensa";
   const podePagar = deve || p.situacao === "teste" || (p.situacao === "ativa" && faltam != null && faltam <= 10);
-  const rotuloPagar = p.situacao === "teste" ? `Assinar o ${NOME_PLANO[atual]}` : deve ? "Pagar mensalidade" : "Pagar o próximo mês";
+  const estreia = p.situacao === "suspensa" && !p.vence_em;
+  const rotuloPagar = estreia ? "Pagar e colocar no ar" : p.situacao === "teste" ? `Assinar o ${NOME_PLANO[atual]}` : deve ? "Pagar mensalidade" : "Pagar o próximo mês";
 
   return (
     <div className="app app-admin">
@@ -133,6 +148,7 @@ export default function MeuPlano() {
               <>
                 <strong>Pagamento confirmado</strong>
                 <p>Obrigada! Seu plano {NOME_PLANO[atual]} está ativo{p.vence_em ? ` até ${dataCurta(p.vence_em)}` : ""}.</p>
+                <Link href="/admin?bemvinda=1" className="botao-ouro plano-volta-botao">Ir para o meu painel</Link>
               </>
             ) : (
               <>

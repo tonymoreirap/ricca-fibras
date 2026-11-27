@@ -1830,3 +1830,13 @@ body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--our
 .primeiros-pe { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.6rem; }
 .primeiros-pe .link-botao { flex: none; font-size: 0.8rem; }
 .pl-falar { display: block; margin-top: 0.4rem; text-align: center; font-size: 0.9rem; }
+.plano-volta-botao { margin-top: 0.9rem; }
+.emp-mensagens { list-style: none; margin: 0; padding: 0 1rem 1rem; display: grid; gap: 0.6rem; }
+.emp-mensagens li { padding: 0.9rem 1rem; border-radius: 1rem; border: 1px solid var(--fio); }
+.emp-mensagens li.nova { border-color: rgb(var(--ouro-rgb) / 0.5); }
+.emp-mensagens strong { display: block; font-weight: 500; }
+.emp-mensagens small { color: var(--apagado); font-size: 0.8rem; }
+.emp-mensagens p { margin-top: 0.4rem; white-space: pre-wrap; color: var(--claro-suave); }
+.emp-mensagem-acoes { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin-top: 0.5rem; font-size: 0.88rem; }
+.emp-mensagem-acoes a { color: var(--ouro-claro); }
+

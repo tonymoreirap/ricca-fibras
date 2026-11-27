@@ -17,7 +17,7 @@ export default function Bloqueio({ children }) {
   return (
     <main className="sem-salao">
       <h1>{salao.nome}</h1>
-      <p>O app está temporariamente fora do ar. Para agendar, fale com o salão.</p>
+      <p>{salao.estreia ? "O app está quase pronto. Enquanto isso, agende pelo WhatsApp." : "O app está temporariamente fora do ar. Para agendar, fale com o salão."}</p>
       {whats && <a className="botao-ouro" href={whats} target="_blank" rel="noopener">Falar pelo WhatsApp</a>}
       <a className="sem-salao-dona" href="/admin/entrar">Sou a dona do salão</a>
     </main>

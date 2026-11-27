@@ -103,8 +103,8 @@ export default function CriarSalao({ planos, whatsapp }) {
       setPronto(r);
       window.scrollTo({ top: 0 });
       setTimeout(() => {
-        window.location.href = `${r.endereco}/admin/entrar#passe=${r.passe}`;
-      }, 3500);
+        window.location.href = `${r.endereco}/admin/entrar#passe=${r.passe}${r.pagar ? "&pagar=1" : ""}`;
+      }, 3000);
     } catch {
       setErro("Não foi possível conectar. Verifique a internet e tente de novo.");
       setEnviando(false);
@@ -127,13 +127,15 @@ export default function CriarSalao({ planos, whatsapp }) {
     return (
       <main className="tela cs-pronto">
         {previa}
-        <h1>Pronto! O app do {nome.trim()} está no ar.</h1>
+        <h1>{pronto.pagar ? `Falta só o pagamento para o ${nome.trim()} ir ao ar.` : `Pronto! O app do ${nome.trim()} está no ar.`}</h1>
         <p>
-          Seu endereço é <strong>{pronto.endereco.replace("https://", "")}</strong>. Você tem 30 dias grátis, até{" "}
-          {new Date(`${pronto.teste_ate}T12:00:00`).toLocaleDateString("pt-BR")}.
+          Seu endereço é <strong>{pronto.endereco.replace("https://", "")}</strong>.
+          {pronto.pagar ? " Agora você paga a primeira mensalidade pelo Mercado Pago e o app vai ao ar assim que o pagamento for aprovado." : ""}
         </p>
-        <a className="botao-ouro" href={`${pronto.endereco}/admin/entrar#passe=${pronto.passe}`}>Abrir meu painel</a>
-        <small>Abrindo o seu painel…</small>
+        <a className="botao-ouro" href={`${pronto.endereco}/admin/entrar#passe=${pronto.passe}${pronto.pagar ? "&pagar=1" : ""}`}>
+          {pronto.pagar ? "Ir para o pagamento" : "Abrir meu painel"}
+        </a>
+        <small>{pronto.pagar ? "Abrindo o pagamento…" : "Abrindo o seu painel…"}</small>
       </main>
     );
   }
@@ -152,7 +154,7 @@ export default function CriarSalao({ planos, whatsapp }) {
       {etapa === 1 && (
         <section className="cs-etapa">
           <h1>Crie o app do seu salão</h1>
-          <p className="cs-sub">Leva 2 minutos. Você testa 30 dias grátis, sem cartão.</p>
+          <p className="cs-sub">Leva 2 minutos. No final você paga a primeira mensalidade e o app vai ao ar na hora.</p>
           {previa}
           <div className="form form-compacto">
             <label htmlFor="cs-nome">Nome do salão</label>
@@ -223,7 +225,7 @@ export default function CriarSalao({ planos, whatsapp }) {
       {etapa === 2 && (
         <section className="cs-etapa">
           <h1>Escolha o plano</h1>
-          <p className="cs-sub">Nos 30 dias grátis você usa tudo do Profissional. Só paga se quiser continuar, pelo próprio app.</p>
+          <p className="cs-sub">Mensal, sem fidelidade. Pague com Pix, cartão ou boleto pelo Mercado Pago.</p>
           <div className="cs-planos" role="radiogroup" aria-label="Plano">
             {planos.map((pl) => (
               <button key={pl.codigo} type="button" role="radio" aria-checked={plano === pl.codigo} className="cs-plano vidro" onClick={() => setPlano(pl.codigo)}>
@@ -240,7 +242,7 @@ export default function CriarSalao({ planos, whatsapp }) {
               </button>
             ))}
           </div>
-          <a className="cs-nota cs-link" href="/planos" target="_blank" rel="noopener">Comparar tudo o que cada plano tem</a>
+          <a className="cs-nota cs-link" href="/#planos" target="_blank" rel="noopener">Comparar tudo o que cada plano tem</a>
           <div className="acao-rodape cs-rodape-duplo">
             <button type="button" className="botao-linha" onClick={() => irPara(1)}>Voltar</button>
             <button type="button" className="botao-ouro" onClick={() => irPara(3)}>Continuar</button>
@@ -264,13 +266,14 @@ export default function CriarSalao({ planos, whatsapp }) {
             <label className="marcar">
               <input type="checkbox" checked={aceite} onChange={(e) => setAceite(e.target.checked)} />
               <span>
-                Li e aceito a <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>
+                Li e aceito os <a href="/termos" target="_blank" rel="noopener">termos de uso</a> e a{" "}
+                <a href="/privacidade" target="_blank" rel="noopener">política de privacidade</a>
               </span>
             </label>
             {erro && <p className="erro" role="alert">{erro}</p>}
             <div className="acao-rodape cs-rodape-duplo">
               <button type="button" className="botao-linha" onClick={() => irPara(2)}>Voltar</button>
-              <button type="submit" className="botao-ouro" disabled={!etapa3 || enviando}>{enviando ? "Criando…" : "Criar meu app"}</button>
+              <button type="submit" className="botao-ouro" disabled={!etapa3 || enviando}>{enviando ? "Criando…" : "Criar e pagar"}</button>
             </div>
           </form>
         </section>

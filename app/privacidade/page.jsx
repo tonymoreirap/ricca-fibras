@@ -1,9 +1,56 @@
 import BarraTopo from "../../components/BarraTopo";
-import { empresaDoPedido } from "../../lib/empresaServidor";
+import { empresaDoPedido, plataformaDoPedido } from "../../lib/empresaServidor";
+import { Cabecalho, Rodape } from "../../components/site/Moldura";
+import { CONTATO } from "../../lib/plataforma";
+
+function PrivacidadeSite() {
+  return (
+    <div className="st">
+      <Cabecalho />
+      <main className="st-pagina">
+        <div className="st-in st-estreito">
+          <h1>Política de privacidade</h1>
+          <p className="st-data">Atualizada em 27 de novembro de 2026</p>
+          <p>
+            Esta política vale para o site tonsdellas.com.br e para os apps dos salões que usam a plataforma Tons Dellas. Explicamos,
+            em linguagem simples, quais dados usamos e por quê, de acordo com a Lei Geral de Proteção de Dados (LGPD).
+          </p>
+          <h2>Donas de salão</h2>
+          <ul>
+            <li>Nome, e-mail, WhatsApp e senha (guardada criptografada), para criar e proteger o acesso ao painel.</li>
+            <li>Dados do salão: nome, endereço, horários, serviços, preços, chave Pix, logo e fotos, para montar o app.</li>
+            <li>Histórico de mensalidades. Os pagamentos são processados pelo Mercado Pago; não recebemos nem guardamos dados de cartão.</li>
+          </ul>
+          <h2>Clientes dos salões</h2>
+          <p>
+            Nome, celular, agendamentos, recibos e, se a cliente escolher, o e-mail da conta Google. Cada salão vê apenas as próprias
+            clientes. Nesses dados, o salão é o controlador e a Tons Dellas trata as informações em nome dele, só para o app funcionar.
+          </p>
+          <h2>Formulário de contato</h2>
+          <p>O que você escreve no formulário fica guardado para que possamos responder. Não usamos para outra finalidade.</p>
+          <h2>Com quem compartilhamos</h2>
+          <p>
+            Não vendemos nem alugamos dados. Eles ficam em serviços de hospedagem contratados pela plataforma (Supabase e Vercel), e os
+            pagamentos passam pelo Mercado Pago. Senhas são criptografadas e ninguém consegue lê-las.
+          </p>
+          <h2>Cookies e armazenamento</h2>
+          <p>Usamos apenas o armazenamento do navegador necessário para manter você conectada ao app. Não usamos cookies de propaganda.</p>
+          <h2>Seus direitos</h2>
+          <p>
+            Você pode pedir para ver, corrigir, levar ou apagar seus dados a qualquer momento: WhatsApp {CONTATO.whatsappTexto} ou{" "}
+            <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>.
+          </p>
+        </div>
+      </main>
+      <Rodape />
+    </div>
+  );
+}
 
 export const metadata = { title: "Política de privacidade" };
 
 export default async function Privacidade() {
+  if (await plataformaDoPedido()) return <PrivacidadeSite />;
   const s = await empresaDoPedido();
   const salao = s?.nome || "o salão";
   return (

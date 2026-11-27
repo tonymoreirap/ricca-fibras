@@ -2,9 +2,14 @@ import Link from "next/link";
 import RedirecionarLogado from "../components/RedirecionarLogado";
 import { SoNoTema } from "../components/TemaSazonal";
 import { LogoDe } from "../components/Empresa";
-import { empresaDoPedido } from "../lib/empresaServidor";
+import { empresaDoPedido, plataformaDoPedido, rpcDoPedido } from "../lib/empresaServidor";
+import Site from "../components/site/Site";
 
 export default async function Entrada() {
+  if (await plataformaDoPedido()) {
+    const d = await rpcDoPedido("planos_publicos").catch(() => ({ planos: [] }));
+    return <Site planos={d.planos || []} />;
+  }
   const s = await empresaDoPedido();
   const rica = s.slug === "rica";
   return (
