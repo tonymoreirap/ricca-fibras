@@ -29,6 +29,7 @@ function Editor({ token, inicial, servicos, aoFechar, aoSalvo, aoLimite, aoAcess
   const [ativo, setAtivo] = useState(inicial.ativo ?? true);
   const [todos, setTodos] = useState(!inicial.servicos?.length);
   const [marcados, setMarcados] = useState(inicial.servicos || []);
+  const [comissao, setComissao] = useState(inicial.comissao_pct != null ? String(Number(inicial.comissao_pct)).replace(".", ",") : "0");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
 
@@ -47,6 +48,12 @@ function Editor({ token, inicial, servicos, aoFechar, aoSalvo, aoLimite, aoAcess
         if (r.limite) return aoLimite();
         throw new Error(r.erro);
       }
+      const pctNovo = Number(String(comissao).replace(",", ".")) || 0;
+      if (!novo && pctNovo !== Number(inicial.comissao_pct || 0)) {
+        const c = await rpc("admin_equipe_comissao", { p_token: token, p_equipe: inicial.id, p_pct: pctNovo });
+        if (!c.ok) throw new Error(c.erro);
+        r.equipe = (r.equipe || []).map((x) => (x.id === inicial.id ? { ...x, comissao_pct: pctNovo } : x));
+      }
       aoSalvo(r, novo ? `${nome.trim()} entrou na equipe.` : "Alterações salvas.");
     } catch (e) {
       setErro(e.message);
@@ -64,6 +71,14 @@ function Editor({ token, inicial, servicos, aoFechar, aoSalvo, aoLimite, aoAcess
           <label htmlFor="eq-nome">Nome que a cliente vê</label>
           <input id="eq-nome" maxLength={40} value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Bia" autoFocus={novo} />
         </div>
+
+        {!novo && (
+          <div className="form form-compacto">
+            <label htmlFor="eq-comissao">Comissão sobre os atendimentos (%)</label>
+            <input id="eq-comissao" inputMode="decimal" maxLength={5} value={comissao} onChange={(e) => setComissao(e.target.value.replace(/[^\d,]/g, ""))} placeholder="0" />
+            <small className="ms-dica">Usada no painel de Resultados para calcular quanto pagar a ela e quanto fica para o salão. Deixe 0 se ela não ganha comissão.</small>
+          </div>
+        )}
 
         <p className="nh-rotulo">Serviços que ela faz</p>
         <div className="eq-servicos">
@@ -213,6 +228,7 @@ export default function Equipe() {
                       ) : (
                         <span className="chip chip-ok">Na agenda</span>
                       )}
+                      {Number(q.comissao_pct) > 0 && <span className="chip">Comissão {Number(q.comissao_pct)}%</span>}
                       {q.acesso && (
                         <span className="chip">{q.acesso.ativo ? "Usa o app" : "Link enviado"}</span>
                       )}

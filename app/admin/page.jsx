@@ -542,8 +542,9 @@ export default function Painel() {
           <h2 id="ger-titulo" className="gerenciar-titulo">Gerenciar</h2>
           <div className="gerenciar-grade">
             {[
+              { href: "/admin/resultados", titulo: "Resultados do mês", sub: "Lucro, despesas, perdas e alertas", arte: "brilho", destaque: true },
               { href: "/admin/salao", titulo: "Meu salão", sub: "Fotos, cores, Pix", arte: "flor" },
-              { href: "/admin/servicos", titulo: "Serviços", sub: "Preços e ofertas", arte: "brilho" },
+              { href: "/admin/servicos", titulo: "Serviços", sub: "Preços e ofertas", arte: "manicure" },
               { href: "/admin/equipe", titulo: "Equipe", sub: `${ativas.length} de ${dados.limite_equipe}`, arte: "manicure" },
               { href: "/admin/promocoes", titulo: "Promoções", sub: "Com data", arte: "batom", recurso: "promocoes", liberado: temRecurso(salao, "promocoes") },
               { href: "/admin/curso", titulo: "Curso e Rede", sub: dados.curso_novas ? `${dados.curso_novas} ${dados.curso_novas === 1 ? "nova" : "novas"}` : "Turmas", arte: "curso", recurso: "curso", liberado: temRecurso(salao, "curso") || temRecurso(salao, "rede"), n: dados.curso_novas },
@@ -565,7 +566,7 @@ export default function Painel() {
                   {corpo}
                 </button>
               ) : (
-                <Link key={g.href} href={g.href} className="ger-item">{corpo}</Link>
+                <Link key={g.href} href={g.href} className={`ger-item ${g.destaque ? "ger-destaque" : ""}`}>{corpo}</Link>
               );
             })}
           </div>
