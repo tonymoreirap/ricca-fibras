@@ -9,6 +9,7 @@ export default function Assinatura() {
   if (temRecurso(salao, "sem_assinatura")) return null;
   return (
     <a className="assinatura-tons" href={`${SITE_PLATAFORMA}/planos`} target="_blank" rel="noopener">
+      <img src="/site/td.webp" alt="" width="120" height="63" />
       Feito com <strong>Tons Dellas</strong> · tenha o app do seu salão
     </a>
   );

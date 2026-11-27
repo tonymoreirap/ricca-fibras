@@ -1605,6 +1605,7 @@ body:not(.marca-rica) .pulso { background: none; border: 2px solid rgb(var(--our
 /* ---------- Assinatura e página de planos ---------- */
 .assinatura-tons { display: block; margin-top: 1.6rem; font-size: 0.75rem; color: var(--apagado); text-align: center; text-decoration: none; }
 .assinatura-tons strong { font-weight: 500; color: var(--claro-suave); }
+.assinatura-tons img { display: block; width: 40px; height: auto; margin: 0 auto 0.35rem; opacity: 0.9; }
 .pl-topo { display: flex; align-items: center; justify-content: space-between; padding: calc(1rem + env(safe-area-inset-top)) var(--margem) 0.5rem; }
 .pl-marca { font-family: var(--display); font-size: 1.35rem; letter-spacing: 0.04em; color: var(--ouro-claro); }
 .pl-capa { display: grid; gap: 0.9rem; padding: 2rem 0 0.5rem; }

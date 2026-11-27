@@ -6,7 +6,7 @@ export function Cabecalho({ cta = true }) {
   return (
     <header className="st-cab">
       <div className="st-cab-in">
-        <Link href="/" className="st-marca" aria-label="Tons Dellas, página inicial"><img src="/site/logo-tons-dellas-p.webp" alt="Tons Dellas" width="360" height="185" className="st-logo" /></Link>
+        <Link href="/" className="st-marca" aria-label="Tons Dellas, página inicial"><img src="/site/logo-tons-dellas-p.webp" alt="Tons Dellas" width="480" height="211" className="st-logo" /></Link>
         <nav className="st-nav" aria-label="Seções">
           <a href="/#recursos">Recursos</a>
           <a href="/#planos">Planos</a>
@@ -34,7 +34,7 @@ export function Rodape() {
     <footer className="st-rodape">
       <div className="st-rodape-in">
         <div className="st-rodape-marca">
-          <img src="/site/logo-tons-dellas-p.webp" alt="Tons Dellas" width="360" height="185" className="st-logo st-logo-rodape" />
+          <img src="/site/logo-tons-dellas-p.webp" alt="Tons Dellas" width="480" height="211" className="st-logo st-logo-rodape" />
           <p>O app de agendamento do seu salão, com a sua marca. Feito em {CONTATO.cidade}.</p>
         </div>
         <nav aria-label="Produto">
