@@ -9,6 +9,8 @@ import { STATUS, primeiroNome } from "../../lib/agenda";
 import { whatsCliente } from "../../lib/mensagens";
 import { useSalao, LogoDe } from "../../components/Empresa";
 import { IconeConversa, IconeCheck } from "../../components/Icones";
+import LinhaDoTempo from "../../components/LinhaDoTempo";
+import { useVistaAgenda, TrocaVista, FolhaHorario } from "../../components/VistaAgenda";
 
 const FUSO = "America/Fortaleza";
 const diaDe = (iso) => new Date(iso).toLocaleDateString("en-CA", { timeZone: FUSO });
@@ -73,6 +75,8 @@ export default function PainelEquipe() {
   const [anteriores, setAnteriores] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState("");
+  const [vista, setVista] = useVistaAgenda("equipe");
+  const [detalhe, setDetalhe] = useState(null);
 
   const sair = useCallback(() => {
     limparSessao("profissional");
@@ -187,8 +191,12 @@ export default function PainelEquipe() {
 
         {aba === "agenda" && (
           <section className="adm-secao">
-            {vis.dias.length === 0 && <p className="bloco-vazio">Nenhum horário marcado daqui pra frente.</p>}
-            {vis.dias.map(([dia, itens]) => (
+            <TrocaVista vista={vista} mudar={setVista} />
+            {vista === "linha" && (
+              <LinhaDoTempo agendamentos={d.agendamentos} salao={salao} verValores={eu.ver_valores} aoAbrir={(a) => setDetalhe(a.codigo)} />
+            )}
+            {vista === "lista" && vis.dias.length === 0 && <p className="bloco-vazio">Nenhum horário marcado daqui pra frente.</p>}
+            {vista === "lista" && vis.dias.map(([dia, itens]) => (
               <div key={dia} className="ag-dia">
                 <h2 className="ag-dia-titulo"><span>{rotuloDia(dia)}</span><small>{itens.filter((a) => a.status !== "cancelado").length}</small></h2>
                 <ul className="ag-lista vidro">
@@ -196,12 +204,12 @@ export default function PainelEquipe() {
                 </ul>
               </div>
             ))}
-            {vis.passados.length > 0 && (
+            {vista === "lista" && vis.passados.length > 0 && (
               <button type="button" className="botao-linha" onClick={() => setAnteriores((v) => !v)}>
                 {anteriores ? "Esconder anteriores" : "Ver atendimentos anteriores"}
               </button>
             )}
-            {anteriores && vis.passados.map(([dia, itens]) => (
+            {vista === "lista" && anteriores && vis.passados.map(([dia, itens]) => (
               <div key={dia} className="ag-dia ag-dia-passado">
                 <h2 className="ag-dia-titulo"><span>{rotuloDia(dia)}</span><small>{itens.length}</small></h2>
                 <ul className="ag-lista vidro">
@@ -237,6 +245,14 @@ export default function PainelEquipe() {
           </section>
         )}
       </main>
+      {detalhe && (() => {
+        const a = d.agendamentos.find((x) => x.codigo === detalhe);
+        return a ? (
+          <FolhaHorario aoFechar={() => setDetalhe(null)}>
+            <Horario a={a} verValores={eu.ver_valores} salao={s} mudar={mudar} ocupado={ocupado} />
+          </FolhaHorario>
+        ) : null;
+      })()}
       {aviso && <div className="toast" role="status">{aviso}</div>}
     </div>
   );

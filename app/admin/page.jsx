@@ -14,6 +14,8 @@ import { real, hora, dataLonga, celularFormatado, hojeISO, somaDias, FUSO } from
 import { STATUS, nivelDe, pagamento, primeiroNome } from "../../lib/agenda";
 import { lerSessao, limparSessao, sessaoExpirada } from "../../lib/sessao";
 import NovoHorario from "../../components/admin/NovoHorario";
+import LinhaDoTempo from "../../components/LinhaDoTempo";
+import { useVistaAgenda, TrocaVista, FolhaHorario } from "../../components/VistaAgenda";
 import FolhaCliente from "../../components/admin/FolhaCliente";
 import { whatsCliente, msgBoasVindas } from "../../lib/mensagens";
 import MenuApp from "../../components/MenuApp";
@@ -294,6 +296,8 @@ export default function Painel() {
   const [verAlertas, setVerAlertas] = useState(false);
   const [travado, setTravado] = useState(null);
   const [filtroProf, setFiltroProf] = useState(null);
+  const [vista, setVista] = useVistaAgenda("admin");
+  const [detalhe, setDetalhe] = useState(null);
   const [bemvinda, setBemvinda] = useState(false);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("bemvinda")) {
@@ -597,8 +601,18 @@ export default function Painel() {
                 ))}
               </div>
             )}
-            {vis.dias.length === 0 && <p className="bloco-vazio">Nenhum horário marcado daqui pra frente.</p>}
-            {vis.dias.map(([dia, itens]) => (
+            <TrocaVista vista={vista} mudar={(x) => { setVista(x); setAberto(null); }} />
+            {vista === "linha" && (
+              <LinhaDoTempo
+                agendamentos={filtroProf ? dados.agendamentos.filter((a) => a.profissional_id === filtroProf) : dados.agendamentos}
+                salao={salao}
+                equipe={filtroProf ? ativas.filter((q) => q.id === filtroProf) : ativas}
+                aoAbrir={(a) => setDetalhe(a.codigo)}
+                aoLivre={({ dia, profissional }) => setNovo({ dia, profissional })}
+              />
+            )}
+            {vista === "lista" && vis.dias.length === 0 && <p className="bloco-vazio">Nenhum horário marcado daqui pra frente.</p>}
+            {vista === "lista" && vis.dias.map(([dia, itens]) => (
               <div key={dia} className="ag-dia">
                 <h2 className="ag-dia-titulo"><span>{rotuloDia(dia)}</span><small>{itens.length}</small></h2>
                 <ul className="ag-lista vidro">
@@ -608,12 +622,12 @@ export default function Painel() {
                 </ul>
               </div>
             ))}
-            {vis.passados.length > 0 && (
+            {vista === "lista" && vis.passados.length > 0 && (
               <button type="button" className="botao-linha" onClick={() => setAnteriores((v) => !v)}>
                 {anteriores ? "Esconder anteriores" : "Ver horários anteriores"}
               </button>
             )}
-            {anteriores &&
+            {vista === "lista" && anteriores &&
               vis.passados.map(([dia, itens]) => (
                 <div key={dia} className="ag-dia ag-dia-passado">
                   <h2 className="ag-dia-titulo"><span>{rotuloDia(dia)}</span><small>{itens.length}</small></h2>
@@ -787,6 +801,14 @@ export default function Painel() {
 
       </main>
 
+      {detalhe && (() => {
+        const a = dados.agendamentos.find((x) => x.codigo === detalhe);
+        return a ? (
+          <FolhaHorario aoFechar={() => setDetalhe(null)}>
+            <Item a={a} aberto alternar={() => setDetalhe(null)} mudar={mudar} ocupado={ocupado} origem={origem} comEquipe={comEquipe} />
+          </FolhaHorario>
+        ) : null;
+      })()}
       <MenuApp quem={{ tipo: "admin" }} aoNovoHorario={() => setNovo({})} />
 
       {novo && (
